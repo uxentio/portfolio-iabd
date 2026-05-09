@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RpaChatApp.SettingsPage"
+             Title="Configuración"
+             BackgroundColor="#0B141A">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+
+            <!-- FastAPI del agente -->
+            <Border Stroke="#2A3942" StrokeThickness="1" Padding="15"
+                    BackgroundColor="#1F2C34" StrokeShape="RoundRectangle 10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Conexión con la API del agente"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#00A884"/>
+
+                    <Label Text="URL base (por defecto http://localhost:8001)" TextColor="#8696A0"/>
+                    <Entry Placeholder="http://localhost:8001"
+                           Text="{Binding ApiBaseUrl}"
+                           TextColor="#E9EDEF"
+                           BackgroundColor="#2A3942"
+                           PlaceholderColor="#8696A0"/>
+
+                    <Label Text="thread_id (identifica la conversación actual)" TextColor="#8696A0"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Entry Grid.Column="0"
+                               Placeholder="default"
+                               Text="{Binding ThreadId}"
+                               TextColor="#E9EDEF"
+                               BackgroundColor="#2A3942"
+                               PlaceholderColor="#8696A0"/>
+                        <Button Text="Nuevo"
+                                Grid.Column="1"
+                                Command="{Binding NewThreadCommand}"
+                                FontSize="10"
+                                HeightRequest="35"
+                                Margin="5,0,0,0"
+                                BackgroundColor="#10B981"
+                                TextColor="White"/>
+                    </Grid>
+
+                    <Label Text="Pulsa 'Nuevo' para empezar una sesión limpia (el agente no recordará los turnos anteriores)."
+                           TextColor="#8696A0"
+                           FontSize="11"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Modelo de LM Studio (selector dinámico desde GET /models) -->
+            <Border Stroke="#2A3942" StrokeThickness="1" Padding="15"
+                    BackgroundColor="#1F2C34" StrokeShape="RoundRectangle 10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Modelo de LM Studio"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#00A884"/>
+
+                    <Label Text="La lista se rellena consultando GET /models de la API, que hace proxy a /v1/models de LM Studio. Si cambias de modelo, los dos agentes se reconstruyen en el siguiente turno."
+                           TextColor="#8696A0"
+                           FontSize="12"/>
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <Picker Grid.Column="0"
+                                x:Name="ModelPicker"
+                                ItemsSource="{Binding AvailableModels}"
+                                SelectedItem="{Binding SelectedModel}"
+                                Title="Selecciona modelo"
+                                TextColor="#E9EDEF"
+                                BackgroundColor="#2A3942"
+                                TitleColor="#8696A0"/>
+                        <Button Grid.Column="1"
+                                Text="Refrescar"
+                                Command="{Binding RefreshModelsCommand}"
+                                FontSize="10"
+                                HeightRequest="35"
+                                BackgroundColor="#10B981"
+                                TextColor="White"/>
+                    </Grid>
+
+                    <Label Text="{Binding ModelsHint}"
+                           TextColor="#8696A0"
+                           FontSize="11"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Lectura por voz (TTS) -->
+            <Border Stroke="#2A3942" StrokeThickness="1" Padding="15"
+                    BackgroundColor="#1F2C34" StrokeShape="RoundRectangle 10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Lectura por voz"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#00A884"/>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <Label Grid.Column="0"
+                               Text="Leer en voz alta la respuesta final del agente (TextToSpeech de MAUI Essentials)"
+                               TextColor="#8696A0"
+                               VerticalOptions="Center"/>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding TtsEnabled}"
+                                OnColor="#00A884"
+                                ThumbColor="White"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Backend del agente -->
+            <Border Stroke="#2A3942" StrokeThickness="1" Padding="15"
+                    BackgroundColor="#1F2C34" StrokeShape="RoundRectangle 10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Backend del agente"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#00A884"/>
+
+                    <Label Text="Elige qué agente usa la API en cada petición. La API tiene los dos cargados; alternar no requiere reinicio."
+                           TextColor="#8696A0"
+                           FontSize="12"/>
+
+                    <Picker x:Name="BackendPicker"
+                            SelectedItem="{Binding Backend}"
+                            Title="Selecciona backend"
+                            TextColor="#E9EDEF"
+                            BackgroundColor="#2A3942"
+                            TitleColor="#8696A0">
+                        <Picker.ItemsSource>
+                            <x:Array Type="{x:Type x:String}">
+                                <x:String>langgraph</x:String>
+                                <x:String>langchain</x:String>
+                            </x:Array>
+                        </Picker.ItemsSource>
+                    </Picker>
+
+                    <Label Text="langgraph: StateGraph propio con HITL antes del RPA. langchain: create_agent con middlewares."
+                           TextColor="#8696A0"
+                           FontSize="11"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Ralentizador sintético -->
+            <Border Stroke="#2A3942" StrokeThickness="1" Padding="15"
+                    BackgroundColor="#1F2C34" StrokeShape="RoundRectangle 10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Ralentizador de la demo"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#00A884"/>
+
+                    <Label Text="Pausa sintética entre eventos del agente (tool_call, tool_result, answer) para ver el flujo paso a paso. 0 ms = sin pausa."
+                           TextColor="#8696A0"
+                           FontSize="12"/>
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <Slider Grid.Column="0"
+                                Minimum="0"
+                                Maximum="3000"
+                                Value="{Binding DelayMs}"
+                                MinimumTrackColor="#00A884"
+                                MaximumTrackColor="#2A3942"
+                                ThumbColor="#00A884"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding DelayMs, StringFormat='{0:0} ms'}"
+                               TextColor="#E9EDEF"
+                               VerticalOptions="Center"
+                               WidthRequest="80"
+                               HorizontalTextAlignment="End"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Acciones -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,10,0,0">
+                <Button Grid.Column="0"
+                        Text="Valores por defecto"
+                        Command="{Binding DefaultsCommand}"
+                        BackgroundColor="#6366F1"
+                        TextColor="White"/>
+                <Button Grid.Column="1"
+                        Text="Guardar"
+                        Command="{Binding SaveCommand}"
+                        BackgroundColor="#00A884"
+                        TextColor="White"/>
+            </Grid>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

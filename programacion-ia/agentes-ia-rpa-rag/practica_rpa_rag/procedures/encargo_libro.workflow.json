@@ -1,0 +1,135 @@
+{
+  "id": "encargo_libro",
+  "titulo": "Encargo de libro en formulario externo (httpbin)",
+  "descripcion": "Rellena el formulario público de https://httpbin.org/forms/post con los datos de un encargo de libro a una tienda externa. Sirve para demostrar que el agente puede ejecutar el RPA sobre formularios reales online, no solo sobre el formulario local del catálogo. Expresiones típicas del usuario: 'encarga el libro X', 'pide el libro Y en formato bolsillo', 'haz un encargo de libro a la tienda externa', 'reserva un libro online'. Requiere nombre del cliente, teléfono, email, formato del libro (bolsillo, tapa blanda o tapa dura) y comentarios o instrucciones de envío. NO sirve para alta, baja ni ajuste de copias del fondo interno (para eso usa los workflows alta_libro, baja_libro o ajuste_copias sobre el formulario local de la biblioteca): este actúa exclusivamente sobre httpbin con sus cinco campos.",
+  "app": "httpbin_forms",
+  "url": "https://httpbin.org/forms/post",
+  "tags": [
+    "encargo libro",
+    "pedido libro",
+    "formulario externo",
+    "httpbin",
+    "tienda externa",
+    "reservar libro"
+  ],
+  "param_schema": {
+    "nombre_cliente": {
+      "type": "string",
+      "description": "Nombre del cliente que encarga el libro",
+      "required": true
+    },
+    "telefono": {
+      "type": "string",
+      "description": "Teléfono de contacto",
+      "required": true
+    },
+    "email": {
+      "type": "string",
+      "description": "Email del cliente",
+      "required": true
+    },
+    "formato_libro": {
+      "type": "enum",
+      "values": [
+        "small",
+        "medium",
+        "large"
+      ],
+      "description": "Formato del libro mapeado al campo size del formulario: small = bolsillo, medium = tapa blanda, large = tapa dura",
+      "required": true
+    },
+    "comentarios": {
+      "type": "string",
+      "description": "Comentarios o instrucciones de envío",
+      "required": true
+    }
+  },
+  "steps": [
+    {
+      "type": "wait",
+      "ms": 800
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "input[name=\"custname\"]"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "input[name=\"custname\"]"
+      },
+      "value": "{{nombre_cliente}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "input[name=\"custtel\"]"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "input[name=\"custtel\"]"
+      },
+      "value": "{{telefono}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "input[name=\"custemail\"]"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "input[name=\"custemail\"]"
+      },
+      "value": "{{email}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "input[name=\"size\"][value=\"{{formato_libro}}\"]"
+      }
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "textarea[name=\"comments\"]"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "textarea[name=\"comments\"]"
+      },
+      "value": "{{comentarios}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "button"
+      }
+    },
+    {
+      "type": "wait_for_text",
+      "target": {
+        "by": "css",
+        "value": "body"
+      },
+      "contains": "custname"
+    }
+  ]
+}

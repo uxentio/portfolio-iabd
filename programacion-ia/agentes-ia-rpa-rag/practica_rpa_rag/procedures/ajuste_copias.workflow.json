@@ -1,0 +1,79 @@
+{
+  "id": "ajuste_copias",
+  "titulo": "Ajustar copias totales de un título del fondo",
+  "descripcion": "Cambia el número total de ejemplares físicos de un título identificado por su nº de registro (R-NNNN). Se usa cuando entran nuevos ejemplares por compra o donación, o cuando se reduce el fondo (un ejemplar se expurga pero no todo el título). NO es un préstamo ni una devolución (eso afecta a copias_disponibles, no al total). Expresiones típicas: 'añade 2 copias más al R-0003', 'pon 5 ejemplares de R-0007', 'el R-0042 ahora tiene 3 copias', 'sube las copias del título tal a 4'. Requiere id_libro y copias_total.",
+  "app": "biblioteca_seccion",
+  "url": "{{FORM_URL_AJUSTE_COPIAS}}",
+  "tags": [
+    "ajuste copias",
+    "actualizar ejemplares",
+    "anadir copias",
+    "ingresar ejemplar",
+    "fondo",
+    "R-NNNN",
+    "expurgo parcial"
+  ],
+  "param_schema": {
+    "id_libro": {
+      "type": "string",
+      "description": "Nº de registro del libro, formato R-NNNN",
+      "required": true
+    },
+    "copias_total": {
+      "type": "integer",
+      "description": "Nuevo total de ejemplares físicos del título",
+      "required": true
+    }
+  },
+  "steps": [
+    {
+      "type": "wait",
+      "ms": 500
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#id_libro"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#id_libro"
+      },
+      "value": "{{id_libro}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#copias_total"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#copias_total"
+      },
+      "value": "{{copias_total}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#btn_actualizar"
+      }
+    },
+    {
+      "type": "wait_for_text",
+      "target": {
+        "by": "css",
+        "value": "#toast"
+      },
+      "contains": "actualizadas"
+    }
+  ]
+}

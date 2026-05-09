@@ -1,0 +1,29 @@
+flowchart TD
+    U["Usuario teclea petición<br/>en UI MAUI"]
+    M["MainViewModel<br/>+ AgentApiService"]
+    A["FastAPI /chat<br/>subscribe UIEventBus<br/>lanza agente"]
+    G["Agente LangGraph<br/>StateGraph custom"]
+    R{"router_agente"}
+    CR["confirmar_rpa<br/>[pausa] interrupt_before"]
+    H{"Cliente pide<br/>confirmación s/N"}
+    CN["update_state<br/>ToolMessage cancelado"]
+    ER["ejecutar_rpa<br/>run_workflow"]
+    RN["Runner Playwright<br/>RPAChain"]
+    BR["Chromium<br/>rellena formulario<br/>toast Guardado"]
+    TS["tools_seguras (7 idempotentes)<br/>search · list · extract<br/>consultar · listar_catalogo<br/>listar_prestamos · buscar_libro"]
+
+    U -->|teclea| M
+    M -->|POST /chat| A
+    A -->|astream| G
+    G --> R
+    R -->|run_workflow| CR
+    CR --> H
+    H -->|n| CN
+    H -->|s| ER
+    CN --> G
+    ER --> RN
+    RN --> BR
+    BR -->|dict ok/ko| G
+    R -->|tool idempotente| TS
+    TS -->|resultado| G
+    G -.->|"SSE: tool_call · tool_result<br/>answer · done"| M

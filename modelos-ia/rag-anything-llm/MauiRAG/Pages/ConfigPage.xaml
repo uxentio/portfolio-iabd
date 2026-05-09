@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:MauiRAG.ViewModels"
+             x:Class="MauiRAG.Pages.ConfigPage"
+             x:DataType="vm:ConfigViewModel"
+             Title="Configuracion">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <Label Text="Configuracion de la API" FontSize="24" FontAttributes="Bold"/>
+
+            <Label Text="URL Base"/>
+            <Entry Placeholder="http://localhost:3001/api" Text="{Binding BaseUrl}"/>
+
+            <Label Text="API Key"/>
+            <Entry Placeholder="Tu API key de AnythingLLM" IsPassword="True"
+                   Text="{Binding ApiKey}"/>
+
+            <Label Text="URL LM Studio (para vision)"/>
+            <Entry Placeholder="http://localhost:1234" Text="{Binding LmStudioUrl}"/>
+
+            <Label Text="System Prompt (opcional)"/>
+            <Editor HeightRequest="120" Placeholder="Escribe aqui el system prompt que quieras usar..."
+                    Text="{Binding SystemPrompt}"/>
+
+            <BoxView HeightRequest="1" Color="LightGray" Margin="0,5"/>
+            <Label Text="Scripts de Python (preprocesado)" FontSize="18" FontAttributes="Bold"/>
+
+            <Label Text="Ruta de los scripts (.py)"/>
+            <Entry Placeholder="Carpeta donde estan los scripts de preprocesado"
+                   Text="{Binding ScriptsPath}"/>
+
+            <Label Text="Ejecutable de Python"/>
+            <Entry Placeholder="python" Text="{Binding PythonExePath}"/>
+            <Label Text="Dejar 'python' si esta en el PATH del sistema" FontSize="11" TextColor="Gray"/>
+
+            <BoxView HeightRequest="1" Color="LightGray" Margin="0,5"/>
+
+            <Button Text="Guardar Configuracion" Command="{Binding GuardarCommand}"
+                    BackgroundColor="#512BD4" TextColor="White"/>
+
+            <Button Text="Probar Conexion" Command="{Binding ProbarConexionCommand}"
+                    BackgroundColor="#6B7280" TextColor="White"/>
+
+            <ActivityIndicator IsRunning="{Binding Probando}" IsVisible="{Binding Probando}"
+                               Color="#512BD4"/>
+            <Label Text="{Binding Estado}" TextColor="{Binding ColorEstado}" FontSize="14"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

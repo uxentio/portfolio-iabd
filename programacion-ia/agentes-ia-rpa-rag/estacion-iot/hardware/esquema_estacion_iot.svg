@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1100" font-family="Arial, sans-serif" font-size="12">
+<defs>
+  <style>
+    .comp-title   { font-weight: bold; font-size: 13px; fill: #222; }
+    .comp-sub     { font-style: italic; font-size: 10px; fill: #666; }
+    .pin-lbl      { font-size: 10px; font-weight: bold; }
+    .pin-num      { font-size: 8px; fill: white; font-weight: bold; }
+    .net-lbl      { font-size: 10px; font-weight: bold; fill: #222; }
+  </style>
+  <linearGradient id="pcb-grad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#1a5a2a"/>
+    <stop offset="100%" stop-color="#0d3518"/>
+  </linearGradient>
+  <linearGradient id="oled-scr" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#000020"/>
+    <stop offset="100%" stop-color="#000000"/>
+  </linearGradient>
+</defs>
+
+<!-- =========== POWER RAILS (arriba y abajo) =========== -->
+<!-- +3V3 rail -->
+<line x1="60" y1="80" x2="1540" y2="80" stroke="#e53935" stroke-width="3"/>
+<text x="70" y="72" fill="#e53935" font-weight="bold" font-size="14">+3V3</text>
+<text x="1530" y="72" text-anchor="end" fill="#e53935" font-weight="bold" font-size="14">+3V3</text>
+
+<!-- +5V rail (separado, mas corto) -->
+<line x1="120" y1="115" x2="1300" y2="115" stroke="#ff9800" stroke-width="3"/>
+<text x="130" y="108" fill="#ff9800" font-weight="bold" font-size="14">+5V</text>
+
+<!-- GND rail -->
+<line x1="60" y1="1020" x2="1540" y2="1020" stroke="#000" stroke-width="3"/>
+<text x="70" y="1012" fill="#000" font-weight="bold" font-size="14">GND</text>
+<text x="1530" y="1012" text-anchor="end" fill="#000" font-weight="bold" font-size="14">GND</text>
+<!-- GND symbol -->
+<g transform="translate(1450, 1025)">
+  <line x1="0" y1="0" x2="0" y2="8" stroke="black" stroke-width="2"/>
+  <line x1="-10" y1="10" x2="10" y2="10" stroke="black" stroke-width="2.5"/>
+  <line x1="-6" y1="15" x2="6" y2="15" stroke="black" stroke-width="2"/>
+  <line x1="-2" y1="20" x2="2" y2="20" stroke="black" stroke-width="2"/>
+</g>
+
+<!-- =========== ESP32 DEVKIT (centro, realista) =========== -->
+<g id="esp32" transform="translate(550, 270)">
+  <!-- PCB -->
+  <rect x="0" y="0" width="200" height="620" fill="url(#pcb-grad)" stroke="#000" stroke-width="2" rx="6"/>
+
+  <!-- USB-C connector top -->
+  <rect x="75" y="-30" width="50" height="32" fill="#888" stroke="#000" stroke-width="1.5"/>
+  <rect x="83" y="-25" width="34" height="22" fill="#444"/>
+  <text x="100" y="-10" text-anchor="middle" fill="white" font-size="9">USB</text>
+
+  <!-- WiFi antenna (top left) -->
+  <rect x="5" y="15" width="35" height="20" fill="#c0c0c0" stroke="#000"/>
+  <text x="22" y="29" text-anchor="middle" font-size="8" fill="#333" font-weight="bold">ANT</text>
+
+  <!-- Label top -->
+  <text x="120" y="28" fill="white" font-size="11" font-weight="bold">ESP32 DevKit V1</text>
+
+  <!-- ESP32-WROOM module (metallic) -->
+  <rect x="30" y="55" width="140" height="110" fill="#c8c8c8" stroke="#222" stroke-width="1.5" rx="3"/>
+  <rect x="38" y="63" width="124" height="94" fill="#5a5a5a" stroke="#222"/>
+  <text x="100" y="105" text-anchor="middle" fill="white" font-size="15" font-weight="bold">ESPRESSIF</text>
+  <text x="100" y="125" text-anchor="middle" fill="white" font-size="12" font-weight="bold">ESP-WROOM-32</text>
+  <text x="100" y="148" text-anchor="middle" fill="#bbb" font-size="9">FCC ID: 2AC7Z</text>
+
+  <!-- Boot and EN buttons -->
+  <rect x="15" y="575" width="24" height="24" fill="#222" stroke="#000"/>
+  <rect x="20" y="580" width="14" height="14" fill="#555" rx="2"/>
+  <text x="27" y="614" text-anchor="middle" fill="white" font-size="9">EN</text>
+
+  <rect x="161" y="575" width="24" height="24" fill="#222" stroke="#000"/>
+  <rect x="166" y="580" width="14" height="14" fill="#555" rx="2"/>
+  <text x="173" y="614" text-anchor="middle" fill="white" font-size="9">BOOT</text>
+
+  <!-- LED power (tiny) -->
+  <circle cx="55" cy="590" r="3" fill="#ff3030"/>
+  <circle cx="55" cy="590" r="1.5" fill="#ffaaaa"/>
+
+  <!-- ========== LEFT PIN HEADER (pins 1-15, x=-1 a -15) ========== -->
+  <!-- Pin header PCB strip -->
+  <rect x="-16" y="45" width="16" height="530" fill="#1a1a1a" stroke="#000" stroke-width="1"/>
+
+  <!-- Pin 1: EN -->
+  <rect x="-14" y="48" width="12" height="12" fill="#000" stroke="#888"/>
+  <circle cx="-8" cy="54" r="3" fill="#c9a35a"/>
+  <text x="-8" y="57" class="pin-num" text-anchor="middle">1</text>
+
+  <!-- Pin 2: G36 -->
+  <rect x="-14" y="82" width="12" height="12" fill="#000" stroke="#888"/>
+  <circle cx="-8" cy="88" r="3" fill="#c9a35a"/>
+  <text x="-8" y="91" class="pin-num" text-anchor="middle">2</text>
+
+  <!-- Pin 3: G39 -->
+  <rect x="-14" y="116" width="12" height="12" fill="#000" stroke="#888"/>
+  <circle cx="-8" cy="122" r="3" fill="#c9a35a"/>
+  <text x="-8" y="125" class="pin-num" text-anchor="middle">3</text>
+
+  <!-- Pin 4: G34 LDR (USADO - verde oscuro) -->
+  <rect x="-14" y="150" width="12" height="12" fill="#006400" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="-8" cy="156" r="3" fill="#c9a35a"/>
+  <text x="-8" y="159" class="pin-num" text-anchor="middle">4</text>
+
+  <!-- Pin 5: G35 -->
+  <rect x="-14" y="184" width="12" height="12" fill="#000" stroke="#888"/>
+  <circle cx="-8" cy="190" r="3" fill="#c9a35a"/>
+  <text x="-8" y="193" class="pin-num" text-anchor="middle">5</text>
+
+  <!-- Pins 6-13 (unused) -->
+  <g>
+    <rect x="-14" y="218" width="12" height="12" fill="#000" stroke="#888"/>
+    <circle cx="-8" cy="224" r="3" fill="#c9a35a"/>
+    <text x="-8" y="227" class="pin-num" text-anchor="middle">6</text>
+    <rect x="-14" y="252" width="12" height="12" fill="#000" stroke="#888"/>
+    <circle cx="-8" cy="258" r="3" fill="#c9a35a"/>
+    <text x="-8" y="261" class="pin-num" text-anchor="middle">7</text>
+    <rect x="-14" y="286" width="12" height="12" fill="#000" stroke="#888"/>
+    <circle cx="-8" cy="292" r="3" fill="#c9a35a"/>
+    <text x="-8" y="295" class="pin-num" text-anchor="middle">8</text>
+    <rect x="-14" y="320" width="12" height="12" fill="#000" stroke="#888"/>
+    <circle cx="-8" cy="326" r="3" fill="#c9a35a"/>
+    <text x="-8" y="329" class="pin-num" text-anchor="middle">9</text>
+    <rect x="-14" y="354" width="12" height="12" fill="#000" stroke="#888"/>
+    <circle cx="-8" cy="360" r="3" fill="#c9a35a"/>
+    <text x="-8" y="363" class="pin-num" text-anchor="middle">10</text>
+    <rect x="-14" y="388" width="12" height="12" fill="#000" stroke="#888"/>
+    <circle cx="-8" cy="394" r="3" fill="#c9a35a"/>
+    <text x="-8" y="397" class="pin-num" text-anchor="middle">11</text>
+    <rect x="-14" y="422" width="12" height="12" fill="#000" stroke="#888"/>
+    <circle cx="-8" cy="428" r="3" fill="#c9a35a"/>
+    <text x="-8" y="431" class="pin-num" text-anchor="middle">12</text>
+    <rect x="-14" y="456" width="12" height="12" fill="#000" stroke="#888"/>
+    <circle cx="-8" cy="462" r="3" fill="#c9a35a"/>
+    <text x="-8" y="465" class="pin-num" text-anchor="middle">13</text>
+  </g>
+
+  <!-- Pin 14: GND (USADO - negro) -->
+  <rect x="-14" y="490" width="12" height="12" fill="#000" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="-8" cy="496" r="3" fill="#c9a35a"/>
+  <text x="-8" y="499" class="pin-num" text-anchor="middle">14</text>
+
+  <!-- Pin 15: VIN 5V (USADO - naranja) -->
+  <rect x="-14" y="524" width="12" height="12" fill="#ff6600" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="-8" cy="530" r="3" fill="#c9a35a"/>
+  <text x="-8" y="533" class="pin-num" text-anchor="middle">15</text>
+
+  <!-- Pin labels on SILKSCREEN (white text on PCB) -->
+  <text x="5" y="57" fill="white" font-size="9">EN</text>
+  <text x="5" y="91" fill="white" font-size="9">G36</text>
+  <text x="5" y="125" fill="white" font-size="9">G39</text>
+  <text x="5" y="159" fill="#ffff66" font-size="9" font-weight="bold">G34</text>
+  <text x="5" y="193" fill="white" font-size="9">G35</text>
+  <text x="5" y="227" fill="white" font-size="9">G32</text>
+  <text x="5" y="261" fill="white" font-size="9">G33</text>
+  <text x="5" y="295" fill="white" font-size="9">G25</text>
+  <text x="5" y="329" fill="white" font-size="9">G26</text>
+  <text x="5" y="363" fill="white" font-size="9">G27</text>
+  <text x="5" y="397" fill="white" font-size="9">G14</text>
+  <text x="5" y="431" fill="white" font-size="9">G12</text>
+  <text x="5" y="465" fill="white" font-size="9">G13</text>
+  <text x="5" y="499" fill="#ffff66" font-size="9" font-weight="bold">GND</text>
+  <text x="5" y="533" fill="#ffff66" font-size="9" font-weight="bold">VIN</text>
+
+  <!-- ========== RIGHT PIN HEADER (pins 16-30) ========== -->
+  <rect x="200" y="45" width="16" height="530" fill="#1a1a1a" stroke="#000" stroke-width="1"/>
+
+  <!-- Pin 16: G23 -->
+  <rect x="202" y="48" width="12" height="12" fill="#000" stroke="#888"/>
+  <circle cx="208" cy="54" r="3" fill="#c9a35a"/>
+  <text x="208" y="57" class="pin-num" text-anchor="middle">16</text>
+
+  <!-- Pin 17: G22/SCL (USADO - azul oscuro) -->
+  <rect x="202" y="82" width="12" height="12" fill="#1976d2" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="208" cy="88" r="3" fill="#c9a35a"/>
+  <text x="208" y="91" class="pin-num" text-anchor="middle">17</text>
+
+  <!-- Pin 18: TX0 -->
+  <rect x="202" y="116" width="12" height="12" fill="#000" stroke="#888"/>
+  <circle cx="208" cy="122" r="3" fill="#c9a35a"/>
+  <text x="208" y="125" class="pin-num" text-anchor="middle">18</text>
+
+  <!-- Pin 19: RX0 -->
+  <rect x="202" y="150" width="12" height="12" fill="#000" stroke="#888"/>
+  <circle cx="208" cy="156" r="3" fill="#c9a35a"/>
+  <text x="208" y="159" class="pin-num" text-anchor="middle">19</text>
+
+  <!-- Pin 20: G21/SDA (USADO - azul claro) -->
+  <rect x="202" y="184" width="12" height="12" fill="#42a5f5" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="208" cy="190" r="3" fill="#c9a35a"/>
+  <text x="208" y="193" class="pin-num" text-anchor="middle">20</text>
+
+  <!-- Pin 21: G19 BUZZER (USADO - morado) -->
+  <rect x="202" y="218" width="12" height="12" fill="#9c27b0" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="208" cy="224" r="3" fill="#c9a35a"/>
+  <text x="208" y="227" class="pin-num" text-anchor="middle">21</text>
+
+  <!-- Pin 22: G18 ECHO (USADO - cian oscuro) -->
+  <rect x="202" y="252" width="12" height="12" fill="#00838f" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="208" cy="258" r="3" fill="#c9a35a"/>
+  <text x="208" y="261" class="pin-num" text-anchor="middle">22</text>
+
+  <!-- Pin 23: G5 TRIG (USADO - cian claro) -->
+  <rect x="202" y="286" width="12" height="12" fill="#4dd0e1" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="208" cy="292" r="3" fill="#c9a35a"/>
+  <text x="208" y="295" class="pin-num" text-anchor="middle">23</text>
+
+  <!-- Pin 24: G17 LED-B (USADO - azul) -->
+  <rect x="202" y="320" width="12" height="12" fill="#2196f3" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="208" cy="326" r="3" fill="#c9a35a"/>
+  <text x="208" y="329" class="pin-num" text-anchor="middle">24</text>
+
+  <!-- Pin 25: G16 LED-G (USADO - verde) -->
+  <rect x="202" y="354" width="12" height="12" fill="#4caf50" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="208" cy="360" r="3" fill="#c9a35a"/>
+  <text x="208" y="363" class="pin-num" text-anchor="middle">25</text>
+
+  <!-- Pin 26: G4 DHT (USADO - amarillo) -->
+  <rect x="202" y="388" width="12" height="12" fill="#fbc02d" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="208" cy="394" r="3" fill="#c9a35a"/>
+  <text x="208" y="397" class="pin-num" text-anchor="middle">26</text>
+
+  <!-- Pin 27: G2 LED-R (USADO - rojo) -->
+  <rect x="202" y="422" width="12" height="12" fill="#e53935" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="208" cy="428" r="3" fill="#c9a35a"/>
+  <text x="208" y="431" class="pin-num" text-anchor="middle">27</text>
+
+  <!-- Pin 28: G15 PIR (USADO - rosa) -->
+  <rect x="202" y="456" width="12" height="12" fill="#ec407a" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="208" cy="462" r="3" fill="#c9a35a"/>
+  <text x="208" y="465" class="pin-num" text-anchor="middle">28</text>
+
+  <!-- Pin 29: GND -->
+  <rect x="202" y="490" width="12" height="12" fill="#000" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="208" cy="496" r="3" fill="#c9a35a"/>
+  <text x="208" y="499" class="pin-num" text-anchor="middle">29</text>
+
+  <!-- Pin 30: 3V3 -->
+  <rect x="202" y="524" width="12" height="12" fill="#e53935" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="208" cy="530" r="3" fill="#c9a35a"/>
+  <text x="208" y="533" class="pin-num" text-anchor="middle">30</text>
+
+  <!-- Right labels silkscreen -->
+  <text x="195" y="57" fill="white" font-size="9" text-anchor="end">G23</text>
+  <text x="195" y="91" fill="#ffff66" font-size="9" text-anchor="end" font-weight="bold">G22/SCL</text>
+  <text x="195" y="125" fill="white" font-size="9" text-anchor="end">TX0</text>
+  <text x="195" y="159" fill="white" font-size="9" text-anchor="end">RX0</text>
+  <text x="195" y="193" fill="#ffff66" font-size="9" text-anchor="end" font-weight="bold">G21/SDA</text>
+  <text x="195" y="227" fill="#ffff66" font-size="9" text-anchor="end" font-weight="bold">G19</text>
+  <text x="195" y="261" fill="#ffff66" font-size="9" text-anchor="end" font-weight="bold">G18</text>
+  <text x="195" y="295" fill="#ffff66" font-size="9" text-anchor="end" font-weight="bold">G5</text>
+  <text x="195" y="329" fill="#ffff66" font-size="9" text-anchor="end" font-weight="bold">G17</text>
+  <text x="195" y="363" fill="#ffff66" font-size="9" text-anchor="end" font-weight="bold">G16</text>
+  <text x="195" y="397" fill="#ffff66" font-size="9" text-anchor="end" font-weight="bold">G4</text>
+  <text x="195" y="431" fill="#ffff66" font-size="9" text-anchor="end" font-weight="bold">G2</text>
+  <text x="195" y="465" fill="#ffff66" font-size="9" text-anchor="end" font-weight="bold">G15</text>
+  <text x="195" y="499" fill="#ffff66" font-size="9" text-anchor="end" font-weight="bold">GND</text>
+  <text x="195" y="533" fill="#ffff66" font-size="9" text-anchor="end" font-weight="bold">3V3</text>
+</g>
+
+<!-- ========================================================
+     CABLEADO - desde los pines del ESP32 hacia cada componente
+     Colores segun funcion. Cables de 3px para que se vean bien.
+     ======================================================== -->
+
+<!-- ===== Alimentacion ESP32 ===== -->
+<!-- Pin 30 3V3 (x=758, y=800) → rail +3V3 (y=80) por x=790 -->
+<path d="M 758 800 L 790 800 L 790 80" stroke="#e53935" stroke-width="3" fill="none"/>
+<circle cx="790" cy="80" r="4" fill="#e53935"/>
+
+<!-- Pin 29 GND (x=758, y=766) → rail GND (y=1020) por x=780 -->
+<path d="M 758 766 L 780 766 L 780 1020" stroke="#000" stroke-width="3" fill="none"/>
+<circle cx="780" cy="1020" r="4" fill="#000"/>
+
+<!-- Pin 15 VIN (x=542, y=800) → rail +5V (y=115) por x=510 -->
+<path d="M 542 800 L 510 800 L 510 115" stroke="#ff9800" stroke-width="3" fill="none"/>
+<circle cx="510" cy="115" r="4" fill="#ff9800"/>
+
+<!-- Pin 14 GND (x=542, y=766) → rail GND por x=500 -->
+<path d="M 542 766 L 500 766 L 500 1020" stroke="#000" stroke-width="3" fill="none"/>
+<circle cx="500" cy="1020" r="4" fill="#000"/>
+
+<!-- =========================================================
+     SENSORES
+     ========================================================= -->
+
+<!-- ===== DHT11 (derecha arriba) ===== -->
+<g id="dht11" transform="translate(960, 240)">
+  <!-- Body (azul con rejilla) -->
+  <rect x="0" y="0" width="130" height="95" fill="#1976d2" stroke="#000" stroke-width="1.5" rx="4"/>
+  <!-- Sensor grid (inner black with holes) -->
+  <rect x="10" y="8" width="110" height="55" fill="#0d47a1" stroke="#000" rx="2"/>
+  <g fill="#000b30">
+    <circle cx="25" cy="20" r="2"/><circle cx="45" cy="20" r="2"/><circle cx="65" cy="20" r="2"/>
+    <circle cx="85" cy="20" r="2"/><circle cx="105" cy="20" r="2"/>
+    <circle cx="25" cy="35" r="2"/><circle cx="45" cy="35" r="2"/><circle cx="65" cy="35" r="2"/>
+    <circle cx="85" cy="35" r="2"/><circle cx="105" cy="35" r="2"/>
+    <circle cx="25" cy="50" r="2"/><circle cx="45" cy="50" r="2"/><circle cx="65" cy="50" r="2"/>
+    <circle cx="85" cy="50" r="2"/><circle cx="105" cy="50" r="2"/>
+  </g>
+  <text x="65" y="78" text-anchor="middle" fill="white" font-size="11" font-weight="bold">DHT11</text>
+
+  <!-- Pin header below -->
+  <rect x="20" y="90" width="90" height="10" fill="#1a1a1a" stroke="#000"/>
+  <circle cx="35" cy="95" r="3" fill="#c9a35a"/>
+  <circle cx="65" cy="95" r="3" fill="#c9a35a"/>
+  <circle cx="95" cy="95" r="3" fill="#c9a35a"/>
+  <!-- Pin labels -->
+  <text x="35" y="115" text-anchor="middle" font-size="9" font-weight="bold" fill="#e53935">+</text>
+  <text x="65" y="115" text-anchor="middle" font-size="9" font-weight="bold" fill="#fbc02d">S</text>
+  <text x="95" y="115" text-anchor="middle" font-size="9" font-weight="bold">−</text>
+  <!-- Title -->
+  <text x="65" y="-12" text-anchor="middle" class="comp-title">DHT11 · Temperatura + Humedad</text>
+  <text x="65" y="-1" text-anchor="middle" class="comp-sub">Alimentacion 3.3V · 1-Wire DATA</text>
+</g>
+
+<!-- Cables DHT11: sus 3 pines (x=995, 1025, 1055 en el header) bajan un poco y van al destino -->
+<!-- VCC (+): pin a x=995, y=335 → lane x=970 → hacia +3V3 rail -->
+<path d="M 995 335 L 995 360 L 970 360 L 970 80" stroke="#e53935" stroke-width="3" fill="none"/>
+<circle cx="970" cy="80" r="3" fill="#e53935"/>
+
+<!-- DATA (S): pin a x=1025, y=335 → a G4 (x=766, y=664) -->
+<path d="M 1025 335 L 1025 664 L 766 664" stroke="#fbc02d" stroke-width="3" fill="none"/>
+<text x="1040" y="500" fill="#ccac20" font-size="11" font-weight="bold">DATA → G4</text>
+
+<!-- GND (−): pin a x=1055, y=335 → lane x=1075 → rail GND -->
+<path d="M 1055 335 L 1055 355 L 1075 355 L 1075 1020" stroke="#000" stroke-width="3" fill="none"/>
+<circle cx="1075" cy="1020" r="3" fill="#000"/>
+
+<!-- ===== PIR HC-SR501 (derecha abajo-arriba) ===== -->
+<g id="pir" transform="translate(1180, 240)">
+  <!-- Body (verde PCB) -->
+  <rect x="0" y="20" width="150" height="90" fill="#00695c" stroke="#000" stroke-width="1.5" rx="4"/>
+  <!-- White dome with fresnel pattern -->
+  <circle cx="75" cy="65" r="40" fill="#f8f8f8" stroke="#999" stroke-width="1.5"/>
+  <circle cx="75" cy="65" r="37" fill="#fafafa"/>
+  <g stroke="#bbb" stroke-width="0.6" fill="none">
+    <circle cx="75" cy="65" r="8"/><circle cx="75" cy="65" r="16"/>
+    <circle cx="75" cy="65" r="24"/><circle cx="75" cy="65" r="32"/>
+    <line x1="75" y1="28" x2="75" y2="102"/>
+    <line x1="38" y1="65" x2="112" y2="65"/>
+    <line x1="47" y1="37" x2="103" y2="93"/>
+    <line x1="103" y1="37" x2="47" y2="93"/>
+  </g>
+  <!-- Potentiometer screws -->
+  <circle cx="15" cy="100" r="4" fill="#fbc02d"/>
+  <line x1="12" y1="100" x2="18" y2="100" stroke="#000" stroke-width="0.8"/>
+  <circle cx="135" cy="100" r="4" fill="#fbc02d"/>
+  <line x1="132" y1="100" x2="138" y2="100" stroke="#000" stroke-width="0.8"/>
+
+  <!-- Pin header below -->
+  <rect x="30" y="110" width="90" height="10" fill="#1a1a1a" stroke="#000"/>
+  <circle cx="45" cy="115" r="3" fill="#c9a35a"/>
+  <circle cx="75" cy="115" r="3" fill="#c9a35a"/>
+  <circle cx="105" cy="115" r="3" fill="#c9a35a"/>
+  <text x="45" y="135" text-anchor="middle" font-size="9" font-weight="bold" fill="#e53935">VCC</text>
+  <text x="75" y="135" text-anchor="middle" font-size="9" font-weight="bold" fill="#ec407a">OUT</text>
+  <text x="105" y="135" text-anchor="middle" font-size="9" font-weight="bold">GND</text>
+
+  <text x="75" y="12" text-anchor="middle" class="comp-title">HC-SR501 · Sensor PIR</text>
+  <text x="75" y="155" text-anchor="middle" class="comp-sub">Alimentacion 3.3V · OUT digital</text>
+</g>
+
+<!-- Cables PIR -->
+<!-- VCC: pin (x=1225, y=355) → rail +3V3 por lane x=1200 -->
+<path d="M 1225 355 L 1225 380 L 1200 380 L 1200 80" stroke="#e53935" stroke-width="3" fill="none"/>
+<circle cx="1200" cy="80" r="3" fill="#e53935"/>
+
+<!-- OUT: pin (x=1255, y=355) → G15 (x=766, y=732), lane x=1130 -->
+<path d="M 1255 355 L 1255 385 L 1130 385 L 1130 732 L 766 732" stroke="#ec407a" stroke-width="3" fill="none"/>
+<text x="1140" y="500" fill="#ec407a" font-size="11" font-weight="bold">PIR_OUT → G15</text>
+
+<!-- GND: pin (x=1285, y=355) → rail GND por lane x=1300 -->
+<path d="M 1285 355 L 1285 395 L 1300 395 L 1300 1020" stroke="#000" stroke-width="3" fill="none"/>
+<circle cx="1300" cy="1020" r="3" fill="#000"/>
+
+<!-- ===== HC-SR04 (derecha medio) ===== -->
+<g id="hcsr04" transform="translate(960, 490)">
+  <!-- PCB green -->
+  <rect x="0" y="0" width="170" height="90" fill="#2e7d32" stroke="#000" stroke-width="1.5" rx="3"/>
+  <!-- Two ultrasonic cylinders -->
+  <circle cx="40" cy="45" r="28" fill="#d4d4d4" stroke="#000" stroke-width="1.5"/>
+  <circle cx="40" cy="45" r="24" fill="#999"/>
+  <circle cx="40" cy="45" r="18" fill="#666"/>
+  <text x="40" y="49" text-anchor="middle" font-size="10" fill="white" font-weight="bold">T</text>
+
+  <circle cx="130" cy="45" r="28" fill="#d4d4d4" stroke="#000" stroke-width="1.5"/>
+  <circle cx="130" cy="45" r="24" fill="#999"/>
+  <circle cx="130" cy="45" r="18" fill="#666"/>
+  <text x="130" y="49" text-anchor="middle" font-size="10" fill="white" font-weight="bold">R</text>
+
+  <!-- Crystal in between -->
+  <rect x="78" y="38" width="14" height="8" fill="#c0c0c0" stroke="#000"/>
+
+  <!-- Pin header below -->
+  <rect x="25" y="90" width="120" height="10" fill="#1a1a1a" stroke="#000"/>
+  <circle cx="40" cy="95" r="3" fill="#c9a35a"/>
+  <circle cx="70" cy="95" r="3" fill="#c9a35a"/>
+  <circle cx="100" cy="95" r="3" fill="#c9a35a"/>
+  <circle cx="130" cy="95" r="3" fill="#c9a35a"/>
+  <text x="40" y="115" text-anchor="middle" font-size="9" font-weight="bold" fill="#ff9800">VCC</text>
+  <text x="70" y="115" text-anchor="middle" font-size="9" font-weight="bold" fill="#4dd0e1">TRIG</text>
+  <text x="100" y="115" text-anchor="middle" font-size="9" font-weight="bold" fill="#00838f">ECHO</text>
+  <text x="130" y="115" text-anchor="middle" font-size="9" font-weight="bold">GND</text>
+
+  <text x="85" y="-12" text-anchor="middle" class="comp-title">HC-SR04 · Ultrasonico</text>
+  <text x="85" y="-1" text-anchor="middle" class="comp-sub" style="fill: #ff6600;">⚠ Alimentacion 5V (no 3.3V)</text>
+</g>
+
+<!-- Cables HC-SR04 -->
+<!-- VCC (5V): pin x=1000, y=585 → +5V rail por lane x=940 -->
+<path d="M 1000 585 L 1000 605 L 940 605 L 940 115" stroke="#ff9800" stroke-width="3" fill="none"/>
+<circle cx="940" cy="115" r="3" fill="#ff9800"/>
+
+<!-- TRIG: pin x=1030, y=585 → G5 (x=766, y=562) -->
+<path d="M 1030 585 L 1030 562 L 766 562" stroke="#4dd0e1" stroke-width="3" fill="none"/>
+<text x="830" y="557" fill="#00838f" font-size="11" font-weight="bold">TRIG</text>
+
+<!-- ECHO: pin x=1060, y=585 → G18 (x=766, y=528), bend en x=920 -->
+<path d="M 1060 585 L 1060 600 L 920 600 L 920 528 L 766 528" stroke="#00838f" stroke-width="3" fill="none"/>
+<text x="830" y="524" fill="#00838f" font-size="11" font-weight="bold">ECHO</text>
+
+<!-- GND: pin x=1090, y=585 → rail GND por lane x=1110 -->
+<path d="M 1090 585 L 1090 615 L 1110 615 L 1110 1020" stroke="#000" stroke-width="3" fill="none"/>
+<circle cx="1110" cy="1020" r="3" fill="#000"/>
+
+<!-- ===== OLED 0.96" (abajo izquierda) ===== -->
+<g id="oled" transform="translate(220, 620)">
+  <!-- PCB azul -->
+  <rect x="0" y="0" width="200" height="120" fill="#1976d2" stroke="#000" stroke-width="1.5" rx="4"/>
+  <!-- Screen -->
+  <rect x="15" y="15" width="170" height="72" fill="url(#oled-scr)" stroke="#333" stroke-width="1"/>
+  <text x="100" y="38" text-anchor="middle" fill="#4fc3f7" font-size="11" font-family="monospace" font-weight="bold">ESTACION IoT</text>
+  <text x="100" y="54" text-anchor="middle" fill="#4fc3f7" font-size="9" font-family="monospace">Temp: 24.5°C  Hum: 55%</text>
+  <text x="100" y="68" text-anchor="middle" fill="#4fc3f7" font-size="9" font-family="monospace">Luz: 72%  PIR: SI</text>
+  <text x="100" y="82" text-anchor="middle" fill="#4fc3f7" font-size="9" font-family="monospace">Nivel: VERDE</text>
+
+  <!-- Pin header (lado derecho o arriba) -->
+  <rect x="40" y="98" width="120" height="10" fill="#1a1a1a" stroke="#000"/>
+  <circle cx="55" cy="103" r="3" fill="#c9a35a"/>
+  <circle cx="85" cy="103" r="3" fill="#c9a35a"/>
+  <circle cx="115" cy="103" r="3" fill="#c9a35a"/>
+  <circle cx="145" cy="103" r="3" fill="#c9a35a"/>
+  <text x="55" y="122" text-anchor="middle" font-size="9" font-weight="bold" fill="#e53935">VCC</text>
+  <text x="85" y="122" text-anchor="middle" font-size="9" font-weight="bold">GND</text>
+  <text x="115" y="122" text-anchor="middle" font-size="9" font-weight="bold" fill="#1976d2">SCL</text>
+  <text x="145" y="122" text-anchor="middle" font-size="9" font-weight="bold" fill="#42a5f5">SDA</text>
+
+  <text x="100" y="-12" text-anchor="middle" class="comp-title">OLED 0.96" SSD1306</text>
+  <text x="100" y="-1" text-anchor="middle" class="comp-sub">I2C dir 0x3C · Alimentacion 3.3V</text>
+</g>
+
+<!-- Cables OLED -->
+<!-- VCC: pin x=275, y=723 → +3V3 rail por lane x=150 -->
+<path d="M 275 723 L 275 760 L 150 760 L 150 80" stroke="#e53935" stroke-width="3" fill="none"/>
+<circle cx="150" cy="80" r="3" fill="#e53935"/>
+
+<!-- GND: pin x=305, y=723 → rail GND por lane x=160 -->
+<path d="M 305 723 L 305 760 L 160 760 L 160 1020" stroke="#000" stroke-width="3" fill="none"/>
+<circle cx="160" cy="1020" r="3" fill="#000"/>
+
+<!-- SCL: pin x=335, y=723 → G22 (x=550, y=358), bend en lane x=450 -->
+<path d="M 335 723 L 335 770 L 450 770 L 450 358 L 550 358" stroke="#1976d2" stroke-width="3" fill="none"/>
+<text x="470" y="620" fill="#1976d2" font-size="11" font-weight="bold">SCL</text>
+
+<!-- SDA: pin x=365, y=723 → G21 (x=550, y=460), bend en lane x=470 -->
+<path d="M 365 723 L 365 780 L 470 780 L 470 460 L 550 460" stroke="#42a5f5" stroke-width="3" fill="none"/>
+<text x="485" y="700" fill="#42a5f5" font-size="11" font-weight="bold">SDA</text>
+
+<!-- ===== LED RGB + 3 resistencias 220 ===== -->
+<g id="led-rgb" transform="translate(960, 700)">
+  <text x="175" y="-12" text-anchor="middle" class="comp-title">LED RGB + 3 × R 220Ω (indicador alerta)</text>
+  <text x="175" y="-1" text-anchor="middle" class="comp-sub">Catodo comun a GND</text>
+
+  <!-- 3 resistencias -->
+  <g id="r-red" transform="translate(0, 5)">
+    <rect x="0" y="0" width="80" height="18" fill="#e8c89a" stroke="#000" rx="4"/>
+    <!-- bandas de colores 220: rojo rojo marron -->
+    <rect x="14" y="0" width="5" height="18" fill="#e53935"/>
+    <rect x="22" y="0" width="5" height="18" fill="#e53935"/>
+    <rect x="30" y="0" width="5" height="18" fill="#795548"/>
+    <rect x="55" y="0" width="5" height="18" fill="#fbc02d"/>
+    <text x="95" y="13" font-size="10" font-weight="bold">R5 220Ω</text>
+  </g>
+  <g id="r-green" transform="translate(0, 45)">
+    <rect x="0" y="0" width="80" height="18" fill="#e8c89a" stroke="#000" rx="4"/>
+    <rect x="14" y="0" width="5" height="18" fill="#e53935"/>
+    <rect x="22" y="0" width="5" height="18" fill="#e53935"/>
+    <rect x="30" y="0" width="5" height="18" fill="#795548"/>
+    <rect x="55" y="0" width="5" height="18" fill="#fbc02d"/>
+    <text x="95" y="13" font-size="10" font-weight="bold">R4 220Ω</text>
+  </g>
+  <g id="r-blue" transform="translate(0, 85)">
+    <rect x="0" y="0" width="80" height="18" fill="#e8c89a" stroke="#000" rx="4"/>
+    <rect x="14" y="0" width="5" height="18" fill="#e53935"/>
+    <rect x="22" y="0" width="5" height="18" fill="#e53935"/>
+    <rect x="30" y="0" width="5" height="18" fill="#795548"/>
+    <rect x="55" y="0" width="5" height="18" fill="#fbc02d"/>
+    <text x="95" y="13" font-size="10" font-weight="bold">R3 220Ω</text>
+  </g>
+
+  <!-- LED RGB (4 legs, pins separados para que los cables no se pisen) -->
+  <g transform="translate(220, 0)">
+    <!-- Led body (5mm transparent plastic) -->
+    <ellipse cx="60" cy="45" rx="28" ry="30" fill="#fff" stroke="#222" stroke-width="1.5" opacity="0.9"/>
+    <ellipse cx="60" cy="38" rx="22" ry="22" fill="#f0f0f0" opacity="0.7"/>
+    <!-- Light glow -->
+    <circle cx="60" cy="40" r="20" fill="#ffd54f" opacity="0.4"/>
+    <!-- LED base -->
+    <rect x="30" y="72" width="60" height="10" fill="#aaa" stroke="#000"/>
+    <!-- 4 legs (metal pins) bien separados -->
+    <line x1="38" y1="82" x2="38" y2="130" stroke="#b0b0b0" stroke-width="2.5"/>
+    <line x1="52" y1="82" x2="52" y2="130" stroke="#b0b0b0" stroke-width="2.5"/>
+    <line x1="68" y1="82" x2="68" y2="130" stroke="#b0b0b0" stroke-width="2.5"/>
+    <line x1="82" y1="82" x2="82" y2="130" stroke="#b0b0b0" stroke-width="2.5"/>
+    <!-- Leg labels DEBAJO de las patas (con mas espacio) -->
+    <text x="38" y="146" text-anchor="middle" font-size="11" fill="#e53935" font-weight="bold">R</text>
+    <text x="52" y="146" text-anchor="middle" font-size="11" font-weight="bold">−</text>
+    <text x="68" y="146" text-anchor="middle" font-size="11" fill="#4caf50" font-weight="bold">G</text>
+    <text x="82" y="146" text-anchor="middle" font-size="11" fill="#2196f3" font-weight="bold">B</text>
+  </g>
+
+  <!-- Conexiones resistencia-LED (curvas limpias) -->
+  <!-- R5 (rojo, y=14) → LED R leg (x=258, y=82) -->
+  <line x1="80" y1="14" x2="258" y2="14" stroke="#e53935" stroke-width="2.5"/>
+  <line x1="258" y1="14" x2="258" y2="82" stroke="#e53935" stroke-width="2.5"/>
+
+  <!-- R4 (verde, y=54) → LED G leg (x=288, y=82) -->
+  <line x1="80" y1="54" x2="288" y2="54" stroke="#4caf50" stroke-width="2.5"/>
+  <line x1="288" y1="54" x2="288" y2="82" stroke="#4caf50" stroke-width="2.5"/>
+
+  <!-- R3 (azul, y=94) → LED B leg (x=302, y=82) -->
+  <line x1="80" y1="94" x2="302" y2="94" stroke="#2196f3" stroke-width="2.5"/>
+  <line x1="302" y1="94" x2="302" y2="82" stroke="#2196f3" stroke-width="2.5"/>
+</g>
+
+<!-- Cables LED RGB → ESP32 -->
+<!-- R5 (LED_R) izquierda del resistor (x=960, y=714) → G2 (x=766, y=698) -->
+<path d="M 960 714 L 920 714 L 920 698 L 766 698" stroke="#e53935" stroke-width="3" fill="none"/>
+
+<!-- R4 (LED_G) (x=960, y=754) → G16 (x=766, y=630) -->
+<path d="M 960 754 L 910 754 L 910 630 L 766 630" stroke="#4caf50" stroke-width="3" fill="none"/>
+
+<!-- R3 (LED_B) (x=960, y=794) → G17 (x=766, y=596) -->
+<path d="M 960 794 L 900 794 L 900 596 L 766 596" stroke="#2196f3" stroke-width="3" fill="none"/>
+
+<!-- LED RGB catodo comun (segunda pata, x=1232, y=830) → rail GND
+     Sale por abajo SIN pasar por las etiquetas -->
+<path d="M 1232 830 L 1232 870 L 1260 870 L 1260 1020" stroke="#000" stroke-width="3" fill="none"/>
+<circle cx="1260" cy="1020" r="3" fill="#000"/>
+
+<!-- ===== BUZZER ===== -->
+<g id="buzzer" transform="translate(1300, 700)">
+  <!-- Black cylinder body -->
+  <circle cx="50" cy="50" r="38" fill="#1a1a1a" stroke="#000" stroke-width="2"/>
+  <circle cx="50" cy="50" r="33" fill="#0a0a0a"/>
+  <!-- Center hole -->
+  <circle cx="50" cy="50" r="12" fill="#555"/>
+  <circle cx="50" cy="50" r="4" fill="#888"/>
+  <!-- Top label -->
+  <text x="50" y="28" text-anchor="middle" fill="#ffeb3b" font-size="8" font-weight="bold">BUZZER</text>
+
+  <!-- 2 pins -->
+  <line x1="35" y1="88" x2="35" y2="115" stroke="#b0b0b0" stroke-width="2"/>
+  <line x1="65" y1="88" x2="65" y2="115" stroke="#b0b0b0" stroke-width="2"/>
+  <text x="35" y="127" text-anchor="middle" font-size="10" fill="#9c27b0" font-weight="bold">+</text>
+  <text x="65" y="127" text-anchor="middle" font-size="10" font-weight="bold">−</text>
+
+  <text x="50" y="-12" text-anchor="middle" class="comp-title">Buzzer activo</text>
+  <text x="50" y="-1" text-anchor="middle" class="comp-sub">BZ1 · HIGH = sonido</text>
+</g>
+
+<!-- Cables Buzzer -->
+<!-- + (x=1335, y=815) → G19 (x=766, y=494) -->
+<path d="M 1335 815 L 1335 830 L 860 830 L 860 494 L 766 494" stroke="#9c27b0" stroke-width="3" fill="none"/>
+<text x="880" y="489" fill="#9c27b0" font-size="11" font-weight="bold">BUZZ</text>
+
+<!-- − (x=1365, y=815) → rail GND -->
+<path d="M 1365 815 L 1365 840 L 1380 840 L 1380 1020" stroke="#000" stroke-width="3" fill="none"/>
+<circle cx="1380" cy="1020" r="3" fill="#000"/>
+
+<!-- ===== LDR + R10k (arriba-izquierda, lejos del OLED) ===== -->
+<g id="ldr-block" transform="translate(80, 170)">
+  <text x="80" y="-14" text-anchor="middle" class="comp-title">LDR + R2 10kΩ</text>
+  <text x="80" y="-2" text-anchor="middle" class="comp-sub">Divisor de tension</text>
+
+  <!-- LDR (fotorresistor circular) -->
+  <circle cx="80" cy="40" r="26" fill="#fff8dc" stroke="#000" stroke-width="1.5"/>
+  <path d="M 59 40 Q 80 20 101 40 Q 80 60 59 40" fill="#ffa000" stroke="#6d4c41" stroke-width="2" opacity="0.9"/>
+  <line x1="67" y1="66" x2="67" y2="95" stroke="#b0b0b0" stroke-width="2.5"/>
+  <line x1="93" y1="66" x2="93" y2="95" stroke="#b0b0b0" stroke-width="2.5"/>
+  <text x="80" y="83" text-anchor="middle" font-size="9" fill="#6d4c41" font-weight="bold">LDR</text>
+
+  <!-- Middle node (where both meet and G34 reads) -->
+  <circle cx="93" cy="100" r="4" fill="#006400"/>
+
+  <!-- R2 10k resistor below (vertical) -->
+  <g transform="translate(83, 105)">
+    <rect x="0" y="0" width="20" height="80" fill="#e8c89a" stroke="#000" rx="3"/>
+    <!-- bandas 10k: marron negro naranja -->
+    <rect x="0" y="15" width="20" height="5" fill="#795548"/>
+    <rect x="0" y="26" width="20" height="5" fill="#000"/>
+    <rect x="0" y="37" width="20" height="5" fill="#ff9800"/>
+    <rect x="0" y="58" width="20" height="5" fill="#fbc02d"/>
+    <text x="30" y="40" font-size="10" font-weight="bold">R2 10kΩ</text>
+  </g>
+</g>
+
+<!-- Cables LDR -->
+<!-- LDR top pin (x=147, y=236) → +3V3 rail por x=170 -->
+<path d="M 147 236 L 147 220 L 170 220 L 170 80" stroke="#e53935" stroke-width="3" fill="none"/>
+<circle cx="170" cy="80" r="3" fill="#e53935"/>
+
+<!-- Nodo central (x=173, y=270) → G34 (x=550, y=426) -->
+<path d="M 173 270 L 350 270 L 350 426 L 550 426" stroke="#006400" stroke-width="3" fill="none"/>
+<text x="230" y="264" fill="#006400" font-size="11" font-weight="bold">LDR_ADC → G34</text>
+
+<!-- R10k bottom (x=173, y=310) → rail GND por x=370 -->
+<path d="M 173 310 L 173 355 L 370 355 L 370 1020" stroke="#000" stroke-width="3" fill="none"/>
+<circle cx="370" cy="1020" r="3" fill="#000"/>
+
+<!-- Bottom small title (opcional, solo el nombre del esquema) -->
+<text x="800" y="1070" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">Estación IoT · Esquema de cableado</text>
+
+</svg>

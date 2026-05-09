@@ -1,0 +1,211 @@
+EJEMPLOS DE CASOS DE USO - MauiRAG
+=============================================
+
+
+CASO 1: CONSULTAS SOBRE EL HISTORIAL DE EMPLEADOS (PDF)
+
+Contexto:
+Se ha subido el documento "Historial_empleados.pdf" al workspace. Este PDF contiene información de 5 empleados con sus nombres, puestos y trayectoria profesional.
+
+Ejemplo de uso en modo Chat:
+
+  Usuario: Quien es el empleado con más experiencia?
+
+  Asistente: Segun la información del documento, el empleado con más experiencia es Luis Ramírez,
+  que cuenta con 10 años de experiencia como Gerente de Proyecto. Ha gestionado equipos
+  multidisciplinarios y ha asegurado la entrega de proyectos dentro de los plazos propuestos.
+
+  Trazabilidad:
+  - Doc: Historial_empleados.pdf
+  - Texto: "Luis tiene una solida experiencia de 10 años en la gestion de proyectos tecnológicos..."
+  - Score: 0.8234
+
+  Usuario: Y en que se ha especializado?
+
+  Asistente: Luis se ha especializado en la gestion de proyectos tecnológicos. En concreto, ha
+  gestionado equipos multidisciplinarios y se ha encargado de asegurar que los proyectos se
+  entreguen dentro de los plazos y presupuestos estipulados.
+
+  (En modo chat mantiene el contexto de qué estamos hablando de Luis)
+
+Ejemplo en modo Query:
+
+  Usuario: Que puesto tiene Maria Gómez?
+
+  Asistente: Maria Gómez ocupa el puesto de Disenadora.
+
+  Trazabilidad:
+  - Doc: Historial_empleados.pdf
+  - Texto: "Nombre: Maria Gómez. Puesto: Disenadora. Historial: Maria cuenta con 7 años..."
+  - Score: 0.9102
+
+Lo interesante aquí es que en la trazabilidad se ve claramente de que documento viene la información y que trozo de texto ha usado el modelo para responder. Además se puede tocar el chunk para expandirlo y ver el texto completo.
+
+[CAPTURA: chat PDF con trazabilidad]
+
+
+CASO 2: CONSULTAS SOBRE EL CSV DE SALARIOS
+
+Contexto:
+Se ha subido el archivo "empleados (1).csv" a otro workspace. Contiene datos tabulares con nombre, puesto y salario.
+
+Ejemplo:
+
+  Usuario: Cual es el salario más alto?
+
+  Asistente: El salario más alto corresponde a Luis Ramírez, que como Gerente de Proyecto cobra
+  4500 euros.
+
+  Trazabilidad:
+  - Doc: empleados (1).csv
+  - Texto: "Luis Ramírez,Gerente de Proyecto,4500"
+  - Score: 0.7856
+
+  Usuario: Cuanto cobra el desarrollador?
+
+  Asistente: El desarrollador Juan Páez tiene un salario de 3000 euros.
+
+  Trazabilidad:
+  - Doc: empleados (1).csv
+  - Texto: "Juan Páez,Desarrollador,3000"
+  - Score: 0.8521
+
+En este caso vemos como el RAG busca en los datos del CSV y encuentra las filas relevantes. El chunk que devuelve es literalmente la línea del CSV que contiene la respuesta.
+
+[CAPTURA: chat CSV con trazabilidad]
+
+
+CASO 3: CONSULTAS SOBRE IMAGENES (VISION + OCR + EXIF)
+
+Contexto:
+Se ha subido una imagen (por ejemplo una foto hecha con el movil) al workspace. La app automáticamente procesa la imagen de tres formas: pide a un modelo de visión (LLaVA en LM Studio) que describa lo que se ve, extrae los metadatos EXIF y hace OCR para detectar texto. Todo se junta en un .txt que se indexa en el RAG.
+
+Ejemplo preguntando por el contenido visual:
+
+  Usuario: Describe la imagen que se subio
+
+  Asistente: Segun el contexto, la imagen parece ser una vista de un tractor rojo con las
+  palabras "Barreiros" escritas en el. La escena se desarrolla en frente de una construcción
+  blanca, y al lado del tractor hay un vehículo antiguo. En el centro de la imagen hay un
+  asiento cercano a la parte trasera del tractor.
+
+  Trazabilidad:
+  - Doc: i5092222598_analisis.txt
+  - Texto: "--- DESCRIPCIÓN DE LA IMAGEN --- ...un tractor rojo con las palabras Barreiros..."
+  - Score: 0.4194
+
+Ejemplo preguntando por datos técnicos:
+
+  Usuario: Cuando se hizo la foto?
+
+  Asistente: La foto fue tomada el 10 de julio de 2025 a las 10:38.
+
+  Trazabilidad:
+  - Doc: i5092222598_analisis.txt
+  - Texto: "Fecha de creacion: 10/07/2025 10:38:01..."
+  - Score: 0.3856
+
+Ejemplo preguntando por texto en la imagen (OCR):
+
+  Usuario: Que texto aparece en la imagen?
+
+  Asistente: En la imagen se detecta el texto "Barreiros" y "R545S", que corresponden
+  a la marca y modelo del tractor.
+
+  Trazabilidad:
+  - Doc: i5092222598_analisis.txt
+  - Texto: "--- TEXTO DETECTADO (OCR) --- Barreiros R545S..."
+  - Score: 0.9503
+
+Este caso es interesante porque AnythingLLM no acepta imágenes directamente. La app las preprocesa con tres técnicas: descripción con modelo de visión (para entender el contenido visual), metadatos EXIF (fecha, etc.) y OCR (texto detectado). Con las tres cosas juntas, el RAG puede contestar preguntas sobre lo que se ve en la foto y también sobre los datos técnicos.
+
+[CAPTURA: chat imagen con trazabilidad]
+
+
+CASO 4: VIDEO EDUCATIVO (TRANSCRIPCIÓN DE YOUTUBE)
+
+Contexto:
+He usado el video "Programacion Orientada a Objetos (POO) Explicada" del canal Fazt en YouTube (https://www.youtube.com/watch?v=SI7O81GMG2A). Es un video de 9 minutos y medio que explica los 4 pilares de la POO: abstracción, encapsulamiento, herencia y polimorfismo.
+
+Para obtener la transcripción he pegado la URL del video en la sección "Transcripcion de YouTube" de la pestana Documentos de la app. Al pulsar "Procesar y Subir", la app llama automáticamente al script transcribir_video_youtube.py (con Process.Start desde PythonProcessorService), que descarga los subtítulos con marcas de tiempo, los agrupa en bloques de ~30 segundos y los formatea con marcas [Minuto XX:XX - YY:YY]. El resultado se sube directamente al workspace "Video POO" sin tener que hacer nada más.
+
+Ejemplo en modo Query:
+
+  Usuario: Que es la herencia en POO?
+
+  Asistente: En el lenguaje de programación Object-Oriented (POO), la herencia se refiere a un
+  patrón de diseño donde una clase (la clase padre) puede inherir las características y los
+  métodos de otra clase (la clase hija). La clase padre utiliza al menos algunos de los
+  atributos y métodos de la clase hija. (...)
+
+  Trazabilidad (primer chunk expandido):
+  - Doc: transcripcion_poo_video.txt
+  - Texto: "...[Minuto 06:37 - 06:44] Definir atributos y métodos como públicos o privados
+    depende del lenguaje, [Minuto 06:44 - 07:10] eso lo veremos en otro video... Pasemos a la,
+    Herencia. Ahora queremos crear la clase Guerrero y Mago, que tienen todos los atributos y
+    metodos que tiene nuestra clase Personaje... podemos reutilizar la clase Personaje con la
+    herencia. [Minuto 07:11 - 07:19]"
+  - Score: 0.5429
+
+  Segundo chunk:
+  - Texto: "[Minuto 05:02 - 05:27] Como turno es quien controla la ejecución de los métodos..."
+  - Score: 0.5281
+
+El usuario ve que la información viene de los minutos 06:44-07:10 del video, exactamente donde se explica la herencia. Puede ir directamente a ese punto en YouTube para ver la explicación en formato video. Así un estudiante puede repasar un tema puntual sin tragarse todo el video.
+
+[CAPTURA: chat video POO con trazabilidad]
+
+
+CASO 5: APUNTES DE PROGRAMACIÓN EN PDF (SEGMENTADOS POR PAGINA)
+
+Contexto:
+He usado el PDF "Aprenda Java como si estuviera en Primero" de TECNUN (Universidad de Navarra), un clásico de 175 páginas escrito por J. García de Jalón et al. He extraido el capítulo 3 "Clases en Java" (páginas 37-64) que cubre los conceptos de POO: clases, objetos, constructores, herencia, polimorfismo, interfaces y clases abstractas.
+
+Como AnythingLLM no conserva la referencia a la página de origen al trocear un PDF, he seleccionado el PDF en la pestana Documentos de la app y he marcado el checkbox "Procesar PDF con marcas [Pagina XX]". Al pulsar "Subir y Procesar", la app llama automáticamente al script segmentar_pdf_por_pagina.py (con Process.Start desde PythonProcessorService), que extrae el texto página a página usando PyPDF2 y añade [Pagina XX] al inicio de cada línea. Tambien limpia las cabeceras repetidas (copyright, nombre del capítulo). El resultado se sube directamente al workspace "Apuntes Java".
+
+Ejemplo en modo Query:
+
+  Usuario: Que es un constructor en Java?
+
+  Asistente: En Java, el Constructor es un método que se llama automáticamente cada vez que se
+  crea una nueva instancia de una clase. Su proposito principal es inicializar las variables
+  miembro de la clase cuando se crea un nuevo objeto. Un Constructor tiene las siguientes
+  características:
+  1. No tiene valor de retorno (ni siquiera void)
+  2. Nombre coincide con el de la clase
+  3. El argumento implicito es el objeto que se esta creando (...)
+
+  Trazabilidad (chunks expandidos):
+  - Doc: apuntes_java_clases.txt
+  - Texto: "[Pagina 50] constructor previamente definido en la misma clase. En este contexto,
+    la palabra this solo puede [Pagina 50] aparecer en la primera sentencia de un constructor.
+    [Pagina 50] De forma analoga el constructor de una clase derivada puede llamar al constructor
+    de su [Pagina 50] super-clase por medio de la palabra super()..."
+  - Score: 0.5997
+
+  - Doc: apuntes_java_clases.txt
+  - Texto: "[Pagina 44] uso de constructores. [Pagina 44] Un constructor es un método que se
+    llama automaticamente cada vez que se crea un objeto de [Pagina 44] una clase. La principal
+    mision del constructor es reservar memoria e inicializar las variables [Pagina 44] miembro
+    de la clase. [Pagina 44] Los constructores no tienen valor de retorno (ni siquiera void) y
+    su nombre es el mismo que [Pagina 44] el de la clase..."
+  - Score: 0.6241
+
+Se ve que el RAG devuelve chunks con las marcas [Pagina 50] y [Pagina 44] directamente en el texto. Como el preprocesado mete [Pagina XX] en cada línea, el alumno sabe que tiene que ir a la página 44 del PDF. Sin ese preprocesado, no sabría de que página viene el chunk.
+
+[CAPTURA: chat apuntes Java con trazabilidad]
+
+
+RESUMEN
+
+Los 5 casos muestran las capacidades de la aplicación con datos reales:
+
+1. Modo Chat con historial: permite hacer preguntas de seguimiento sin repetir contexto (caso 1)
+2. Modo Query sin contexto: para consultas puntuales y directas (casos 2-5)
+3. Trazabilidad: siempre se muestra de donde viene la información (documento, texto, score), con chunks expandibles para ver el texto completo
+4. Flexibilidad de documentos: funcióna con PDFs, CSVs, TXT y cualquier formato que acepte AnythingLLM
+5. Procesamiento de imágenes: la app preprocesa imágenes (descripción con IA + OCR + EXIF) para poder indexarlas y hacer consultas tanto sobre el contenido visual como sobre los datos técnicos (caso 3)
+6. Transcripcion de video: las marcas de tiempo [Minuto XX:XX] permiten redirigir al usuario al punto exacto del video donde se habla del tema (caso 4)
+7. Apuntes segmentados por página: las marcas [Pagina XX] permiten que el alumno vaya directamente a la página del PDF donde esta la información (caso 5)
+
+Lo de la trazabilidad es clave: el usuario puede comprobar de donde sale cada respuesta y no tiene que fiarse a ciegas del modelo. Los chunks se pueden expandir pulsando sobre ellos para ver el texto completo si el extracto recortado no es suficiente.

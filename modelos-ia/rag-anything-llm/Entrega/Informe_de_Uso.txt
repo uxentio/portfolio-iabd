@@ -1,0 +1,311 @@
+INFORME DE USO - MauiRAG
+Aplicacion MAUI para RAG local con AnythingLLM y LM Studio
+=============================================
+
+
+1. DESCRIPCIÓN GENERAL
+
+MauiRAG es una aplicación multiplataforma hecha con .NET MAUI que se conecta con AnythingLLM para poder hacer consultas RAG desde una interfaz grafica. La app permite gestionar workspaces, subir documentos (incluyendo imágenes), configurar el system prompt y hacer preguntas en modo chat o query, viendo de donde vienen las respuestas (trazabilidad).
+
+La aplicación sigue el patrón MVVM (Model-View-ViewModel) y se organiza en 4 pestanas principales con iconos:
+- Chat (icono de mensaje): pantalla principal para interactuar con el RAG
+- Workspaces (icono de carpeta): crear, renombrar y eliminar workspaces
+- Documentos (icono de documento): subir archivos y asignarlos a un workspace
+- Config (icono de engranaje): configurar la URL, API key y system prompt
+
+
+2. ARQUITECTURA MVVM
+
+La app usa el patrón MVVM para separar la lógica de la interfaz:
+
+Estructura de carpetas:
+- Modelos/ -> clases de datos (WorkspaceItem, DocumentoItem, MensajeChat, ChunkInfo)
+- ViewModels/ -> lógica de cada pantalla (ChatViewModel, WorkspacesViewModel, DocumentosViewModel, ConfigViewModel, BaseViewModel)
+- Pages/ -> las vistas XAML de cada pantalla
+- Servicios/ -> ApiService (llamadas a la API), ImageProcessorService (procesamiento de imágenes) y PythonProcessorService (preprocesado de PDFs y videos de YouTube)
+
+Cada pantalla tiene su ViewModel con INotifyPropertyChanged y ObservableCollection, así la interfaz se actualiza sola cuando cambian los datos. Los comandos (ICommand) enlazan los botones con los métodos del ViewModel.
+
+BaseViewModel implementa INotifyPropertyChanged y tiene un método SetProperty para no repetir el código de notificación en cada ViewModel.
+
+
+3. STACK TECNOLOGICO
+
+Tecnologias y herramientas utilizadas en el proyecto:
+
+Aplicacion:
+- .NET MAUI (net10.0-windows10.0.19041.0): framework para la interfaz grafica multiplataforma
+- C#: lenguaje de programación de la app
+- Patron MVVM: arquitectura de la aplicación
+- Newtonsoft.Json 13.0.3: seríalización/deseríalización de JSON para la comúnicación con la API
+- MetadataExtractor 2.8.1: extracción de metadatos EXIF de imágenes
+- Windows.Media.Ocr: reconocimiento de texto en imágenes (OCR nativo de Windows)
+
+Infraestructura RAG:
+- LM Studio (https://lmstudio.ai): servidor local de modelos de lenguaje. Expone una API compatible con OpenAI en localhost:1234
+- Llama 3.2 1B Instruct: modelo de texto para generar respuestas (ligero, funcióna con GPU)
+- LLaVA 1.5 7B: modelo de visión para describir imágenes (opciónal, funcióna en CPU)
+- AnythingLLM Desktop (https://anythingllm.com): plataforma RAG que gestiona documentos, embeddings y workspaces. Expone una API REST en localhost:3001
+- all-MiniLM-L6-v2: modelo de embeddings incluido en AnythingLLM (embeddings nativos)
+- LanceDB: base de datos vectorial incluida en AnythingLLM
+
+Scripts de preprocesado (integrados en la app):
+- Python 3: lenguaje para los scripts de preprocesado de documentos (se ejecutan automáticamente desde la app via Process.Start)
+- youtube-transcript-api: libreria para descargar subtítulos de YouTube
+- PyPDF2: libreria para extraer texto de archivos PDF
+
+Nota sobre la eleccion de modelos:
+Para el modelo de texto probe varios modelos disponibles en LM Studio antes de elegir Llama 3.2 1B Instruct. Tambien probe Qwen 2.5 1.5B Instruct y Phi-3.1 Mini 4K, pero Llama 3.2 1B dio el mejor equilibrio entre velocidad de respuesta y calidad para las consultas RAG en mi hardware (GPU con 4GB VRAM). Los modelos más grandes (7B+) daban mejor calidad pero eran demásiado lentos para una experiencia de uso fluida.
+
+Para los embeddings use all-MiniLM-L6-v2, qué es el que viene incluido con AnythingLLM como "embedder nativo" y no necesita configuración adicional. AnythingLLM también permite usar modelos de embeddings externos (como nomic-embed-text a traves de Ollama o modelos de OpenAI), pero el nativo va bien para documentos en español y además no necesita ningun servicio extra.
+
+Para el modelo de visión (procesamiento de imágenes) use LLaVA 1.5 7B, qué es de los pocos modelos múltimodales que se pueden ejecutar en local con LM Studio. Al ser un modelo de 7B parámetros lo cargo en CPU, lo cual lo hace más lento pero funcióna sin necesitar VRAM adicional.
+
+
+4. INSTALACIÓN Y PUESTA EN MARCHA
+
+4.1 Instalar LM Studio
+1. Descargar LM Studio desde https://lmstudio.ai (disponible para Windows, Mac y Linux)
+2. Instalar y abrir la aplicación
+3. Desde la pestana de busqueda, descargar los modelos:
+   - Llama 3.2 1B Instruct (para texto): buscar "llama-3.2-1b-instruct" y descargar la versión GGUF
+   - LLaVA 1.5 7B (para visión, opciónal): buscar "llava-v1.5-7b" y descargar
+4. Ir a la pestana "Local Server" (icono de servidor en el lateral)
+5. Cargar el modelo de texto (Llama 3.2 1B Instruct)
+6. Pulsar "Start Server". El servidor arranca en http://localhost:1234
+7. Si se quiere usar procesamiento de imágenes, cargar también el modelo de visión en una segunda instancia o slot
+
+4.2 Instalar AnythingLLM Desktop
+1. Descargar AnythingLLM Desktop desde https://anythingllm.com (sección Download)
+2. Instalar y abrir la aplicación
+3. En la configuración inicial:
+   - LLM Provider: seleccionar "LM Studio" e introducir la URL http://localhost:1234/v1
+   - Embedding Provider: seleccionar "AnythingLLM Embedder" (usa all-MiniLM-L6-v2, no necesita configuración adicional)
+   - Vector Database: dejar LanceDB (viene por defecto)
+4. Generar una API Key desde la configuración de AnythingLLM (apartado API Keys). Esta clave se necesita para que MauiRAG pueda conectarse.
+5. AnythingLLM queda corriendo en http://localhost:3001
+
+4.3 Compilar y ejecutar MauiRAG
+1. Abrir la solución MauiRAG.csproj en Visual Studio
+2. Seleccionar el target framework: net10.0-windows10.0.19041.0
+3. Compilar con F5 o Ctrl+Shift+B
+4. Al abrir la app, ir a la pestana Config e introducir la URL (http://localhost:3001/api) y la API Key generada en el paso anterior
+5. Pulsar "Probar Conexion" para verificar que conecta correctamente
+
+4.4 Orden de arranque
+El orden para arrancar todo el sistema es:
+1. Primero: LM Studio (cargar modelos y arrancar el servidor local)
+2. Segundo: AnythingLLM Desktop (se conecta a LM Studio para el LLM y embeddings)
+3. Tercero: MauiRAG (se conecta a AnythingLLM para gestionar workspaces y hacer consultas)
+
+Los scripts de preprocesado (casos 4 y 5) estan integrados en la app y se ejecutan automáticamente cuando se sube un PDF o se introduce una URL de YouTube. Para que funciónen es necesario:
+- Python 3 instalado y en el PATH del sistema
+- Librerias: pip install youtube-transcript-api PyPDF2
+- Configurar la ruta de los scripts y del ejecutable de Python en la pestana Config de la app
+
+
+5. SCRIPTS DE PREPROCESADO (Casos 4 y 5)
+
+Para los casos de uso 4 y 5 he creado dos scripts de Python independientes que preparan los documentos antes de subirlos a AnythingLLM. Los scripts son herramientas generales reutilizables: aceptan cualquier video de YouTube o cualquier PDF, no estan atados a un archivo concreto. Se encuentran en la carpeta raiz del proyecto, junto a la solución de MAUI.
+
+Además, los scripts estan integrados dentro de la propia app MAUI: cuando el usuario sube un PDF o pega una URL de YouTube en la pestana Documentos, la app llama automáticamente al script correspondiente mediante Process.Start (clase PythonProcessorService). Así el usuario no necesita abrir una terminal para ejecutarlos, todo se hace desde la interfaz grafica. Para los PDFs hay un checkbox que permite elegir si se quiere procesar el PDF con marcas de página o subirlo directamente tal cual.
+
+5.1 transcribir_video_youtube.py
+
+Este script descarga los subtítulos de cualquier video de YouTube y genera un archivo de texto con marcas de tiempo [Minuto XX:XX - YY:YY]. Acepta la URL del video o su ID como argumento de línea de comandos, o si se ejecuta sin argumentos los pide por consola.
+
+YouTube permite que los creadores de contenido anadan subtítulos a sus videos, y también genera subtítulos automaticos mediante reconocimiento de voz. Estos subtítulos se pueden descargar a traves de la API de YouTube. Tambien se podría copiar la transcripción a mano desde la propia interfaz de YouTube (en el desplegable del video aparece la opción "Mostrar transcripción"), pero hacerlo manualmente no sería la forma adecuada: se perderian las marcas de tiempo exactas, habría que formatear todo el texto a mano y para videos largos sería inviable.
+
+El script automatiza todo el proceso: descarga los subtítulos con sus timestamps, los agrupa en bloques de 30 segundos y genera el archivo listo para subir. El nombre del archivo de salida se genera automáticamente a partir del ID del video (por ejemplo transcripcion_SI7O81GMG2A.txt).
+
+Requisitos e instalación:
+
+    pip install youtube-transcript-api
+
+Ejecucion (con argumentos):
+
+    python transcribir_video_youtube.py https://www.youtube.com/watch?v=SI7O81GMG2A
+    python transcribir_video_youtube.py SI7O81GMG2A es
+
+Ejecucion (interactiva, sin argumentos):
+
+    python transcribir_video_youtube.py
+
+El segundo argumento es opciónal e indica el idioma de los subtítulos (por defecto 'es'). Si no hay subtítulos en ese idioma, el script intenta descargar los que haya disponibles.
+
+Para el caso de uso 4 se uso con el video "Programacion Orientada a Objetos (POO) Explicada" de Fazt (ID: SI7O81GMG2A). El archivo generado (transcripcion_SI7O81GMG2A.txt) se renombro a transcripcion_poo_video.txt y se subio al workspace "Video POO" desde la pestana Documentos de la app.
+
+Para más detalles sobre el proceso técnico, ver la sección 6 del Documento de Preprocesado.
+
+5.2 segmentar_pdf_por_pagina.py
+
+Este script extrae el texto de cualquier PDF página a página y genera un archivo de texto con marcas [Pagina XX] al inicio de cada línea. Acepta la ruta del PDF como argumento de línea de comandos, o si se ejecuta sin argumentos la pide por consola. Opcionalmente se puede indicar un rango de páginas para procesar solo una parte del PDF.
+
+Esto es necesario porque AnythingLLM, al procesar un PDF directamente, pierde la referencia a la página de origen en los chunks. Con este formato, cualquier chunk que genere AnythingLLM siempre contiene la página de donde viene el texto.
+
+El nombre del archivo de salida se genera automáticamente a partir del nombre del PDF (por ejemplo manual_segmentado.txt).
+
+Requisitos e instalación:
+
+    pip install PyPDF2
+
+Ejecucion (con argumentos):
+
+    python segmentar_pdf_por_pagina.py manual.pdf
+    python segmentar_pdf_por_pagina.py aprenda_java_primero.pdf 37-64
+
+Ejecucion (interactiva, sin argumentos):
+
+    python segmentar_pdf_por_pagina.py
+
+El segundo argumento es opciónal e indica el rango de páginas a procesar (por ejemplo 10-50). Si no se indica, se procesan todas las páginas del PDF.
+
+Para el caso de uso 5 se uso con el PDF "Aprenda Java como si estuviera en Primero" de TECNUN (Universidad de Navarra), que se puede descargar desde:
+    https://www.tecnun.es/jgjalon/Asignaturas/JAVA/ApsJava.pdf
+
+Se proceso el rango de páginas 37-64 (capítulo 3: Clases en Java). El archivo generado (aprenda_java_primero_segmentado.txt) se renombro a apuntes_java_clases.txt y se subio al workspace "Apuntes Java" desde la pestana Documentos de la app.
+
+Para más detalles sobre el proceso técnico y por que se pone [Pagina XX] en cada línea, ver la sección 7 del Documento de Preprocesado.
+
+
+6. GUIA DE USUARIO
+
+6.1 PANTALLA DE CONFIGURACIÓN (pestana "Config")
+
+Es lo primero que hay que hacer al abrir la app por primera vez. Aqui se configuran varias cosas:
+
+- URL Base: la direccion donde esta corriendo AnythingLLM. Por defecto es http://localhost:3001/api. Si lo tienes en otro puerto o en otra maquína hay que cambiarlo aquí.
+
+- API Key: la clave de la API de AnythingLLM. Se genera desde la configuración de AnythingLLM, en el apartado de API keys. Sin esto la app no puede conectarse.
+
+- System Prompt: es opciónal. Aqui puedes escribir un prompt de sistema que se envia con cada consulta. Por ejemplo "Responde siempre en español y de forma concisa". Se guarda automáticamente para que no lo pierdas al cerrar la app.
+
+- Ruta de los scripts (.py): la carpeta donde estan los scripts de preprocesado (segmentar_pdf_por_pagina.py y transcribir_video_youtube.py). Es necesario para que la app pueda ejecutarlos automáticamente al subir PDFs o videos de YouTube.
+
+- Ejecutable de Python: la ruta al ejecutable de Python (por defecto "python"). Si Python esta en el PATH del sistema se puede dejar el valor por defecto.
+
+Al pulsar "Guardar Configuracion" los valores se guardan en las preferencias del dispositivo y se aplican inmediatamente.
+
+Tambien hay un boton "Probar Conexion" que comprueba si la app puede conectarse a AnythingLLM con la configuración actual. Muestra un mensaje verde si la conexión es correcta o rojo si falla. Es util para verificar que la URL y la API key son correctas antes de empezar a trabajar.
+
+[CAPTURA: pantalla Config con los campos rellenados y el boton de probar conexión]
+
+
+6.2 PANTALLA DE WORKSPACES (pestana "Workspaces")
+
+Aqui se gestionan los workspaces de AnythingLLM. La pantalla muestra:
+
+- Un campo de texto y boton "Crear" arriba para crear workspaces nuevos
+- Un boton "Refrescar" para recargar la lista
+- La lista de workspaces existentes, cada uno con su nombre, slug, y botones de "Renombrar" y "Eliminar"
+
+Para crear un workspace: escribes el nombre y pulsas "Crear". Te saldrá un aviso de que se ha creado correctamente.
+
+Para renombrar: pulsas "Renombrar" en el workspace que quieras y te sale un popup para escribir el nuevo nombre.
+
+Para eliminar: pulsas "Eliminar" (boton rojo) y te pide confirmación antes de borrarlo. Esto elimina el workspace y todos sus documentos asociados, asi que hay que tener cuidado.
+
+[CAPTURA: pantalla Workspaces con la lista de workspaces y el formulario de crear]
+
+
+6.3 PANTALLA DE DOCUMENTOS (pestana "Documentos")
+
+Esta pantalla tiene tres secciónes:
+
+Seccion superior - Subir Documento:
+- Picker para elegir el workspace destino
+- Boton "Seleccionar Archivo" para abrir el explorador de archivos
+- Acepta los siguientes formatos: PDF, TXT, CSV, DOCX, MD y también imágenes (JPG, JPEG, PNG, BMP, GIF, TIFF, WEBP)
+- Una vez seleccionado el archivo aparece su nombre y tipo debajo (por ejemplo "Documento de texto", "PDF detectado" o "Imagen detectada")
+- Si el archivo seleccionado es un PDF, aparece un checkbox "Procesar PDF con marcas [Pagina XX]" que permite elegir si se quiere preprocesar el PDF con el script de Python (añadiendo la página de origen a cada línea) o subirlo directamente tal cual a AnythingLLM
+- Boton "Subir y Procesar" que hace la subida y actualización de embeddings
+
+Si el archivo es una imagen, la app hace un preprocesado especial antes de subirla: pide a un modelo de visión (cargado en LM Studio) que describa lo que se ve en la imagen, extrae los metadatos EXIF (cámara, fecha, GPS, etc.) y hace OCR para detectar texto. Todo se junta en un archivo .txt que se sube a AnythingLLM para generar los embeddings. La app detecta automáticamente el modelo de visión disponible en LM Studio (busca uno con "llava" o "visión" en el nombre), asi que no hace falta configurar el nombre del modelo. Si no hay modelo de visión cargado, el resto del analisis (EXIF + OCR) sigue funciónando normal.
+
+Si el archivo es un PDF y el checkbox esta marcado, la app llama al script segmentar_pdf_por_pagina.py que extrae el texto del PDF y añade [Pagina XX] al inicio de cada línea. Si el checkbox no esta marcado, el PDF se sube directamente a AnythingLLM sin preprocesar.
+
+[CAPTURA: pantalla Documentos con un PDF seleccionado y el checkbox de marcas de página visible]
+
+El proceso de subida muestra mensajes de estado:
+- "Procesando imagen (Vision IA + OCR + EXIF)..." (si es una imagen)
+- "Procesando PDF con marcas [Pagina XX]..." (si es un PDF con el checkbox marcado)
+- "Subiendo documento..." (en naranja)
+- "Documento 'X' subido. Actualizando embeddings..."
+- "Documento 'X' subido y embeddings actualizados!" (en verde si todo fue bien)
+- Mensajes de error en rojo si algo falla
+
+Seccion media - URL de YouTube:
+- Un campo de texto discreto donde se puede pegar la URL de un video de YouTube
+- Cuando la app detecta que la URL es de YouTube (válida el formato), aparece automáticamente un panel informativo en rojo que dice "URL de YouTube detectada" y explica que se van a descargar los subtítulos, agruparlos en bloques de 30 segundos con marcas [Minuto XX:XX] y subirlos al workspace
+- El boton "Procesar y Subir al Workspace" solo aparece cuando hay una URL válida detectada
+- Todo el proceso es automatico: la app extrae el ID del video, ejecuta el script de Python y sube el resultado
+
+[CAPTURA: pantalla Documentos con URL de YouTube detectada y panel rojo visible]
+
+Seccion inferior - Documentos en el Sistema:
+- Lista de todos los documentos que hay en AnythingLLM
+- Cada documento tiene un checkbox para seleccionarlo
+- Boton "Refrescar" para actualizar la lista
+- Boton "Eliminar Seleccionados" (en rojo) para borrar los documentos marcados, con confirmación previa
+
+[CAPTURA: pantalla Documentos con un archivo seleccionado y el picker de workspace]
+[CAPTURA: pantalla Documentos después de subir un archivo, con el mensaje en verde]
+
+
+6.4 PANTALLA DE CHAT (pestana "Chat")
+
+Esta es la pantalla principal donde se interactua con el RAG. Tiene estas partes:
+
+Parte superior:
+- Picker para seleccionar el workspace sobre el que quieres preguntar
+- Boton "Limpiar Chat" para borrar la conversacion y empezar de cero
+
+Selector de modo:
+- Chat: mantiene el historial de conversacion. Las preguntas anteriores influyen en las respuestas siguientes. Es más conversacional.
+- Query: cada pregunta es independiente, no mantiene contexto. Es más preciso para consultas puntuales.
+
+Area de chat:
+- Los mensajes del usuario aparecen en verde a la derecha con la hora
+- Las respuestas del asistente aparecen en gris a la izquierda con la hora
+- Se hace scroll automatico al último mensaje
+- Se usa un CollectionView con DataTemplate para mostrar los mensajes (patrón MVVM)
+
+Seccion de trazabilidad:
+- Debajo del chat hay un recuadro con tema oscuro que muestra los chunks que el RAG ha recuperado
+- El panel es redimensiónable: se puede arrastrar el handle de la parte superior para hacerlo más grande o más pequeño (entre 80 y 500 pixeles)
+- Tiene scroll por si los chunks no caben
+- Para cada chunk se muestra:
+  * El nombre del documento de origen (Doc: nombre_archivo)
+  * Un extracto del texto del chunk (recortado a 150 caracteres)
+  * El score de similitud (un número entre 0 y 1, cuanto más alto más relevante)
+- Se puede tocar un chunk para expandirlo y ver el texto completo, y tocarlo otra vez para contraerlo
+- Al expandir un chunk cambia el color del borde (a azul) para indicar qué esta expandido
+
+Campo de entrada:
+- Abajo hay un campo de texto para escribir la pregunta y un boton "Enviar"
+- Mientras se procesa se muestra un indicador de carga y el boton se desactiva
+- Tambien se puede enviar pulsando Enter en el campo de texto
+
+[CAPTURA: pantalla Chat en modo Chat con una conversacion y los chunks de trazabilidad]
+[CAPTURA: pantalla Chat en modo Query mostrando una consulta puntual con trazabilidad]
+
+
+7. NOTAS DE COMPILACIÓN
+
+El proyecto esta hecho con .NET MAUI targeteando net10.0. Para compilarlo:
+
+1. Abrir la solución MauiRAG.csproj en Visual Studio
+2. Seleccionar el target framework de Windows (net10.0-windows10.0.19041.0)
+3. Compilar con F5 o Ctrl+Shift+B
+
+Dependencias:
+- Microsoft.Maui.Controls
+- Microsoft.Maui.Essentials
+- Newtonsoft.Json 13.0.3
+- MetadataExtractor 2.8.1 (para leer metadatos EXIF de imágenes)
+
+Para el OCR se usa Windows.Media.Ocr que viene con Windows, no necesita paquete adicional. Esta funciónalidad solo esta disponible en Windows (compilacion condicional con #if WINDOWS).
+
+El proyecto compila sin errores. Los warnings que salen son por nullable references y DisplayAlert en .NET 10, pero funcióna sin problemas.
+
+Para el preprocesado de PDFs y videos de YouTube desde la app, es necesario tener Python 3 instalado con las librerias youtube-transcript-api y PyPDF2, y configurar la ruta de los scripts en la pestana Config.

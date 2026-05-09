@@ -1,0 +1,109 @@
+{
+  "id": "prestamo_libro",
+  "titulo": "Préstamo de libro a un socio de la biblioteca",
+  "descripcion": "Registra un préstamo activo: presta un ejemplar a un socio de la biblioteca durante N días. Decrementa las copias_disponibles del título, NO lo retira del fondo (esa es la baja). Si copias_disponibles llega a 0 (todos los ejemplares prestados), el préstamo falla con error claro. Workflow PREFERENTE para todo lo relacionado con prestar. Expresiones típicas: 'presta el R-0003 al socio S-0042', 'préstamo de Cien años de soledad para el carnet S-0007 durante 14 días', 'que se lleve el R-0042 el socio Antonio', 'apunta el préstamo del libro X al lector Y'. Si el usuario solo da el título, primero llama a listar_catalogo para resolver el R-NNNN. Si solo da el nombre del socio sin S-NNNN, pregúntale el carnet.",
+  "app": "biblioteca_seccion",
+  "url": "{{FORM_URL_PRESTAMO}}",
+  "tags": [
+    "prestamo",
+    "prestar libro",
+    "socio biblioteca",
+    "carnet lector",
+    "registrar prestamo",
+    "P-NNNN",
+    "S-NNNN",
+    "R-NNNN"
+  ],
+  "param_schema": {
+    "id_libro": {
+      "type": "string",
+      "description": "Nº de registro del libro, formato R-NNNN",
+      "required": true
+    },
+    "id_socio": {
+      "type": "string",
+      "description": "Nº de carnet del socio, formato S-NNNN",
+      "required": true
+    },
+    "dias_prestamo": {
+      "type": "integer",
+      "description": "Días de préstamo. Default 21 días (3 semanas).",
+      "required": false
+    }
+  },
+  "steps": [
+    {
+      "type": "wait",
+      "ms": 500
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#id_libro"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#id_libro"
+      },
+      "value": "{{id_libro}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#id_socio"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#id_socio"
+      },
+      "value": "{{id_socio}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#dias_prestamo"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#dias_prestamo"
+      },
+      "value": "{{dias_prestamo}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#btn_prestar"
+      }
+    },
+    {
+      "type": "wait_for_text",
+      "target": {
+        "by": "css",
+        "value": "#toast"
+      },
+      "contains": "Préstamo registrado"
+    },
+    {
+      "type": "read_text",
+      "target": {
+        "by": "css",
+        "value": "#toast"
+      },
+      "save_as": "id_prestamo",
+      "pattern": "P-\\d+"
+    }
+  ]
+}

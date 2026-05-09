@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:RpaChatApp.ViewModels"
+             x:Class="RpaChatApp.MainPage"
+             Title="{Binding ChatTitle}"
+             BackgroundColor="#0B141A">
+
+    <!--
+        BindingContext instanciado en XAML con <vm:MainViewModel/>.
+        La UI es autocontenida: el VM construye sus propias dependencias
+        (AppSettings, AgentApiService) y no hace falta DI.
+        Alternativa: resolver el VM desde IServiceProvider en el code-behind.
+        Se descarta para no obligar a registrar VMs y páginas en MauiProgram.
+    -->
+    <ContentPage.BindingContext>
+        <vm:MainViewModel/>
+    </ContentPage.BindingContext>
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="10">
+
+        <!-- Barra superior: botón reiniciar conversación -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+            <Label Grid.Column="0"
+                   Text="{Binding ChatTitle}"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   TextColor="#E9EDEF"
+                   VerticalOptions="Center"/>
+
+            <HorizontalStackLayout Grid.Column="1" Spacing="6">
+                <Button Text="Logs"
+                        Clicked="OnLogsClicked"
+                        BackgroundColor="#0EA5E9"
+                        TextColor="White"
+                        FontSize="12"
+                        HeightRequest="35"/>
+                <Button Text="Limpiar chat"
+                        Command="{Binding ResetCommand}"
+                        BackgroundColor="#EF4444"
+                        TextColor="White"
+                        FontSize="12"
+                        HeightRequest="35"/>
+            </HorizontalStackLayout>
+        </Grid>
+
+        <!--
+            Mensajes. CollectionView (no ListView) porque virtualiza con mejor
+            rendimiento y es la API recomendada en .NET MAUI; ListView está
+            mantenido por compatibilidad pero queda como legado.
+            ItemsSource enlaza a una ObservableCollection<ChatMessage> del VM:
+            cada Add dispara CollectionChanged y la vista pinta la nueva burbuja
+            sin recrear el resto.
+        -->
+        <CollectionView x:Name="chatCollectionView"
+                        Grid.Row="1"
+                        ItemsSource="{Binding Messages}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="0" Margin="{Binding BubbleMargin}">
+                        <Border BackgroundColor="{Binding BubbleColor}"
+                                Stroke="Transparent"
+                                StrokeThickness="0"
+                                Padding="10,8,10,8"
+                                HorizontalOptions="{Binding BubbleAlignment}"
+                                StrokeShape="RoundRectangle 10"
+                                MaximumWidthRequest="560">
+                            <VerticalStackLayout>
+                                <Label Text="{Binding Sender}"
+                                       FontAttributes="Bold"
+                                       TextColor="{Binding SenderColor}"
+                                       FontSize="12"/>
+                                <Label Text="{Binding Content}"
+                                       TextColor="#E9EDEF"
+                                       FontSize="14"
+                                       Margin="0,2,0,0"/>
+                                <Label Text="{Binding TimeText}"
+                                       TextColor="#8696A0"
+                                       FontSize="10"
+                                       HorizontalOptions="End"
+                                       Margin="0,4,0,0"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Indicador de actividad (aparece mientras el agente piensa/ejecuta tools) -->
+        <Label Grid.Row="1"
+               Text="{Binding StatusText}"
+               IsVisible="{Binding IsBusy}"
+               TextColor="#00A884"
+               FontSize="12"
+               FontAttributes="Italic"
+               Padding="10,0,0,0"
+               VerticalOptions="End"
+               Margin="0,0,0,5"/>
+
+        <!-- Entrada + envío + ajustes -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" Margin="0,10,0,0">
+            <Border Stroke="#2A3942"
+                    StrokeThickness="1"
+                    Padding="5"
+                    BackgroundColor="#1F2C34"
+                    StrokeShape="RoundRectangle 20">
+                <Entry x:Name="messageEntry"
+                       Placeholder="Escribe lo que quieres que haga el agente..."
+                       PlaceholderColor="#8696A0"
+                       TextColor="#E9EDEF"
+                       BackgroundColor="Transparent"
+                       Text="{Binding MessageText}"
+                       ReturnType="Send"
+                       ReturnCommand="{Binding SendCommand}"
+                       VerticalOptions="Center"/>
+            </Border>
+
+            <Button Grid.Column="1"
+                    Text="Enviar"
+                    Command="{Binding SendCommand}"
+                    BackgroundColor="#4A90D9"
+                    TextColor="White"
+                    Margin="5,0,0,0"/>
+
+            <Button Grid.Column="2"
+                    Text="⚙"
+                    Clicked="OnSettingsClicked"
+                    BackgroundColor="#6366F1"
+                    TextColor="White"
+                    Margin="5,0,0,0"
+                    WidthRequest="44"/>
+        </Grid>
+
+    </Grid>
+</ContentPage>

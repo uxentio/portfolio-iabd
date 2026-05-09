@@ -1,0 +1,11 @@
+<Solution>
+  <Project Path="LucesIoT.MAUI/LucesIoT.MAUI.csproj" />
+  <Project Path="LucesIoT.MCP/LucesIoT.MCP.csproj" />
+  <Folder Name="/ESP32/">
+    <File Path="ESP32/src/main.cpp" />
+    <File Path="ESP32/platformio.ini" />
+  </Folder>
+  <Folder Name="/NodeRED/">
+    <File Path="NodeRED/flows.json" />
+  </Folder>
+</Solution>

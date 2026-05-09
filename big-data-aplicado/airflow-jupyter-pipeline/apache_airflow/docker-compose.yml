@@ -1,0 +1,140 @@
+services:
+  # -------------------------------------------------------
+  # BASE DE DATOS - PostgreSQL para los metadatos de Airflow
+  # -------------------------------------------------------
+  postgres:
+    image: postgres:13
+    container_name: reto01-postgres
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    volumes:
+      - reto01_postgres_data:/var/lib/postgresql/data
+    networks:
+      - reto01_network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # -------------------------------------------------------
+  # AIRFLOW INIT - Inicializa la BD y crea el usuario admin
+  # Se ejecuta solo una vez y se para
+  # -------------------------------------------------------
+  airflow-init:
+    build:
+      context: .
+      dockerfile: airflow.Dockerfile
+    container_name: reto01-airflow-init
+    depends_on:
+      - postgres
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth
+    entrypoint: bash -c "airflow db migrate && airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    networks:
+      - reto01_network
+
+  # -------------------------------------------------------
+  # AIRFLOW WEBSERVER - Interfaz web de Airflow
+  # Accesible en http://localhost:8080
+  # -------------------------------------------------------
+  airflow-webserver:
+    build:
+      context: .
+      dockerfile: airflow.Dockerfile
+    container_name: reto01-airflow-webserver
+    depends_on:
+      - postgres
+      - airflow-init
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    command: webserver
+    networks:
+      - reto01_network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # -------------------------------------------------------
+  # AIRFLOW SCHEDULER - Planificador que ejecuta los DAGs
+  # Necesita papermill instalado para ejecutar notebooks
+  # -------------------------------------------------------
+  airflow-scheduler:
+    build:
+      context: .
+      dockerfile: airflow.Dockerfile
+    container_name: reto01-airflow-scheduler
+    depends_on:
+      - postgres
+      - airflow-webserver
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./notebooks:/opt/airflow/notebooks
+    command: scheduler
+    networks:
+      - reto01_network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # -------------------------------------------------------
+  # JUPYTER NOTEBOOK - Entorno de trabajo interactivo
+  # Accesible en http://localhost:8888
+  # -------------------------------------------------------
+  jupyter:
+    build:
+      context: .
+      dockerfile: jupyter.Dockerfile
+    container_name: reto01-jupyter
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__CORE__DAGS_FOLDER=/home/jovyan/dags
+    command: start-notebook.sh --ServerApp.token='' --ServerApp.password=''
+    volumes:
+      - ./notebooks:/home/jovyan/notebooks
+      - ./dags:/home/jovyan/dags
+    networks:
+      - reto01_network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+networks:
+  reto01_network:
+    name: reto01_network
+
+volumes:
+  reto01_postgres_data:

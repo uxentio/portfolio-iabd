@@ -1,0 +1,31 @@
+============================================================
+TEXTO EXTRAIDO DE: Historial_empleados.pdf
+Paginas: 1 a 1 (de 1 totales)
+============================================================
+
+[Pagina 1] HISTORIAL DE EMPLEADOS
+[Pagina 1] Nombre: Juan Pérez
+[Pagina 1] Puesto: Desarrollador
+[Pagina 1] Historial: Juan ha trabajado como desarrollador durante los últimos 5 años en la
+[Pagina 1] empresa, especializándose en desarrollo web y móviles. Ha liderado proyectos
+[Pagina 1] clave que han mejorado la eficiencia operativa.
+[Pagina 1] Nombre: María Gómez
+[Pagina 1] Puesto: Diseñadora
+[Pagina 1] Historial: María cuenta con 7 años de experiencia en diseño gráfico y UX/UI. Ha
+[Pagina 1] colaborado en la creación de interfaces atractivas y funcionales que han sido
+[Pagina 1] reconocidas por su innovación.
+[Pagina 1] Nombre: Luis Ramírez
+[Pagina 1] Puesto: Gerente de Proyecto
+[Pagina 1] Historial: Luis tiene una sólida experiencia de 10 años en la gestión de proyectos
+[Pagina 1] tecnológicos. Ha gestionado equipos multidisciplinarios y ha asegurado la entrega
+[Pagina 1] de proyectos dentro de los plazos propuestos y el presupuesto estipulado.
+[Pagina 1] Nombre: Ana López
+[Pagina 1] Puesto: Analista de Datos
+[Pagina 1] Historial: Ana cuenta con 5 años de experiencia en análisis de datos. Ha
+[Pagina 1] colaborado en la extracción y procesamiento de grandes volúmenes de
+[Pagina 1] información, contribuyendo a la toma de decisiones estratégicas de la empresa.
+[Pagina 1] Nombre: Pedro Martínez
+[Pagina 1] Puesto: Ingeniero de Sistemas
+[Pagina 1] Historial: Pedro cuenta con 8 años de experiencia en la administración y
+[Pagina 1] mantenimiento de infraestructura tecnológica. Ha diseñado e implementado
+[Pagina 1] soluciones innovadoras para optimizar la eficiencia y la seguridad de los sistemas.

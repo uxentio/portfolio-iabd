@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="FacturasOCR.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:FacturasOCR"
+    xmlns:paginas="clr-namespace:FacturasOCR.Paginas"
+    Title="FacturasOCR">
+
+    <TabBar>
+        <ShellContent
+            x:Name="tabAnalyze"
+            Title="Analizar"
+            Icon="camera_icon.png"
+            ContentTemplate="{DataTemplate local:PaginaPrincipal}"
+            Route="PaginaPrincipal" />
+        <ShellContent
+            x:Name="tabArchive"
+            Title="Archivo"
+            Icon="history_icon.png"
+            ContentTemplate="{DataTemplate paginas:PaginaHistorial}"
+            Route="PaginaHistorial" />
+        <ShellContent
+            x:Name="tabSettings"
+            Title="Ajustes"
+            Icon="settings_icon.png"
+            ContentTemplate="{DataTemplate paginas:PaginaAjustes}"
+            Route="PaginaAjustes" />
+    </TabBar>
+
+</Shell>

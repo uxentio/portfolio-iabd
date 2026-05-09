@@ -1,0 +1,312 @@
+========================================================
+   GUÍA PARA EL VÍDEO - TRABAJO FINAL UT7
+   Duración máxima: 10 minutos
+   Abre el notebook YA EJECUTADO en VS Code
+
+   REFERENCIA: In [N] = número de ejecución que ves
+   a la izquierda de cada celda de código en VS Code.
+   Los textos explicativos NO tienen número (son markdown).
+========================================================
+
+ANTES DE GRABAR:
+- Ejecuta todas las celdas (Run All) para que tengan número
+- Pon zoom al 80-90% para que se vea bien
+- Cierra pestañas innecesarias
+- Ten esta guía en otro monitor o impresa
+
+========================================================
+[0:00 - 0:40] INTRODUCCIÓN
+========================================================
+MOSTRAR: El título morado del principio y la lista de 3 datasets
+         (es texto, NO tiene número de ejecución)
+
+DECIR:
+"Buenas, soy autor. Voy a presentar el trabajo final de la UT7
+sobre agrupación. He usado tres datasets: uno de exoplanetas para el
+clustering, uno de transacciones de una panadería para Apriori, y el
+NSL-KDD de ciberseguridad para la detección de anomalías."
+
+→ Señalar brevemente cada dataset en pantalla mientras lo nombras.
+
+========================================================
+[0:40 - 2:00] SECCIÓN 1 - EDA
+========================================================
+
+--- 1.1 PREPROCESADO ---
+
+MOSTRAR: In [3] (Dimensiones + tipos de datos)
+DECIR: "El dataset tiene 5414 exoplanetas con 25 columnas. Bastantes
+nulos porque no se conocen todas las propiedades de cada planeta."
+
+MOSTRAR: In [6] (nulos por columna)
+DECIR: "Hay columnas con más del 80% de nulos como longitude o age.
+Me quedo solo con las filas que tienen completas las 9 variables que
+me interesan para clustering."
+
+MOSTRAR: In [8] (LabelEncoder + métodos de descubrimiento)
+DECIR: "La columna discoverymethod es categórica, la codifico con
+LabelEncoder. También hago variables dummy con drop_first para evitar
+la trampa de multicolinealidad."
+
+MOSTRAR: In [10] (train_test_split) → scroll rápido
+DECIR: "Separo en train y test 70-30."
+
+MOSTRAR: In [11] y In [12] (StandardScaler)
+DECIR: "Estandarizo con StandardScaler porque las escalas son muy
+diferentes: masa en Júpiteres, período en días, temperatura en Kelvin..."
+
+--- 1.2 EDA BÁSICO ---
+
+MOSTRAR: In [13] (heatmap de correlaciones) → SEÑALAR LA GRÁFICA
+DECIR: "En el mapa de calor se ve que period y semimajoraxis tienen
+correlación altísima, casi 1. Son las leyes de Kepler. Quito
+semimajoraxis para no tener redundancia."
+
+MOSTRAR: In [15] (pairplot) → SEÑALAR LA GRÁFICA
+DECIR: "En el pairplot ya se intuyen grupos, sobre todo en masa
+vs radio."
+
+MOSTRAR: In [18] (scatter masa vs radio) → SEÑALAR LA GRÁFICA
+DECIR: "Aquí se ve claro: hay un grupo de planetas pequeños abajo
+a la izquierda y los gigantes arriba a la derecha."
+
+MOSTRAR: El texto de "Conclusiones" del EDA (markdown, sin número)
+DECIR: "Las conclusiones del EDA: muchos nulos, distribuciones
+sesgadas, y ya se intuyen los grupos que buscará el clustering."
+
+→ NO te pares mucho aquí. Scroll rápido por las celdas intermedias.
+
+========================================================
+[2:00 - 4:30] SECCIÓN 2 - CLUSTERING
+========================================================
+
+--- 2.1 K-MEANS ---
+
+MOSTRAR: In [20] (gráfico del codo) → SEÑALAR EL CODO EN LA GRÁFICA
+DECIR: "Método del codo. El codo está entre 3 y 5. Elijo k=4 porque
+en astronomía los exoplanetas se clasifican en unas 4 categorías:
+rocosos, super-Tierras, Neptunos y gigantes gaseosos."
+
+MOSTRAR: In [22] (scatter de clusters con colores) → SEÑALAR LA GRÁFICA
+DECIR: "Aquí se ven los 4 clusters. Los colores son los mismos que
+en los apuntes: green, blue, magenta, cyan. Los centroides están
+marcados con X negra. Como se puede ver, los planetas del mismo
+grupo acaban todos bastante cerca unos de otros."
+
+MOSTRAR: In [23] (conteo de elementos por cluster)
+DECIR: "El conteo muestra cuántos planetas hay en cada cluster."
+
+MOSTRAR: In [24] (medias por cluster) → pasar rápido
+DECIR: "Mirando las medias de cada cluster se confirma que coinciden
+con tipos reales de exoplanetas."
+
+--- 2.2 DBSCAN ---
+
+MOSTRAR: El texto explicativo de DBSCAN (markdown con justificación, sin número)
+DECIR: "DBSCAN con eps=1.5 y min_samples=10. Elegí eps=1.5 porque
+con valores más bajos casi todo sale como ruido y con valores más
+altos mete todo en un solo cluster."
+
+MOSTRAR: In [26] (gráfica DBSCAN) → SEÑALAR LOS PUNTOS DE RUIDO
+DECIR: "Los puntos rojos son ruido, los planetas con propiedades
+extremas que no encajan en ningún grupo denso."
+
+MOSTRAR: In [27] (conteo por cluster)
+DECIR: "Se ven los clusters y cuántos puntos de ruido hay."
+
+--- 2.3 PROPAGACIÓN DE AFINIDAD ---
+
+MOSTRAR: El texto explicativo de AP (markdown con damping, sin número)
+DECIR: "Propagación de Afinidad con damping 0.8. Lo pongo alto para
+que converja sin oscilar. No le digo cuántos clusters, lo decide solo."
+
+MOSTRAR: In [30] (gráfica Propagación de Afinidad) → SEÑALAR LA GRÁFICA
+DECIR: "Genera bastantes más clusters que K-Means. Cada uno tiene un
+planeta real como ejemplar, que es el representante del grupo."
+
+--- 2.4 MÉTRICAS ---
+
+MOSTRAR: In [33] (valores numéricos de silueta y Davies-Bouldin)
+DECIR: "Las métricas: silueta cuanto más alta mejor, Davies-Bouldin
+cuanto más bajo mejor."
+→ LEE LOS VALORES que salen en pantalla para cada algoritmo.
+
+MOSTRAR: In [34] (comparativa visual K-Means vs AP) → SEÑALAR GRÁFICA
+DECIR: "Aquí la comparativa visual. En los títulos se ven los valores
+de silueta y Davies-Bouldin de cada algoritmo."
+
+MOSTRAR: In [35] (comparativa 3 algoritmos) → SEÑALAR GRÁFICA
+DECIR: "Añado DBSCAN a la comparativa. Las métricas de DBSCAN no
+son directamente comparables porque excluyen los puntos de ruido."
+
+MOSTRAR: In [36] (grid K=2..9) → SEÑALAR GRÁFICA GRANDE
+DECIR: "Aquí pruebo K de 2 a 9. Se ve que K=4 y K=5 dan los mejores
+valores de silueta y Davies-Bouldin."
+
+MOSTRAR: La tabla comparativa (markdown con tabla, justo debajo de In [36])
+DECIR: "La conclusión: K-Means con k=4 es el mejor para este dataset
+porque los clusters tienen sentido físico real y las métricas lo
+confirman. DBSCAN es útil para detectar outliers y Propagación de
+Afinidad para análisis más fino con ejemplares reales."
+
+→ IMPORTANTE: Señala la tabla con el ratón mientras hablas.
+
+========================================================
+[4:30 - 6:30] SECCIÓN 3 - MARKET BASKET APRIORI
+========================================================
+
+MOSTRAR: El texto intro de Market Basket (markdown morado, sin número)
+DECIR: "Para Market Basket uso un dataset de una panadería real con
+unas 9500 transacciones y 95 productos."
+
+MOSTRAR: In [38] (info del dataset bakery)
+DECIR: "Tiene 21000 líneas con columnas de fecha, transacción,
+producto e item."
+
+MOSTRAR: In [39] (gráfico barras top productos) → SEÑALAR LA GRÁFICA
+DECIR: "El producto más vendido es Coffee con diferencia, seguido
+de Bread y Tea."
+
+MOSTRAR: In [41] (TransactionEncoder output)
+DECIR: "Con TransactionEncoder convierto las transacciones a formato
+OneHot: cada columna es un producto, True si está en la transacción."
+
+MOSTRAR: El texto de min_support (markdown justo encima de In [42])
+DECIR: "Uso min_support 0.02, un 2%. Lo pongo bajo porque con 95
+productos y soporte alto como en los apuntes no encontraría casi nada."
+
+MOSTRAR: In [42] (frequent itemsets)
+DECIR: "Estos son los itemsets frecuentes. La columna length indica
+cuántos productos tiene cada combinación."
+
+MOSTRAR: In [43] (filtrado pares de productos)
+DECIR: "Filtro los pares de productos. Los más frecuentes son
+Coffee con Bread, Coffee con Cake..."
+
+MOSTRAR: In [45] (frozenset)
+DECIR: "También se puede buscar un par concreto con frozenset."
+
+MOSTRAR: In [46] (reglas de asociación)
+DECIR: "Las reglas de asociación muestran la confianza y el lift.
+Si el lift es mayor que 1, los productos se compran juntos más
+de lo esperado por azar."
+
+MOSTRAR: Texto de conclusiones Apriori (markdown, sin número)
+DECIR: "La conclusión es que la panadería vive del café con
+acompañamiento. Podrían usar esto para ofertas combo o colocar
+productos estratégicamente."
+
+========================================================
+[6:30 - 9:00] SECCIÓN 4 - ANOMALÍAS
+========================================================
+
+MOSTRAR: Texto intro anomalías (markdown morado + explicación Isolation Forest)
+DECIR: "Para detección de anomalías uso el dataset NSL-KDD de
+ciberseguridad. Son 125000 conexiones de red, de las cuales casi
+la mitad son ataques de 23 tipos distintos: neptune, smurf, satan...
+Encaja con el tema de ciberseguridad que pide el trabajo."
+
+MOSTRAR: In [49] (distribución normal vs ataque)
+DECIR: "67000 normales y 58000 ataques. El top son neptune y smurf
+que son ataques de denegación de servicio."
+
+MOSTRAR: Texto de contaminación (markdown justo encima de In [51])
+DECIR: "Pruebo tres niveles de contaminación: 1% muy conservador,
+5% equilibrado, y 10% más agresivo. En la realidad el porcentaje
+de ataques es mucho menor que en este dataset, por eso pruebo
+con contaminaciones bajas."
+
+MOSTRAR: In [51] (output entrenamiento con las 3 contaminaciones)
+DECIR: Los números que salen: "Con 1% detecta X anomalías, con 5%
+detecta Y, y con 10% detecta Z."
+→ LEE LOS NÚMEROS REALES que salen en tu pantalla.
+
+MOSTRAR: In [52] (gráficas src_bytes vs dst_bytes) → SEÑALAR LAS 3 GRÁFICAS
+DECIR: "En las gráficas los cuadrados azules son las anomalías
+detectadas. Se ve cómo a mayor contaminación se detectan más puntos.
+Fijaos cómo se concentran donde hay picos raros de muchos bytes
+enviados o recibidos."
+
+MOSTRAR: In [53] (gráficas count vs srv_count) → SEÑALAR LAS 3 GRÁFICAS
+DECIR: "Otra vista: conexiones al host vs al servicio. Los ataques
+DoS tienen muchas conexiones simultáneas al mismo servicio."
+
+MOSTRAR: In [54] (anomalías vs ataques reales)
+DECIR: "Compruebo cuántas anomalías son realmente ataques. Con
+contaminación al 1% la precisión es alta pero se pierden muchos.
+Con 5% es el mejor equilibrio."
+
+MOSTRAR: In [55] (tipos de ataque detectados)
+DECIR: "Los tipos de ataque que más detecta son DoS como neptune
+y smurf, porque tienen patrones muy distintos al tráfico normal."
+
+MOSTRAR: Texto de conclusiones anomalías (markdown, sin número, al final)
+DECIR: "La conclusión: Isolation Forest funciona bien como primer
+filtro en ciberseguridad. No necesita datos etiquetados, aprende
+qué es normal y marca lo que se desvía. Los ataques sutiles son
+más difíciles de detectar."
+
+========================================================
+[9:00 - 9:30] CIERRE
+========================================================
+
+DECIR: "En resumen: he aplicado tres algoritmos de clustering al
+dataset de exoplanetas, K-Means es el que mejor funciona con k=4.
+Con Apriori he encontrado las asociaciones de productos en la
+panadería. Y con Isolation Forest he detectado ataques de red en
+el dataset de ciberseguridad. Eso es todo, gracias."
+
+========================================================
+   CONSEJOS IMPORTANTES
+========================================================
+
+1. NO leas el código línea por línea. Muestra la gráfica y explica
+   qué se ve.
+
+2. Cuando muestres una gráfica, SEÑALA con el ratón las partes
+   importantes (el codo, los clusters, las anomalías).
+
+3. Si una celda tiene mucho output (tablas largas), haz scroll
+   rápido y quédate en lo importante.
+
+4. Habla con naturalidad, como si se lo explicaras a un compañero.
+   No leas un guión palabra por palabra.
+
+5. Los tiempos son orientativos. Si vas bien de tiempo, párarte
+   más en las gráficas. Si vas justo, acelera en el preprocesado.
+
+6. Las partes MÁS IMPORTANTES donde pararte más son:
+   - In [20] gráfico del codo + justificación de k=4
+   - In [33]-[36] comparativa de métricas + tabla conclusión
+   - In [52]-[53] gráficas de anomalías con los 3 niveles
+
+7. CUIDADO: No confundas las gráficas. Las de clustering usan
+   exoplanetas (masa, radio) = In [20] a In [36].
+   Las de anomalías usan NSL-KDD (bytes, conexiones) = In [52]-[53].
+   Son datasets DISTINTOS.
+
+8. Si el profe pregunta por qué K-Means es el mejor: "Porque tiene
+   la silueta más alta y el Davies-Bouldin más bajo, y además los
+   4 clusters coinciden con la clasificación real de exoplanetas."
+
+9. Si pregunta por qué eps=1.5 en DBSCAN: "Probé varios valores.
+   Con menos de 1 casi todo es ruido, con más de 2 todo en un
+   cluster. 1.5 es el equilibrio."
+
+10. Si pregunta por qué min_support=0.02: "Porque con 95 productos
+    un soporte alto como 0.6 no devuelve casi nada."
+
+========================================================
+   RESUMEN RÁPIDO: QUÉ NÚMERO BUSCAR EN CADA MOMENTO
+========================================================
+
+PREPROCESADO:  In [3], [6], [8], [10], [11]-[12]
+EDA:           In [13], [15], [18]
+K-MEANS:       In [20]→codo, [22]→clusters, [23]→conteo
+DBSCAN:        In [26]→gráfica, [27]→conteo
+AFINIDAD:      In [30]→gráfica
+MÉTRICAS:      In [33]→valores, [34]-[35]→comparativa, [36]→grid K
+APRIORI:       In [38]-[39]→datos, [41]→encoder, [42]→itemsets,
+               [43]-[45]→filtros, [46]→reglas
+ANOMALÍAS:     In [49]→distribución, [51]→entrenamiento,
+               [52]-[53]→gráficas, [54]-[55]→resultados

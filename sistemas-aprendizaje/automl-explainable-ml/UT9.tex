@@ -1,0 +1,2672 @@
+\documentclass[11pt]{article}
+
+    \usepackage[breakable]{tcolorbox}
+    \usepackage{parskip} % Stop auto-indenting (to mimic markdown behaviour)
+    
+
+    % Basic figure setup, for now with no caption control since it's done
+    % automatically by Pandoc (which extracts ![](path) syntax from Markdown).
+    \usepackage{graphicx}
+    % Keep aspect ratio if custom image width or height is specified
+    \setkeys{Gin}{keepaspectratio}
+    % Maintain compatibility with old templates. Remove in nbconvert 6.0
+    \let\Oldincludegraphics\includegraphics
+    % Ensure that by default, figures have no caption (until we provide a
+    % proper Figure object with a Caption API and a way to capture that
+    % in the conversion process - todo).
+    \usepackage{caption}
+    \DeclareCaptionFormat{nocaption}{}
+    \captionsetup{format=nocaption,aboveskip=0pt,belowskip=0pt}
+
+    \usepackage{float}
+    \floatplacement{figure}{H} % forces figures to be placed at the correct location
+    \usepackage{xcolor} % Allow colors to be defined
+    \usepackage{enumerate} % Needed for markdown enumerations to work
+    \usepackage{geometry} % Used to adjust the document margins
+    \usepackage{amsmath} % Equations
+    \usepackage{amssymb} % Equations
+    \usepackage{textcomp} % defines textquotesingle
+    % Hack from http://tex.stackexchange.com/a/47451/13684:
+    \AtBeginDocument{%
+        \def\PYZsq{\textquotesingle}% Upright quotes in Pygmentized code
+    }
+    \usepackage{upquote} % Upright quotes for verbatim code
+    \usepackage{eurosym} % defines \euro
+
+    \usepackage{iftex}
+    \ifPDFTeX
+        \usepackage[T1]{fontenc}
+        \IfFileExists{alphabeta.sty}{
+              \usepackage{alphabeta}
+          }{
+              \usepackage[mathletters]{ucs}
+              \usepackage[utf8x]{inputenc}
+          }
+    \else
+        \usepackage{fontspec}
+        \usepackage{unicode-math}
+    \fi
+
+    \usepackage{fancyvrb} % verbatim replacement that allows latex
+    \usepackage{grffile} % extends the file name processing of package graphics
+                         % to support a larger range
+    \makeatletter % fix for old versions of grffile with XeLaTeX
+    \@ifpackagelater{grffile}{2019/11/01}
+    {
+      % Do nothing on new versions
+    }
+    {
+      \def\Gread@@xetex#1{%
+        \IfFileExists{"\Gin@base".bb}%
+        {\Gread@eps{\Gin@base.bb}}%
+        {\Gread@@xetex@aux#1}%
+      }
+    }
+    \makeatother
+    \usepackage[Export]{adjustbox} % Used to constrain images to a maximum size
+    \adjustboxset{max size={0.9\linewidth}{0.9\paperheight}}
+
+    % The hyperref package gives us a pdf with properly built
+    % internal navigation ('pdf bookmarks' for the table of contents,
+    % internal cross-reference links, web links for URLs, etc.)
+    \usepackage{hyperref}
+    % The default LaTeX title has an obnoxious amount of whitespace. By default,
+    % titling removes some of it. It also provides customization options.
+    \usepackage{titling}
+    \usepackage{longtable} % longtable support required by pandoc >1.10
+    \usepackage{booktabs}  % table support for pandoc > 1.12.2
+    \usepackage{array}     % table support for pandoc >= 2.11.3
+    \usepackage{calc}      % table minipage width calculation for pandoc >= 2.11.1
+    \usepackage[inline]{enumitem} % IRkernel/repr support (it uses the enumerate* environment)
+    \usepackage[normalem]{ulem} % ulem is needed to support strikethroughs (\sout)
+                                % normalem makes italics be italics, not underlines
+    \usepackage{soul}      % strikethrough (\st) support for pandoc >= 3.0.0
+    \usepackage{mathrsfs}
+    
+
+    
+    % Colors for the hyperref package
+    \definecolor{urlcolor}{rgb}{0,.145,.698}
+    \definecolor{linkcolor}{rgb}{.71,0.21,0.01}
+    \definecolor{citecolor}{rgb}{.12,.54,.11}
+
+    % ANSI colors
+    \definecolor{ansi-black}{HTML}{3E424D}
+    \definecolor{ansi-black-intense}{HTML}{282C36}
+    \definecolor{ansi-red}{HTML}{E75C58}
+    \definecolor{ansi-red-intense}{HTML}{B22B31}
+    \definecolor{ansi-green}{HTML}{00A250}
+    \definecolor{ansi-green-intense}{HTML}{007427}
+    \definecolor{ansi-yellow}{HTML}{DDB62B}
+    \definecolor{ansi-yellow-intense}{HTML}{B27D12}
+    \definecolor{ansi-blue}{HTML}{208FFB}
+    \definecolor{ansi-blue-intense}{HTML}{0065CA}
+    \definecolor{ansi-magenta}{HTML}{D160C4}
+    \definecolor{ansi-magenta-intense}{HTML}{A03196}
+    \definecolor{ansi-cyan}{HTML}{60C6C8}
+    \definecolor{ansi-cyan-intense}{HTML}{258F8F}
+    \definecolor{ansi-white}{HTML}{C5C1B4}
+    \definecolor{ansi-white-intense}{HTML}{A1A6B2}
+    \definecolor{ansi-default-inverse-fg}{HTML}{FFFFFF}
+    \definecolor{ansi-default-inverse-bg}{HTML}{000000}
+
+    % common color for the border for error outputs.
+    \definecolor{outerrorbackground}{HTML}{FFDFDF}
+
+    % commands and environments needed by pandoc snippets
+    % extracted from the output of `pandoc -s`
+    \providecommand{\tightlist}{%
+      \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+    \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+    % Add ',fontsize=\small' for more characters per line
+    \newenvironment{Shaded}{}{}
+    \newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{{#1}}}
+    \newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{{#1}}}}
+    \newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{{#1}}}
+    \newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{{#1}}}
+    \newcommand{\RegionMarkerTok}[1]{{#1}}
+    \newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\NormalTok}[1]{{#1}}
+
+    % Additional commands for more recent versions of Pandoc
+    \newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{{#1}}}
+    \newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{{#1}}}
+    \newcommand{\ImportTok}[1]{{#1}}
+    \newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{{#1}}}}
+    \newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{{#1}}}
+    \newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{{#1}}}
+    \newcommand{\BuiltInTok}[1]{{#1}}
+    \newcommand{\ExtensionTok}[1]{{#1}}
+    \newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{{#1}}}
+    \newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{{#1}}}
+    \newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \makeatletter
+    \newsavebox\pandoc@box
+    \newcommand*\pandocbounded[1]{%
+      \sbox\pandoc@box{#1}%
+      % scaling factors for width and height
+      \Gscale@div\@tempa\textheight{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+      \Gscale@div\@tempb\linewidth{\wd\pandoc@box}%
+      % select the smaller of both
+      \ifdim\@tempb\p@<\@tempa\p@
+        \let\@tempa\@tempb
+      \fi
+      % scaling accordingly (\@tempa < 1)
+      \ifdim\@tempa\p@<\p@
+        \scalebox{\@tempa}{\usebox\pandoc@box}%
+      % scaling not needed, use as it is
+      \else
+        \usebox{\pandoc@box}%
+      \fi
+    }
+    \makeatother
+
+    % Define a nice break command that doesn't care if a line doesn't already
+    % exist.
+    \def\br{\hspace*{\fill} \\* }
+    % Math Jax compatibility definitions
+    \def\gt{>}
+    \def\lt{<}
+    \let\Oldtex\TeX
+    \let\Oldlatex\LaTeX
+    \renewcommand{\TeX}{\textrm{\Oldtex}}
+    \renewcommand{\LaTeX}{\textrm{\Oldlatex}}
+    % Document parameters
+    % Document title
+    \title{UT9\_Antonio\_Ferrer\_Martinez\_XXXXXXXXX}
+    
+    
+    
+    
+    
+    
+    
+% Pygments definitions
+\makeatletter
+\def\PY@reset{\let\PY@it=\relax \let\PY@bf=\relax%
+    \let\PY@ul=\relax \let\PY@tc=\relax%
+    \let\PY@bc=\relax \let\PY@ff=\relax}
+\def\PY@tok#1{\csname PY@tok@#1\endcsname}
+\def\PY@toks#1+{\ifx\relax#1\empty\else%
+    \PY@tok{#1}\expandafter\PY@toks\fi}
+\def\PY@do#1{\PY@bc{\PY@tc{\PY@ul{%
+    \PY@it{\PY@bf{\PY@ff{#1}}}}}}}
+\def\PY#1#2{\PY@reset\PY@toks#1+\relax+\PY@do{#2}}
+
+\@namedef{PY@tok@w}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.73,0.73}{##1}}}
+\@namedef{PY@tok@c}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@cp}{\def\PY@tc##1{\textcolor[rgb]{0.61,0.40,0.00}{##1}}}
+\@namedef{PY@tok@k}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kp}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kt}{\def\PY@tc##1{\textcolor[rgb]{0.69,0.00,0.25}{##1}}}
+\@namedef{PY@tok@o}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@ow}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\@namedef{PY@tok@nb}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@nf}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\@namedef{PY@tok@nc}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\@namedef{PY@tok@nn}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\@namedef{PY@tok@ne}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.80,0.25,0.22}{##1}}}
+\@namedef{PY@tok@nv}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@no}{\def\PY@tc##1{\textcolor[rgb]{0.53,0.00,0.00}{##1}}}
+\@namedef{PY@tok@nl}{\def\PY@tc##1{\textcolor[rgb]{0.46,0.46,0.00}{##1}}}
+\@namedef{PY@tok@ni}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.44,0.44,0.44}{##1}}}
+\@namedef{PY@tok@na}{\def\PY@tc##1{\textcolor[rgb]{0.41,0.47,0.13}{##1}}}
+\@namedef{PY@tok@nt}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@nd}{\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\@namedef{PY@tok@s}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@sd}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@si}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.64,0.35,0.47}{##1}}}
+\@namedef{PY@tok@se}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.67,0.36,0.12}{##1}}}
+\@namedef{PY@tok@sr}{\def\PY@tc##1{\textcolor[rgb]{0.64,0.35,0.47}{##1}}}
+\@namedef{PY@tok@ss}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@sx}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@m}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@gh}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\@namedef{PY@tok@gu}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.50,0.00,0.50}{##1}}}
+\@namedef{PY@tok@gd}{\def\PY@tc##1{\textcolor[rgb]{0.63,0.00,0.00}{##1}}}
+\@namedef{PY@tok@gi}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.52,0.00}{##1}}}
+\@namedef{PY@tok@gr}{\def\PY@tc##1{\textcolor[rgb]{0.89,0.00,0.00}{##1}}}
+\@namedef{PY@tok@ge}{\let\PY@it=\textit}
+\@namedef{PY@tok@gs}{\let\PY@bf=\textbf}
+\@namedef{PY@tok@ges}{\let\PY@bf=\textbf\let\PY@it=\textit}
+\@namedef{PY@tok@gp}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\@namedef{PY@tok@go}{\def\PY@tc##1{\textcolor[rgb]{0.44,0.44,0.44}{##1}}}
+\@namedef{PY@tok@gt}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.27,0.87}{##1}}}
+\@namedef{PY@tok@err}{\def\PY@bc##1{{\setlength{\fboxsep}{\string -\fboxrule}\fcolorbox[rgb]{1.00,0.00,0.00}{1,1,1}{\strut ##1}}}}
+\@namedef{PY@tok@kc}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kd}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kn}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kr}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@bp}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@fm}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\@namedef{PY@tok@vc}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@vg}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@vi}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@vm}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@sa}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@sb}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@sc}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@dl}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@s2}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@sh}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@s1}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@mb}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@mf}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@mh}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@mi}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@il}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@mo}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@ch}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@cm}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@cpf}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@c1}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@cs}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+
+\def\PYZbs{\char`\\}
+\def\PYZus{\char`\_}
+\def\PYZob{\char`\{}
+\def\PYZcb{\char`\}}
+\def\PYZca{\char`\^}
+\def\PYZam{\char`\&}
+\def\PYZlt{\char`\<}
+\def\PYZgt{\char`\>}
+\def\PYZsh{\char`\#}
+\def\PYZpc{\char`\%}
+\def\PYZdl{\char`\$}
+\def\PYZhy{\char`\-}
+\def\PYZsq{\char`\'}
+\def\PYZdq{\char`\"}
+\def\PYZti{\char`\~}
+% for compatibility with earlier versions
+\def\PYZat{@}
+\def\PYZlb{[}
+\def\PYZrb{]}
+\makeatother
+
+
+    % For linebreaks inside Verbatim environment from package fancyvrb.
+    \makeatletter
+        \newbox\Wrappedcontinuationbox
+        \newbox\Wrappedvisiblespacebox
+        \newcommand*\Wrappedvisiblespace {\textcolor{red}{\textvisiblespace}}
+        \newcommand*\Wrappedcontinuationsymbol {\textcolor{red}{\llap{\tiny$\m@th\hookrightarrow$}}}
+        \newcommand*\Wrappedcontinuationindent {3ex }
+        \newcommand*\Wrappedafterbreak {\kern\Wrappedcontinuationindent\copy\Wrappedcontinuationbox}
+        % Take advantage of the already applied Pygments mark-up to insert
+        % potential linebreaks for TeX processing.
+        %        {, <, #, %, $, ' and ": go to next line.
+        %        _, }, ^, &, >, - and ~: stay at end of broken line.
+        % Use of \textquotesingle for straight quote.
+        \newcommand*\Wrappedbreaksatspecials {%
+            \def\PYGZus{\discretionary{\char`\_}{\Wrappedafterbreak}{\char`\_}}%
+            \def\PYGZob{\discretionary{}{\Wrappedafterbreak\char`\{}{\char`\{}}%
+            \def\PYGZcb{\discretionary{\char`\}}{\Wrappedafterbreak}{\char`\}}}%
+            \def\PYGZca{\discretionary{\char`\^}{\Wrappedafterbreak}{\char`\^}}%
+            \def\PYGZam{\discretionary{\char`\&}{\Wrappedafterbreak}{\char`\&}}%
+            \def\PYGZlt{\discretionary{}{\Wrappedafterbreak\char`\<}{\char`\<}}%
+            \def\PYGZgt{\discretionary{\char`\>}{\Wrappedafterbreak}{\char`\>}}%
+            \def\PYGZsh{\discretionary{}{\Wrappedafterbreak\char`\#}{\char`\#}}%
+            \def\PYGZpc{\discretionary{}{\Wrappedafterbreak\char`\%}{\char`\%}}%
+            \def\PYGZdl{\discretionary{}{\Wrappedafterbreak\char`\$}{\char`\$}}%
+            \def\PYGZhy{\discretionary{\char`\-}{\Wrappedafterbreak}{\char`\-}}%
+            \def\PYGZsq{\discretionary{}{\Wrappedafterbreak\textquotesingle}{\textquotesingle}}%
+            \def\PYGZdq{\discretionary{}{\Wrappedafterbreak\char`\"}{\char`\"}}%
+            \def\PYGZti{\discretionary{\char`\~}{\Wrappedafterbreak}{\char`\~}}%
+        }
+        % Some characters . , ; ? ! / are not pygmentized.
+        % This macro makes them "active" and they will insert potential linebreaks
+        \newcommand*\Wrappedbreaksatpunct {%
+            \lccode`\~`\.\lowercase{\def~}{\discretionary{\hbox{\char`\.}}{\Wrappedafterbreak}{\hbox{\char`\.}}}%
+            \lccode`\~`\,\lowercase{\def~}{\discretionary{\hbox{\char`\,}}{\Wrappedafterbreak}{\hbox{\char`\,}}}%
+            \lccode`\~`\;\lowercase{\def~}{\discretionary{\hbox{\char`\;}}{\Wrappedafterbreak}{\hbox{\char`\;}}}%
+            \lccode`\~`\:\lowercase{\def~}{\discretionary{\hbox{\char`\:}}{\Wrappedafterbreak}{\hbox{\char`\:}}}%
+            \lccode`\~`\?\lowercase{\def~}{\discretionary{\hbox{\char`\?}}{\Wrappedafterbreak}{\hbox{\char`\?}}}%
+            \lccode`\~`\!\lowercase{\def~}{\discretionary{\hbox{\char`\!}}{\Wrappedafterbreak}{\hbox{\char`\!}}}%
+            \lccode`\~`\/\lowercase{\def~}{\discretionary{\hbox{\char`\/}}{\Wrappedafterbreak}{\hbox{\char`\/}}}%
+            \catcode`\.\active
+            \catcode`\,\active
+            \catcode`\;\active
+            \catcode`\:\active
+            \catcode`\?\active
+            \catcode`\!\active
+            \catcode`\/\active
+            \lccode`\~`\~
+        }
+    \makeatother
+
+    \let\OriginalVerbatim=\Verbatim
+    \makeatletter
+    \renewcommand{\Verbatim}[1][1]{%
+        %\parskip\z@skip
+        \sbox\Wrappedcontinuationbox {\Wrappedcontinuationsymbol}%
+        \sbox\Wrappedvisiblespacebox {\FV@SetupFont\Wrappedvisiblespace}%
+        \def\FancyVerbFormatLine ##1{\hsize\linewidth
+            \vtop{\raggedright\hyphenpenalty\z@\exhyphenpenalty\z@
+                \doublehyphendemerits\z@\finalhyphendemerits\z@
+                \strut ##1\strut}%
+        }%
+        % If the linebreak is at a space, the latter will be displayed as visible
+        % space at end of first line, and a continuation symbol starts next line.
+        % Stretch/shrink are however usually zero for typewriter font.
+        \def\FV@Space {%
+            \nobreak\hskip\z@ plus\fontdimen3\font minus\fontdimen4\font
+            \discretionary{\copy\Wrappedvisiblespacebox}{\Wrappedafterbreak}
+            {\kern\fontdimen2\font}%
+        }%
+
+        % Allow breaks at special characters using \PYG... macros.
+        \Wrappedbreaksatspecials
+        % Breaks at punctuation characters . , ; ? ! and / need catcode=\active
+        \OriginalVerbatim[#1,codes*=\Wrappedbreaksatpunct]%
+    }
+    \makeatother
+
+    % Exact colors from NB
+    \definecolor{incolor}{HTML}{303F9F}
+    \definecolor{outcolor}{HTML}{D84315}
+    \definecolor{cellborder}{HTML}{CFCFCF}
+    \definecolor{cellbackground}{HTML}{F7F7F7}
+
+    % prompt
+    \makeatletter
+    \newcommand{\boxspacing}{\kern\kvtcb@left@rule\kern\kvtcb@boxsep}
+    \makeatother
+    \newcommand{\prompt}[4]{
+        {\ttfamily\llap{{\color{#2}[#3]:\hspace{3pt}#4}}\vspace{-\baselineskip}}
+    }
+    
+
+    
+    % Prevent overflowing lines due to hard-to-break entities
+    \sloppy
+    % Setup hyperref package
+    \hypersetup{
+      breaklinks=true,  % so long urls are correctly broken across lines
+      colorlinks=true,
+      urlcolor=urlcolor,
+      linkcolor=linkcolor,
+      citecolor=citecolor,
+      }
+    % Slightly bigger margins than the latex defaults
+    
+    \geometry{verbose,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
+    
+    
+
+\begin{document}
+    
+    \maketitle
+    
+    
+
+    
+    \section{Trabajo Final UT9 - Auto Machine
+Learning}\label{trabajo-final-ut9---auto-machine-learning}
+
+\textbf{Alumno:} autor \textbf{DNI:} XXXXXXXXX
+
+\textbf{Enlace al vídeo:}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Datasets utilizados}\label{datasets-utilizados}
+
+El enunciado pide utilizar los \textbf{mismos datasets de las prácticas
+anteriores} (UT5 para regresión y UT6 para clasificación), para poder
+comparar los resultados de XGBoost y AutoML con los modelos que ya
+entrenamos previamente.
+
+\subsubsection{1. House Prices (Regresión) --- mismo que
+UT5}\label{house-prices-regresiuxf3n-mismo-que-ut5}
+
+El mismo dataset de la competición de Kaggle ``House Prices - Advanced
+Regression Techniques'' que usamos en la UT5. Contiene \textbf{1460
+muestras} con 81 variables (calidad de materiales, año de construcción,
+tipo de garaje, etc.). El objetivo es predecir el \textbf{precio de
+venta} (\texttt{SalePrice}).
+
+Se descarga automáticamente desde Kaggle con \texttt{kagglehub}, así la
+comparación con los modelos de la UT5 es directa y justa.
+
+\subsubsection{2. Social Network Ads (Clasificación) --- mismo que
+UT6}\label{social-network-ads-clasificaciuxf3n-mismo-que-ut6}
+
+En la UT6 trabajamos con un dataset llamado ``Ensayo de Motores'' que
+tenía las columnas RPM, Par de carga y Fallo Motor. Buscando el dataset
+para descargarlo automáticamente, descubrí que en realidad es el
+conocido dataset \textbf{Social Network Ads} de Kaggle (subido por
+Rakesh Rau), con las columnas renombradas:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Nombre original (Kaggle) & Nombre en UT6 \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Age (edad del usuario) & RPM \\
+EstimatedSalary (salario estimado) & Par de carga \\
+Purchased (si compró el producto) & Fallo Motor \\
+\end{longtable}
+}
+
+Las columnas \texttt{User\ ID} y \texttt{Gender} fueron eliminadas en la
+versión de la UT6.
+
+\textbf{¿Por qué uso el dataset original de Kaggle?} Por dos razones: 1.
+\textbf{Comodidad:} Se descarga automáticamente con \texttt{kagglehub},
+sin subir archivos manualmente 2. \textbf{Coherencia:} Los nombres
+originales (Age, EstimatedSalary, Purchased) tienen mucho más sentido
+que ``RPM'' y ``Par de carga'' para predecir una compra. Los datos son
+exactamente los mismos, solo cambian los nombres de las columnas.
+
+Ambos datasets se descargan automáticamente desde Kaggle.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Índice}\label{uxedndice}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{XGBoost}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    1.1 XGBoost para Regresión (dataset House Prices)
+  \item
+    1.2 XGBoost para Clasificación (dataset Social Network Ads)
+  \end{itemize}
+\item
+  \textbf{AutoML con FLAML}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    2.1 Clasificación automática (dataset Social Network Ads)
+  \end{itemize}
+\item
+  \textbf{Valores SHAP}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    3.1 Explicar una única predicción
+  \item
+    3.2 Explicar el dataset completo
+  \end{itemize}
+\item
+  \textbf{Conclusiones finales}
+\end{enumerate}
+
+\subsubsection{Nota sobre AutoML}\label{nota-sobre-automl}
+
+El enunciado propone usar auto-sklearn o PyCaret. Sin embargo: -
+\textbf{auto-sklearn} fue abandonado en 2022 y no funciona con Python
+3.10 o superior - \textbf{PyCaret 3.3.2} no soporta Python 3.12, que es
+la versión actual de Google Colab
+
+Por eso se utiliza \textbf{FLAML} (Fast and Lightweight AutoML) de
+Microsoft, que es compatible, ligero y cumple exactamente la misma
+función: automatizar la selección de modelos y la búsqueda de
+hiperparámetros.
+
+    \subsection{0. Instalación de librerías e
+imports}\label{instalaciuxf3n-de-libreruxedas-e-imports}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{1}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Instalación de librerías necesarias}
+\PY{o}{!}pip\PY{+w}{ }\PYZhy{}q\PY{+w}{ }install\PY{+w}{ }xgboost\PY{+w}{ }shap\PY{+w}{ }openpyxl\PY{+w}{ }kagglehub\PY{+w}{ }\PY{l+s+s2}{\PYZdq{}flaml[automl]\PYZdq{}}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+   \textcolor{ansi-black-intense}{━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━} \textcolor{ansi-green}{223.6/223.6 MB}
+\textcolor{ansi-red}{5.3 MB/s} eta \textcolor{ansi-cyan}{0:00:00}:00:0100:01
+   \textcolor{ansi-black-intense}{━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━} \textcolor{ansi-green}{337.7/337.7 kB}
+\textcolor{ansi-red}{26.2 MB/s} eta \textcolor{ansi-cyan}{0:00:00}
+
+    \end{Verbatim}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{2}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Imports generales}
+\PY{k+kn}{import}\PY{+w}{ }\PY{n+nn}{pandas}\PY{+w}{ }\PY{k}{as}\PY{+w}{ }\PY{n+nn}{pd}
+\PY{k+kn}{import}\PY{+w}{ }\PY{n+nn}{numpy}\PY{+w}{ }\PY{k}{as}\PY{+w}{ }\PY{n+nn}{np}
+\PY{k+kn}{import}\PY{+w}{ }\PY{n+nn}{matplotlib}\PY{n+nn}{.}\PY{n+nn}{pyplot}\PY{+w}{ }\PY{k}{as}\PY{+w}{ }\PY{n+nn}{plt}
+\PY{k+kn}{import}\PY{+w}{ }\PY{n+nn}{seaborn}\PY{+w}{ }\PY{k}{as}\PY{+w}{ }\PY{n+nn}{sns}
+
+\PY{c+c1}{\PYZsh{} Scikit\PYZhy{}learn}
+\PY{k+kn}{from}\PY{+w}{ }\PY{n+nn}{sklearn}\PY{n+nn}{.}\PY{n+nn}{model\PYZus{}selection}\PY{+w}{ }\PY{k+kn}{import} \PY{n}{train\PYZus{}test\PYZus{}split}
+\PY{k+kn}{from}\PY{+w}{ }\PY{n+nn}{sklearn}\PY{n+nn}{.}\PY{n+nn}{preprocessing}\PY{+w}{ }\PY{k+kn}{import} \PY{n}{StandardScaler}\PY{p}{,} \PY{n}{LabelEncoder}
+\PY{k+kn}{from}\PY{+w}{ }\PY{n+nn}{sklearn}\PY{n+nn}{.}\PY{n+nn}{metrics}\PY{+w}{ }\PY{k+kn}{import} \PY{p}{(}
+    \PY{n}{mean\PYZus{}squared\PYZus{}error}\PY{p}{,} \PY{n}{r2\PYZus{}score}\PY{p}{,}
+    \PY{n}{confusion\PYZus{}matrix}\PY{p}{,} \PY{n}{classification\PYZus{}report}\PY{p}{,} \PY{n}{accuracy\PYZus{}score}\PY{p}{,}
+    \PY{n}{RocCurveDisplay}
+\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} XGBoost}
+\PY{k+kn}{from}\PY{+w}{ }\PY{n+nn}{xgboost}\PY{+w}{ }\PY{k+kn}{import} \PY{n}{XGBRegressor}\PY{p}{,} \PY{n}{XGBClassifier}
+
+\PY{c+c1}{\PYZsh{} SHAP}
+\PY{k+kn}{import}\PY{+w}{ }\PY{n+nn}{shap}
+
+\PY{k+kn}{import}\PY{+w}{ }\PY{n+nn}{warnings}
+\PY{n}{warnings}\PY{o}{.}\PY{n}{filterwarnings}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{ignore}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+
+\PY{n}{sns}\PY{o}{.}\PY{n}{set\PYZus{}theme}\PY{p}{(}\PY{n}{style}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{whitegrid}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Librerías importadas correctamente.}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Librerías importadas correctamente.
+    \end{Verbatim}
+
+    \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{1. Aplicar modelo XGBoost}\label{aplicar-modelo-xgboost}
+
+XGBoost (eXtreme Gradient Boosting) es un algoritmo de ensemble basado
+en árboles de decisión que utiliza gradient boosting. Básicamente,
+entrena muchos árboles de decisión uno detrás de otro, donde cada nuevo
+árbol intenta corregir los errores que cometieron los anteriores. Es de
+los algoritmos más usados en competiciones de Kaggle por su buen
+rendimiento.
+
+    \subsection{1.1 XGBoost para Regresión}\label{xgboost-para-regresiuxf3n}
+
+Utilizamos el mismo dataset \textbf{House Prices} de la competición de
+Kaggle que en la UT5. El objetivo es predecir el precio de venta
+(\texttt{SalePrice}) de viviendas a partir de 81 variables (calidad,
+superficie, año, garaje, etc.).
+
+    \subsubsection{1.1.1 Importar dataset}\label{importar-dataset}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{3}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Configuramos las credenciales de Kaggle para poder descargar datasets}
+\PY{k+kn}{import}\PY{+w}{ }\PY{n+nn}{os}
+\PY{n}{os}\PY{o}{.}\PY{n}{environ}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{KAGGLE\PYZus{}USERNAME}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{autor}\PY{l+s+s1}{\PYZsq{}}
+\PY{n}{os}\PY{o}{.}\PY{n}{environ}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{KAGGLE\PYZus{}KEY}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{6a52c6651f478c0cc2148110957d0843}\PY{l+s+s1}{\PYZsq{}}
+
+\PY{c+c1}{\PYZsh{} Descargamos el MISMO dataset de House Prices que usamos en la UT5}
+\PY{c+c1}{\PYZsh{} Es la competicion \PYZdq{}House Prices \PYZhy{} Advanced Regression Techniques\PYZdq{}}
+\PY{c+c1}{\PYZsh{} 1460 casas con 81 variables, asi la comparacion con la UT5 es justa}
+\PY{k+kn}{import}\PY{+w}{ }\PY{n+nn}{kagglehub}
+\PY{n}{path} \PY{o}{=} \PY{n}{kagglehub}\PY{o}{.}\PY{n}{competition\PYZus{}download}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{house\PYZhy{}prices\PYZhy{}advanced\PYZhy{}regression\PYZhy{}techniques}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Dataset descargado en:}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{path}\PY{p}{)}
+
+\PY{k}{for} \PY{n}{f} \PY{o+ow}{in} \PY{n}{os}\PY{o}{.}\PY{n}{listdir}\PY{p}{(}\PY{n}{path}\PY{p}{)}\PY{p}{:}
+    \PY{n+nb}{print}\PY{p}{(}\PY{n}{f}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Downloading to /root/.cache/kagglehub/competitions/house-prices-advanced-
+regression-techniques.archive{\ldots}
+    \end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+100\%|██████████| 199k/199k [00:00<00:00, 726kB/s]
+    \end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Extracting files{\ldots}
+Dataset descargado en: /root/.cache/kagglehub/competitions/house-prices-
+advanced-regression-techniques
+data\_description.txt
+test.csv
+train.csv
+sample\_submission.csv
+    \end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+
+    \end{Verbatim}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{4}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Cargamos el dataset de entrenamiento (train.csv)}
+\PY{c+c1}{\PYZsh{} Es el mismo house\PYZus{}prices\PYZus{}train.csv que usamos en la UT5}
+\PY{n}{df\PYZus{}reg} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{read\PYZus{}csv}\PY{p}{(}\PY{n}{os}\PY{o}{.}\PY{n}{path}\PY{o}{.}\PY{n}{join}\PY{p}{(}\PY{n}{path}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{train.csv}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Dimensiones del dataset: }\PY{l+s+si}{\PYZob{}}\PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{shape}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{head}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Dimensiones del dataset: (1460, 81)
+    \end{Verbatim}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{4}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+   Id  MSSubClass MSZoning  LotFrontage  LotArea Street Alley LotShape  \textbackslash{}
+0   1          60       RL         65.0     8450   Pave   NaN      Reg
+1   2          20       RL         80.0     9600   Pave   NaN      Reg
+2   3          60       RL         68.0    11250   Pave   NaN      IR1
+3   4          70       RL         60.0     9550   Pave   NaN      IR1
+4   5          60       RL         84.0    14260   Pave   NaN      IR1
+
+  LandContour Utilities  {\ldots} PoolArea PoolQC Fence MiscFeature MiscVal MoSold  \textbackslash{}
+0         Lvl    AllPub  {\ldots}        0    NaN   NaN         NaN       0      2
+1         Lvl    AllPub  {\ldots}        0    NaN   NaN         NaN       0      5
+2         Lvl    AllPub  {\ldots}        0    NaN   NaN         NaN       0      9
+3         Lvl    AllPub  {\ldots}        0    NaN   NaN         NaN       0      2
+4         Lvl    AllPub  {\ldots}        0    NaN   NaN         NaN       0     12
+
+  YrSold  SaleType  SaleCondition  SalePrice
+0   2008        WD         Normal     208500
+1   2007        WD         Normal     181500
+2   2008        WD         Normal     223500
+3   2006        WD        Abnorml     140000
+4   2008        WD         Normal     250000
+
+[5 rows x 81 columns]
+\end{Verbatim}
+\end{tcolorbox}
+        
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{5}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Información general del dataset}
+\PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{info}\PY{p}{(}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{\PYZhy{}\PYZhy{}\PYZhy{} Estadísticas descriptivas \PYZhy{}\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{describe}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 1460 entries, 0 to 1459
+Data columns (total 81 columns):
+ \#   Column         Non-Null Count  Dtype
+---  ------         --------------  -----
+ 0   Id             1460 non-null   int64
+ 1   MSSubClass     1460 non-null   int64
+ 2   MSZoning       1460 non-null   object
+ 3   LotFrontage    1201 non-null   float64
+ 4   LotArea        1460 non-null   int64
+ 5   Street         1460 non-null   object
+ 6   Alley          91 non-null     object
+ 7   LotShape       1460 non-null   object
+ 8   LandContour    1460 non-null   object
+ 9   Utilities      1460 non-null   object
+ 10  LotConfig      1460 non-null   object
+ 11  LandSlope      1460 non-null   object
+ 12  Neighborhood   1460 non-null   object
+ 13  Condition1     1460 non-null   object
+ 14  Condition2     1460 non-null   object
+ 15  BldgType       1460 non-null   object
+ 16  HouseStyle     1460 non-null   object
+ 17  OverallQual    1460 non-null   int64
+ 18  OverallCond    1460 non-null   int64
+ 19  YearBuilt      1460 non-null   int64
+ 20  YearRemodAdd   1460 non-null   int64
+ 21  RoofStyle      1460 non-null   object
+ 22  RoofMatl       1460 non-null   object
+ 23  Exterior1st    1460 non-null   object
+ 24  Exterior2nd    1460 non-null   object
+ 25  MasVnrType     588 non-null    object
+ 26  MasVnrArea     1452 non-null   float64
+ 27  ExterQual      1460 non-null   object
+ 28  ExterCond      1460 non-null   object
+ 29  Foundation     1460 non-null   object
+ 30  BsmtQual       1423 non-null   object
+ 31  BsmtCond       1423 non-null   object
+ 32  BsmtExposure   1422 non-null   object
+ 33  BsmtFinType1   1423 non-null   object
+ 34  BsmtFinSF1     1460 non-null   int64
+ 35  BsmtFinType2   1422 non-null   object
+ 36  BsmtFinSF2     1460 non-null   int64
+ 37  BsmtUnfSF      1460 non-null   int64
+ 38  TotalBsmtSF    1460 non-null   int64
+ 39  Heating        1460 non-null   object
+ 40  HeatingQC      1460 non-null   object
+ 41  CentralAir     1460 non-null   object
+ 42  Electrical     1459 non-null   object
+ 43  1stFlrSF       1460 non-null   int64
+ 44  2ndFlrSF       1460 non-null   int64
+ 45  LowQualFinSF   1460 non-null   int64
+ 46  GrLivArea      1460 non-null   int64
+ 47  BsmtFullBath   1460 non-null   int64
+ 48  BsmtHalfBath   1460 non-null   int64
+ 49  FullBath       1460 non-null   int64
+ 50  HalfBath       1460 non-null   int64
+ 51  BedroomAbvGr   1460 non-null   int64
+ 52  KitchenAbvGr   1460 non-null   int64
+ 53  KitchenQual    1460 non-null   object
+ 54  TotRmsAbvGrd   1460 non-null   int64
+ 55  Functional     1460 non-null   object
+ 56  Fireplaces     1460 non-null   int64
+ 57  FireplaceQu    770 non-null    object
+ 58  GarageType     1379 non-null   object
+ 59  GarageYrBlt    1379 non-null   float64
+ 60  GarageFinish   1379 non-null   object
+ 61  GarageCars     1460 non-null   int64
+ 62  GarageArea     1460 non-null   int64
+ 63  GarageQual     1379 non-null   object
+ 64  GarageCond     1379 non-null   object
+ 65  PavedDrive     1460 non-null   object
+ 66  WoodDeckSF     1460 non-null   int64
+ 67  OpenPorchSF    1460 non-null   int64
+ 68  EnclosedPorch  1460 non-null   int64
+ 69  3SsnPorch      1460 non-null   int64
+ 70  ScreenPorch    1460 non-null   int64
+ 71  PoolArea       1460 non-null   int64
+ 72  PoolQC         7 non-null      object
+ 73  Fence          281 non-null    object
+ 74  MiscFeature    54 non-null     object
+ 75  MiscVal        1460 non-null   int64
+ 76  MoSold         1460 non-null   int64
+ 77  YrSold         1460 non-null   int64
+ 78  SaleType       1460 non-null   object
+ 79  SaleCondition  1460 non-null   object
+ 80  SalePrice      1460 non-null   int64
+dtypes: float64(3), int64(35), object(43)
+memory usage: 924.0+ KB
+
+--- Estadísticas descriptivas ---
+    \end{Verbatim}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{5}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+                Id   MSSubClass  LotFrontage        LotArea  OverallQual  \textbackslash{}
+count  1460.000000  1460.000000  1201.000000    1460.000000  1460.000000
+mean    730.500000    56.897260    70.049958   10516.828082     6.099315
+std     421.610009    42.300571    24.284752    9981.264932     1.382997
+min       1.000000    20.000000    21.000000    1300.000000     1.000000
+25\%     365.750000    20.000000    59.000000    7553.500000     5.000000
+50\%     730.500000    50.000000    69.000000    9478.500000     6.000000
+75\%    1095.250000    70.000000    80.000000   11601.500000     7.000000
+max    1460.000000   190.000000   313.000000  215245.000000    10.000000
+
+       OverallCond    YearBuilt  YearRemodAdd   MasVnrArea   BsmtFinSF1  {\ldots}  \textbackslash{}
+count  1460.000000  1460.000000   1460.000000  1452.000000  1460.000000  {\ldots}
+mean      5.575342  1971.267808   1984.865753   103.685262   443.639726  {\ldots}
+std       1.112799    30.202904     20.645407   181.066207   456.098091  {\ldots}
+min       1.000000  1872.000000   1950.000000     0.000000     0.000000  {\ldots}
+25\%       5.000000  1954.000000   1967.000000     0.000000     0.000000  {\ldots}
+50\%       5.000000  1973.000000   1994.000000     0.000000   383.500000  {\ldots}
+75\%       6.000000  2000.000000   2004.000000   166.000000   712.250000  {\ldots}
+max       9.000000  2010.000000   2010.000000  1600.000000  5644.000000  {\ldots}
+
+        WoodDeckSF  OpenPorchSF  EnclosedPorch    3SsnPorch  ScreenPorch  \textbackslash{}
+count  1460.000000  1460.000000    1460.000000  1460.000000  1460.000000
+mean     94.244521    46.660274      21.954110     3.409589    15.060959
+std     125.338794    66.256028      61.119149    29.317331    55.757415
+min       0.000000     0.000000       0.000000     0.000000     0.000000
+25\%       0.000000     0.000000       0.000000     0.000000     0.000000
+50\%       0.000000    25.000000       0.000000     0.000000     0.000000
+75\%     168.000000    68.000000       0.000000     0.000000     0.000000
+max     857.000000   547.000000     552.000000   508.000000   480.000000
+
+          PoolArea       MiscVal       MoSold       YrSold      SalePrice
+count  1460.000000   1460.000000  1460.000000  1460.000000    1460.000000
+mean      2.758904     43.489041     6.321918  2007.815753  180921.195890
+std      40.177307    496.123024     2.703626     1.328095   79442.502883
+min       0.000000      0.000000     1.000000  2006.000000   34900.000000
+25\%       0.000000      0.000000     5.000000  2007.000000  129975.000000
+50\%       0.000000      0.000000     6.000000  2008.000000  163000.000000
+75\%       0.000000      0.000000     8.000000  2009.000000  214000.000000
+max     738.000000  15500.000000    12.000000  2010.000000  755000.000000
+
+[8 rows x 38 columns]
+\end{Verbatim}
+\end{tcolorbox}
+        
+    \subsubsection{1.1.2 Manejar datos missing}\label{manejar-datos-missing}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{6}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Comprobamos valores nulos}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Valores nulos por columna:}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{isnull}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{Total de valores nulos: }\PY{l+s+si}{\PYZob{}}\PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{isnull}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{p}{)}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Valores nulos por columna:
+Id                 0
+MSSubClass         0
+MSZoning           0
+LotFrontage      259
+LotArea            0
+                {\ldots}
+MoSold             0
+YrSold             0
+SaleType           0
+SaleCondition      0
+SalePrice          0
+Length: 81, dtype: int64
+
+Total de valores nulos: 7829
+    \end{Verbatim}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{7}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Si hubiera valores nulos los rellenamos:}
+\PY{c+c1}{\PYZsh{} \PYZhy{} Numericas: con la mediana (mejor que la media porque no le afectan los outliers)}
+\PY{c+c1}{\PYZsh{} \PYZhy{} Categoricas: con la moda (el valor mas frecuente)}
+\PY{k}{for} \PY{n}{col} \PY{o+ow}{in} \PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{select\PYZus{}dtypes}\PY{p}{(}\PY{n}{include}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{number}\PY{p}{)}\PY{o}{.}\PY{n}{columns}\PY{p}{:}
+    \PY{n}{df\PYZus{}reg}\PY{p}{[}\PY{n}{col}\PY{p}{]}\PY{o}{.}\PY{n}{fillna}\PY{p}{(}\PY{n}{df\PYZus{}reg}\PY{p}{[}\PY{n}{col}\PY{p}{]}\PY{o}{.}\PY{n}{median}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{inplace}\PY{o}{=}\PY{k+kc}{True}\PY{p}{)}
+
+\PY{k}{for} \PY{n}{col} \PY{o+ow}{in} \PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{select\PYZus{}dtypes}\PY{p}{(}\PY{n}{include}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{object}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{o}{.}\PY{n}{columns}\PY{p}{:}
+    \PY{n}{df\PYZus{}reg}\PY{p}{[}\PY{n}{col}\PY{p}{]}\PY{o}{.}\PY{n}{fillna}\PY{p}{(}\PY{n}{df\PYZus{}reg}\PY{p}{[}\PY{n}{col}\PY{p}{]}\PY{o}{.}\PY{n}{mode}\PY{p}{(}\PY{p}{)}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{,} \PY{n}{inplace}\PY{o}{=}\PY{k+kc}{True}\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Valores nulos tras imputación: }\PY{l+s+si}{\PYZob{}}\PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{isnull}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{p}{)}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Valores nulos tras imputación: 0
+    \end{Verbatim}
+
+    \subsubsection{1.1.3 Manejar datos
+categóricos}\label{manejar-datos-categuxf3ricos}
+
+Identificamos las variables categóricas y aplicamos codificación
+adecuada: - \textbf{Variables binarias (yes/no):} Label Encoding -
+\textbf{Variables con más categorías:} One-Hot Encoding con
+\texttt{drop\_first=True} para evitar la trampa de las variables dummy
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{8}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Identificamos variables categóricas}
+\PY{n}{cat\PYZus{}cols} \PY{o}{=} \PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{select\PYZus{}dtypes}\PY{p}{(}\PY{n}{include}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{object}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{o}{.}\PY{n}{columns}\PY{o}{.}\PY{n}{tolist}\PY{p}{(}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Variables categóricas (}\PY{l+s+si}{\PYZob{}}\PY{n+nb}{len}\PY{p}{(}\PY{n}{cat\PYZus{}cols}\PY{p}{)}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{): }\PY{l+s+si}{\PYZob{}}\PY{n}{cat\PYZus{}cols}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{k}{for} \PY{n}{col} \PY{o+ow}{in} \PY{n}{cat\PYZus{}cols}\PY{p}{:}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{  }\PY{l+s+si}{\PYZob{}}\PY{n}{col}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{: }\PY{l+s+si}{\PYZob{}}\PY{n}{df\PYZus{}reg}\PY{p}{[}\PY{n}{col}\PY{p}{]}\PY{o}{.}\PY{n}{unique}\PY{p}{(}\PY{p}{)}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Variables categóricas (43): ['MSZoning', 'Street', 'Alley', 'LotShape',
+'LandContour', 'Utilities', 'LotConfig', 'LandSlope', 'Neighborhood',
+'Condition1', 'Condition2', 'BldgType', 'HouseStyle', 'RoofStyle', 'RoofMatl',
+'Exterior1st', 'Exterior2nd', 'MasVnrType', 'ExterQual', 'ExterCond',
+'Foundation', 'BsmtQual', 'BsmtCond', 'BsmtExposure', 'BsmtFinType1',
+'BsmtFinType2', 'Heating', 'HeatingQC', 'CentralAir', 'Electrical',
+'KitchenQual', 'Functional', 'FireplaceQu', 'GarageType', 'GarageFinish',
+'GarageQual', 'GarageCond', 'PavedDrive', 'PoolQC', 'Fence', 'MiscFeature',
+'SaleType', 'SaleCondition']
+  MSZoning: ['RL' 'RM' 'C (all)' 'FV' 'RH']
+  Street: ['Pave' 'Grvl']
+  Alley: ['Grvl' 'Pave']
+  LotShape: ['Reg' 'IR1' 'IR2' 'IR3']
+  LandContour: ['Lvl' 'Bnk' 'Low' 'HLS']
+  Utilities: ['AllPub' 'NoSeWa']
+  LotConfig: ['Inside' 'FR2' 'Corner' 'CulDSac' 'FR3']
+  LandSlope: ['Gtl' 'Mod' 'Sev']
+  Neighborhood: ['CollgCr' 'Veenker' 'Crawfor' 'NoRidge' 'Mitchel' 'Somerst'
+'NWAmes'
+ 'OldTown' 'BrkSide' 'Sawyer' 'NridgHt' 'NAmes' 'SawyerW' 'IDOTRR'
+ 'MeadowV' 'Edwards' 'Timber' 'Gilbert' 'StoneBr' 'ClearCr' 'NPkVill'
+ 'Blmngtn' 'BrDale' 'SWISU' 'Blueste']
+  Condition1: ['Norm' 'Feedr' 'PosN' 'Artery' 'RRAe' 'RRNn' 'RRAn' 'PosA'
+'RRNe']
+  Condition2: ['Norm' 'Artery' 'RRNn' 'Feedr' 'PosN' 'PosA' 'RRAn' 'RRAe']
+  BldgType: ['1Fam' '2fmCon' 'Duplex' 'TwnhsE' 'Twnhs']
+  HouseStyle: ['2Story' '1Story' '1.5Fin' '1.5Unf' 'SFoyer' 'SLvl' '2.5Unf'
+'2.5Fin']
+  RoofStyle: ['Gable' 'Hip' 'Gambrel' 'Mansard' 'Flat' 'Shed']
+  RoofMatl: ['CompShg' 'WdShngl' 'Metal' 'WdShake' 'Membran' 'Tar\&Grv' 'Roll'
+ 'ClyTile']
+  Exterior1st: ['VinylSd' 'MetalSd' 'Wd Sdng' 'HdBoard' 'BrkFace' 'WdShing'
+'CemntBd'
+ 'Plywood' 'AsbShng' 'Stucco' 'BrkComm' 'AsphShn' 'Stone' 'ImStucc'
+ 'CBlock']
+  Exterior2nd: ['VinylSd' 'MetalSd' 'Wd Shng' 'HdBoard' 'Plywood' 'Wd Sdng'
+'CmentBd'
+ 'BrkFace' 'Stucco' 'AsbShng' 'Brk Cmn' 'ImStucc' 'AsphShn' 'Stone'
+ 'Other' 'CBlock']
+  MasVnrType: ['BrkFace' 'Stone' 'BrkCmn']
+  ExterQual: ['Gd' 'TA' 'Ex' 'Fa']
+  ExterCond: ['TA' 'Gd' 'Fa' 'Po' 'Ex']
+  Foundation: ['PConc' 'CBlock' 'BrkTil' 'Wood' 'Slab' 'Stone']
+  BsmtQual: ['Gd' 'TA' 'Ex' 'Fa']
+  BsmtCond: ['TA' 'Gd' 'Fa' 'Po']
+  BsmtExposure: ['No' 'Gd' 'Mn' 'Av']
+  BsmtFinType1: ['GLQ' 'ALQ' 'Unf' 'Rec' 'BLQ' 'LwQ']
+  BsmtFinType2: ['Unf' 'BLQ' 'ALQ' 'Rec' 'LwQ' 'GLQ']
+  Heating: ['GasA' 'GasW' 'Grav' 'Wall' 'OthW' 'Floor']
+  HeatingQC: ['Ex' 'Gd' 'TA' 'Fa' 'Po']
+  CentralAir: ['Y' 'N']
+  Electrical: ['SBrkr' 'FuseF' 'FuseA' 'FuseP' 'Mix']
+  KitchenQual: ['Gd' 'TA' 'Ex' 'Fa']
+  Functional: ['Typ' 'Min1' 'Maj1' 'Min2' 'Mod' 'Maj2' 'Sev']
+  FireplaceQu: ['Gd' 'TA' 'Fa' 'Ex' 'Po']
+  GarageType: ['Attchd' 'Detchd' 'BuiltIn' 'CarPort' 'Basment' '2Types']
+  GarageFinish: ['RFn' 'Unf' 'Fin']
+  GarageQual: ['TA' 'Fa' 'Gd' 'Ex' 'Po']
+  GarageCond: ['TA' 'Fa' 'Gd' 'Po' 'Ex']
+  PavedDrive: ['Y' 'N' 'P']
+  PoolQC: ['Gd' 'Ex' 'Fa']
+  Fence: ['MnPrv' 'GdWo' 'GdPrv' 'MnWw']
+  MiscFeature: ['Shed' 'Gar2' 'Othr' 'TenC']
+  SaleType: ['WD' 'New' 'COD' 'ConLD' 'ConLI' 'CWD' 'ConLw' 'Con' 'Oth']
+  SaleCondition: ['Normal' 'Abnorml' 'Partial' 'AdjLand' 'Alloca' 'Family']
+    \end{Verbatim}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{9}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Codificación de variables categóricas}
+\PY{c+c1}{\PYZsh{} Las que son si/no (binarias) las pasamos a 0/1 con LabelEncoder}
+\PY{n}{binary\PYZus{}cols} \PY{o}{=} \PY{p}{[}\PY{n}{col} \PY{k}{for} \PY{n}{col} \PY{o+ow}{in} \PY{n}{cat\PYZus{}cols} \PY{k}{if} \PY{n}{df\PYZus{}reg}\PY{p}{[}\PY{n}{col}\PY{p}{]}\PY{o}{.}\PY{n}{nunique}\PY{p}{(}\PY{p}{)} \PY{o}{==} \PY{l+m+mi}{2}\PY{p}{]}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Variables binarias: }\PY{l+s+si}{\PYZob{}}\PY{n}{binary\PYZus{}cols}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+
+\PY{n}{le} \PY{o}{=} \PY{n}{LabelEncoder}\PY{p}{(}\PY{p}{)}
+\PY{k}{for} \PY{n}{col} \PY{o+ow}{in} \PY{n}{binary\PYZus{}cols}\PY{p}{:}
+    \PY{n}{df\PYZus{}reg}\PY{p}{[}\PY{n}{col}\PY{p}{]} \PY{o}{=} \PY{n}{le}\PY{o}{.}\PY{n}{fit\PYZus{}transform}\PY{p}{(}\PY{n}{df\PYZus{}reg}\PY{p}{[}\PY{n}{col}\PY{p}{]}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Las que tienen mas de 2 categorias las convertimos con One\PYZhy{}Hot Encoding}
+\PY{c+c1}{\PYZsh{} Usamos drop\PYZus{}first=True para evitar la trampa de las variables dummy}
+\PY{c+c1}{\PYZsh{} (si tenemos n categorias, con n\PYZhy{}1 columnas ya queda definida la informacion)}
+\PY{n}{multi\PYZus{}cat\PYZus{}cols} \PY{o}{=} \PY{p}{[}\PY{n}{col} \PY{k}{for} \PY{n}{col} \PY{o+ow}{in} \PY{n}{cat\PYZus{}cols} \PY{k}{if} \PY{n}{col} \PY{o+ow}{not} \PY{o+ow}{in} \PY{n}{binary\PYZus{}cols}\PY{p}{]}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Variables multi\PYZhy{}categoría: }\PY{l+s+si}{\PYZob{}}\PY{n}{multi\PYZus{}cat\PYZus{}cols}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+
+\PY{n}{df\PYZus{}reg} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{get\PYZus{}dummies}\PY{p}{(}\PY{n}{df\PYZus{}reg}\PY{p}{,} \PY{n}{columns}\PY{o}{=}\PY{n}{multi\PYZus{}cat\PYZus{}cols}\PY{p}{,} \PY{n}{drop\PYZus{}first}\PY{o}{=}\PY{k+kc}{True}\PY{p}{,} \PY{n}{dtype}\PY{o}{=}\PY{n+nb}{int}\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{Dimensiones tras codificación: }\PY{l+s+si}{\PYZob{}}\PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{shape}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{head}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Variables binarias: ['Street', 'Alley', 'Utilities', 'CentralAir']
+Variables multi-categoría: ['MSZoning', 'LotShape', 'LandContour', 'LotConfig',
+'LandSlope', 'Neighborhood', 'Condition1', 'Condition2', 'BldgType',
+'HouseStyle', 'RoofStyle', 'RoofMatl', 'Exterior1st', 'Exterior2nd',
+'MasVnrType', 'ExterQual', 'ExterCond', 'Foundation', 'BsmtQual', 'BsmtCond',
+'BsmtExposure', 'BsmtFinType1', 'BsmtFinType2', 'Heating', 'HeatingQC',
+'Electrical', 'KitchenQual', 'Functional', 'FireplaceQu', 'GarageType',
+'GarageFinish', 'GarageQual', 'GarageCond', 'PavedDrive', 'PoolQC', 'Fence',
+'MiscFeature', 'SaleType', 'SaleCondition']
+
+Dimensiones tras codificación: (1460, 246)
+    \end{Verbatim}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{9}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+   Id  MSSubClass  LotFrontage  LotArea  Street  Alley  Utilities  \textbackslash{}
+0   1          60         65.0     8450       1      0          0
+1   2          20         80.0     9600       1      0          0
+2   3          60         68.0    11250       1      0          0
+3   4          70         60.0     9550       1      0          0
+4   5          60         84.0    14260       1      0          0
+
+   OverallQual  OverallCond  YearBuilt  {\ldots}  SaleType\_ConLI  SaleType\_ConLw  \textbackslash{}
+0            7            5       2003  {\ldots}               0               0
+1            6            8       1976  {\ldots}               0               0
+2            7            5       2001  {\ldots}               0               0
+3            7            5       1915  {\ldots}               0               0
+4            8            5       2000  {\ldots}               0               0
+
+   SaleType\_New  SaleType\_Oth  SaleType\_WD  SaleCondition\_AdjLand  \textbackslash{}
+0             0             0            1                      0
+1             0             0            1                      0
+2             0             0            1                      0
+3             0             0            1                      0
+4             0             0            1                      0
+
+   SaleCondition\_Alloca  SaleCondition\_Family  SaleCondition\_Normal  \textbackslash{}
+0                     0                     0                     1
+1                     0                     0                     1
+2                     0                     0                     1
+3                     0                     0                     0
+4                     0                     0                     1
+
+   SaleCondition\_Partial
+0                      0
+1                      0
+2                      0
+3                      0
+4                      0
+
+[5 rows x 246 columns]
+\end{Verbatim}
+\end{tcolorbox}
+        
+    \subsubsection{1.1.4 Separar datos en conjuntos de entrenamiento y
+test}\label{separar-datos-en-conjuntos-de-entrenamiento-y-test}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{10}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Quitamos la columna Id que es solo un identificador}
+\PY{k}{if} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Id}\PY{l+s+s1}{\PYZsq{}} \PY{o+ow}{in} \PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{columns}\PY{p}{:}
+    \PY{n}{df\PYZus{}reg} \PY{o}{=} \PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{drop}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Id}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{axis}\PY{o}{=}\PY{l+m+mi}{1}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Separamos features (X) y target (y)}
+\PY{n}{X\PYZus{}reg} \PY{o}{=} \PY{n}{df\PYZus{}reg}\PY{o}{.}\PY{n}{drop}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{SalePrice}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{axis}\PY{o}{=}\PY{l+m+mi}{1}\PY{p}{)}
+\PY{n}{y\PYZus{}reg} \PY{o}{=} \PY{n}{df\PYZus{}reg}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{SalePrice}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+
+\PY{c+c1}{\PYZsh{} Dividimos en train (80\PYZpc{}) y test (20\PYZpc{})}
+\PY{n}{X\PYZus{}train\PYZus{}reg}\PY{p}{,} \PY{n}{X\PYZus{}test\PYZus{}reg}\PY{p}{,} \PY{n}{y\PYZus{}train\PYZus{}reg}\PY{p}{,} \PY{n}{y\PYZus{}test\PYZus{}reg} \PY{o}{=} \PY{n}{train\PYZus{}test\PYZus{}split}\PY{p}{(}
+    \PY{n}{X\PYZus{}reg}\PY{p}{,} \PY{n}{y\PYZus{}reg}\PY{p}{,} \PY{n}{test\PYZus{}size}\PY{o}{=}\PY{l+m+mf}{0.2}\PY{p}{,} \PY{n}{random\PYZus{}state}\PY{o}{=}\PY{l+m+mi}{42}
+\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Train: }\PY{l+s+si}{\PYZob{}}\PY{n}{X\PYZus{}train\PYZus{}reg}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ muestras}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Test:  }\PY{l+s+si}{\PYZob{}}\PY{n}{X\PYZus{}test\PYZus{}reg}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ muestras}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Train: 1168 muestras
+Test:  292 muestras
+    \end{Verbatim}
+
+    \subsubsection{1.1.5 Estandarizar los
+datos}\label{estandarizar-los-datos}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{11}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Estandarizamos las features para que todas esten en la misma escala}
+\PY{c+c1}{\PYZsh{} MUY IMPORTANTE: el fit() solo sobre train, para no contaminar con datos de test (data leakage)}
+\PY{n}{scaler\PYZus{}reg} \PY{o}{=} \PY{n}{StandardScaler}\PY{p}{(}\PY{p}{)}
+\PY{n}{X\PYZus{}train\PYZus{}reg\PYZus{}scaled} \PY{o}{=} \PY{n}{scaler\PYZus{}reg}\PY{o}{.}\PY{n}{fit\PYZus{}transform}\PY{p}{(}\PY{n}{X\PYZus{}train\PYZus{}reg}\PY{p}{)}
+\PY{n}{X\PYZus{}test\PYZus{}reg\PYZus{}scaled} \PY{o}{=} \PY{n}{scaler\PYZus{}reg}\PY{o}{.}\PY{n}{transform}\PY{p}{(}\PY{n}{X\PYZus{}test\PYZus{}reg}\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Datos estandarizados correctamente.}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Datos estandarizados correctamente.
+    \end{Verbatim}
+
+    \subsubsection{1.1.6 Aplicar el modelo
+XGBoostRegressor}\label{aplicar-el-modelo-xgboostregressor}
+
+En vez de usar unos hiperparámetros fijos, vamos a probar 3
+configuraciones diferentes y quedarnos con la que mejor funcione. Usamos
+validación cruzada (5-fold) para que el resultado no dependa de una sola
+partición de datos:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Configuración
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n\_estimators
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+max\_depth
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+learning\_rate
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Idea
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Conservadora & 100 & 3 & 0.1 & Pocos árboles poco profundos, menos
+riesgo de sobreajuste \\
+Equilibrada & 200 & 6 & 0.1 & Valores estándar, buen punto medio \\
+Agresiva & 500 & 8 & 0.05 & Muchos árboles profundos con learning rate
+bajo, más capacidad pero más lento \\
+\end{longtable}
+}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{12}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Primero probamos varias configuraciones de hiperparametros para ver cual va mejor}
+\PY{c+c1}{\PYZsh{} En vez de quedarnos con los valores por defecto, comparamos 3 configuraciones}
+\PY{k+kn}{from}\PY{+w}{ }\PY{n+nn}{sklearn}\PY{n+nn}{.}\PY{n+nn}{model\PYZus{}selection}\PY{+w}{ }\PY{k+kn}{import} \PY{n}{cross\PYZus{}val\PYZus{}score}
+
+\PY{n}{configs} \PY{o}{=} \PY{p}{\PYZob{}}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Conservador (pocos arboles, poca profundidad)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{n\PYZus{}estimators}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mi}{100}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{max\PYZus{}depth}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mi}{3}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{learning\PYZus{}rate}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mf}{0.1}\PY{p}{\PYZcb{}}\PY{p}{,}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Equilibrado (valores estandar)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{n\PYZus{}estimators}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mi}{200}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{max\PYZus{}depth}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mi}{6}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{learning\PYZus{}rate}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mf}{0.1}\PY{p}{\PYZcb{}}\PY{p}{,}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Agresivo (muchos arboles, mas profundidad)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{n\PYZus{}estimators}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mi}{500}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{max\PYZus{}depth}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mi}{8}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{learning\PYZus{}rate}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mf}{0.05}\PY{p}{\PYZcb{}}\PY{p}{,}
+\PY{p}{\PYZcb{}}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{=== Comparativa de hiperparámetros XGBoostRegressor ===}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{mejor\PYZus{}config} \PY{o}{=} \PY{k+kc}{None}
+\PY{n}{mejor\PYZus{}r2} \PY{o}{=} \PY{o}{\PYZhy{}}\PY{l+m+mi}{1}
+
+\PY{k}{for} \PY{n}{nombre}\PY{p}{,} \PY{n}{params} \PY{o+ow}{in} \PY{n}{configs}\PY{o}{.}\PY{n}{items}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+    \PY{n}{modelo\PYZus{}tmp} \PY{o}{=} \PY{n}{XGBRegressor}\PY{p}{(}\PY{o}{*}\PY{o}{*}\PY{n}{params}\PY{p}{,} \PY{n}{random\PYZus{}state}\PY{o}{=}\PY{l+m+mi}{42}\PY{p}{)}
+    \PY{c+c1}{\PYZsh{} Validacion cruzada con 5 folds para no depender de una sola particion}
+    \PY{n}{scores} \PY{o}{=} \PY{n}{cross\PYZus{}val\PYZus{}score}\PY{p}{(}\PY{n}{modelo\PYZus{}tmp}\PY{p}{,} \PY{n}{X\PYZus{}train\PYZus{}reg\PYZus{}scaled}\PY{p}{,} \PY{n}{y\PYZus{}train\PYZus{}reg}\PY{p}{,} \PY{n}{cv}\PY{o}{=}\PY{l+m+mi}{5}\PY{p}{,} \PY{n}{scoring}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{r2}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n}{r2\PYZus{}medio} \PY{o}{=} \PY{n}{scores}\PY{o}{.}\PY{n}{mean}\PY{p}{(}\PY{p}{)}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}}\PY{n}{nombre}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{:}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{  Params: n\PYZus{}estimators=}\PY{l+s+si}{\PYZob{}}\PY{n}{params}\PY{p}{[}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{n\PYZus{}estimators}\PY{l+s+s2}{\PYZdq{}}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{, max\PYZus{}depth=}\PY{l+s+si}{\PYZob{}}\PY{n}{params}\PY{p}{[}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{max\PYZus{}depth}\PY{l+s+s2}{\PYZdq{}}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{, lr=}\PY{l+s+si}{\PYZob{}}\PY{n}{params}\PY{p}{[}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{learning\PYZus{}rate}\PY{l+s+s2}{\PYZdq{}}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{  R² medio (CV 5\PYZhy{}fold): }\PY{l+s+si}{\PYZob{}}\PY{n}{r2\PYZus{}medio}\PY{l+s+si}{:}\PY{l+s+s1}{.4f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ (+/\PYZhy{} }\PY{l+s+si}{\PYZob{}}\PY{n}{scores}\PY{o}{.}\PY{n}{std}\PY{p}{(}\PY{p}{)}\PY{l+s+si}{:}\PY{l+s+s1}{.4f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{)}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{k}{if} \PY{n}{r2\PYZus{}medio} \PY{o}{\PYZgt{}} \PY{n}{mejor\PYZus{}r2}\PY{p}{:}
+        \PY{n}{mejor\PYZus{}r2} \PY{o}{=} \PY{n}{r2\PYZus{}medio}
+        \PY{n}{mejor\PYZus{}config} \PY{o}{=} \PY{n}{params}
+        \PY{n}{mejor\PYZus{}nombre} \PY{o}{=} \PY{n}{nombre}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZgt{}\PYZgt{}\PYZgt{} Mejor configuración: }\PY{l+s+si}{\PYZob{}}\PY{n}{mejor\PYZus{}nombre}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZgt{}\PYZgt{}\PYZgt{} Params: }\PY{l+s+si}{\PYZob{}}\PY{n}{mejor\PYZus{}config}\PY{l+s+si}{\PYZcb{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Entrenamos con la mejor configuracion}
+\PY{n}{xgb\PYZus{}reg} \PY{o}{=} \PY{n}{XGBRegressor}\PY{p}{(}\PY{o}{*}\PY{o}{*}\PY{n}{mejor\PYZus{}config}\PY{p}{,} \PY{n}{random\PYZus{}state}\PY{o}{=}\PY{l+m+mi}{42}\PY{p}{)}
+\PY{n}{xgb\PYZus{}reg}\PY{o}{.}\PY{n}{fit}\PY{p}{(}\PY{n}{X\PYZus{}train\PYZus{}reg\PYZus{}scaled}\PY{p}{,} \PY{n}{y\PYZus{}train\PYZus{}reg}\PY{p}{)}
+\PY{n}{y\PYZus{}pred\PYZus{}reg} \PY{o}{=} \PY{n}{xgb\PYZus{}reg}\PY{o}{.}\PY{n}{predict}\PY{p}{(}\PY{n}{X\PYZus{}test\PYZus{}reg\PYZus{}scaled}\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Modelo XGBoostRegressor entrenado con la mejor configuración.}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+=== Comparativa de hiperparámetros XGBoostRegressor ===
+
+Conservador (pocos arboles, poca profundidad):
+  Params: n\_estimators=100, max\_depth=3, lr=0.1
+  R² medio (CV 5-fold): 0.8519 (+/- 0.0511)
+
+Equilibrado (valores estandar):
+  Params: n\_estimators=200, max\_depth=6, lr=0.1
+  R² medio (CV 5-fold): 0.8352 (+/- 0.0556)
+
+Agresivo (muchos arboles, mas profundidad):
+  Params: n\_estimators=500, max\_depth=8, lr=0.05
+  R² medio (CV 5-fold): 0.8278 (+/- 0.0408)
+
+>>> Mejor configuración: Conservador (pocos arboles, poca profundidad)
+>>> Params: \{'n\_estimators': 100, 'max\_depth': 3, 'learning\_rate': 0.1\}
+
+Modelo XGBoostRegressor entrenado con la mejor configuración.
+    \end{Verbatim}
+
+    \subsubsection{1.1.7 Aplicar métricas (RMSE) y comparar con
+UT5}\label{aplicar-muxe9tricas-rmse-y-comparar-con-ut5}
+
+Evaluamos el modelo con tres métricas: - \textbf{RMSE:} El error medio
+en las mismas unidades que los precios (dólares). Nos dice cuánto se
+equivoca de media al predecir. - \textbf{R²:} Qué porcentaje de la
+variación en los precios explica el modelo (de 0 a 1, cuanto más alto
+mejor). - \textbf{MSE:} El RMSE al cuadrado (se usa menos para
+interpretar, pero los algoritmos lo usan internamente).
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{13}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Calculamos métricas}
+\PY{n}{mse\PYZus{}xgb} \PY{o}{=} \PY{n}{mean\PYZus{}squared\PYZus{}error}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}reg}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}reg}\PY{p}{)}
+\PY{n}{rmse\PYZus{}xgb} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{sqrt}\PY{p}{(}\PY{n}{mse\PYZus{}xgb}\PY{p}{)}
+\PY{n}{r2\PYZus{}xgb} \PY{o}{=} \PY{n}{r2\PYZus{}score}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}reg}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}reg}\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{=== Métricas XGBoostRegressor ===}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{MSE:  }\PY{l+s+si}{\PYZob{}}\PY{n}{mse\PYZus{}xgb}\PY{l+s+si}{:}\PY{l+s+s1}{,.2f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{RMSE: }\PY{l+s+si}{\PYZob{}}\PY{n}{rmse\PYZus{}xgb}\PY{l+s+si}{:}\PY{l+s+s1}{,.2f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{R²:   }\PY{l+s+si}{\PYZob{}}\PY{n}{r2\PYZus{}xgb}\PY{l+s+si}{:}\PY{l+s+s1}{.4f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+=== Métricas XGBoostRegressor ===
+MSE:  703,294,400.00
+RMSE: 26,519.70
+R²:   0.9083
+    \end{Verbatim}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{14}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Métricas del modelo XGBoost}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{=== Métricas XGBoostRegressor ===}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{MSE:  }\PY{l+s+si}{\PYZob{}}\PY{n}{mse\PYZus{}xgb}\PY{l+s+si}{:}\PY{l+s+s1}{,.2f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{RMSE: }\PY{l+s+si}{\PYZob{}}\PY{n}{rmse\PYZus{}xgb}\PY{l+s+si}{:}\PY{l+s+s1}{,.2f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{R²:   }\PY{l+s+si}{\PYZob{}}\PY{n}{r2\PYZus{}xgb}\PY{l+s+si}{:}\PY{l+s+s1}{.4f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Nota: El dataset de Kaggle (Housing.csv, 545 filas) difiere del usado en UT5}
+\PY{c+c1}{\PYZsh{} (house\PYZus{}prices\PYZus{}train.csv, 1460 filas), por lo que la comparación directa de RMSE}
+\PY{c+c1}{\PYZsh{} no es válida. Comparamos en términos de R² como referencia relativa.}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{=== Referencia modelos UT5 (dataset diferente) ===}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Linear Regression: R²=0.8544 | SVR: R²=0.8757}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Decision Tree: R²=0.8275 | Random Forest: R²=0.8977}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Ensemble: R²=0.9039}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{XGBoost (este trabajo): R²=}\PY{l+s+si}{\PYZob{}}\PY{n}{r2\PYZus{}xgb}\PY{l+s+si}{:}\PY{l+s+s1}{.4f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Gráfico de predicción vs real}
+\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{8}\PY{p}{,} \PY{l+m+mi}{6}\PY{p}{)}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{scatter}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}reg}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}reg}\PY{p}{,} \PY{n}{alpha}\PY{o}{=}\PY{l+m+mf}{0.6}\PY{p}{,} \PY{n}{edgecolors}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{k}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{linewidths}\PY{o}{=}\PY{l+m+mf}{0.5}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{p}{[}\PY{n}{y\PYZus{}test\PYZus{}reg}\PY{o}{.}\PY{n}{min}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{y\PYZus{}test\PYZus{}reg}\PY{o}{.}\PY{n}{max}\PY{p}{(}\PY{p}{)}\PY{p}{]}\PY{p}{,} \PY{p}{[}\PY{n}{y\PYZus{}test\PYZus{}reg}\PY{o}{.}\PY{n}{min}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{y\PYZus{}test\PYZus{}reg}\PY{o}{.}\PY{n}{max}\PY{p}{(}\PY{p}{)}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{r\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{lw}\PY{o}{=}\PY{l+m+mi}{2}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Precio Real}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{ylabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Precio Predicho}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{title}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{XGBoostRegressor: Predicción vs Real (R²=}\PY{l+s+si}{\PYZob{}}\PY{n}{r2\PYZus{}xgb}\PY{l+s+si}{:}\PY{l+s+s1}{.4f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{tight\PYZus{}layout}\PY{p}{(}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+=== Métricas XGBoostRegressor ===
+MSE:  703,294,400.00
+RMSE: 26,519.70
+R²:   0.9083
+
+=== Referencia modelos UT5 (dataset diferente) ===
+Linear Regression: R²=0.8544 | SVR: R²=0.8757
+Decision Tree: R²=0.8275 | Random Forest: R²=0.8977
+Ensemble: R²=0.9039
+XGBoost (este trabajo): R²=0.9083
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_24_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \textbf{Conclusión regresión --- ¿qué nos dicen estos números?}
+
+Usamos exactamente el mismo dataset que en la UT5 (1460 casas, 81
+variables), así que la comparación es directa y justa.
+
+\textbf{Comparación con la UT5:}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Modelo (UT5) & R² \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Linear Regression & 0.8544 \\
+SVR & 0.8757 \\
+Decision Tree & 0.8275 \\
+Random Forest & 0.8977 \\
+Ensemble (Stacking) & 0.9039 \\
+\textbf{XGBoost (este trabajo)} & \textbf{ver arriba} \\
+\end{longtable}
+}
+
+XGBoost debería dar un R² competitivo con el ensemble de la UT5, ya que
+gradient boosting es precisamente lo que hace XGBoost: combinar muchos
+árboles donde cada uno corrige los errores del anterior.
+
+\textbf{En el gráfico de Predicción vs Real:} los puntos que caen sobre
+la línea roja son predicciones perfectas. Los que se alejan son errores.
+En las casas más caras el modelo se desvía más, porque suelen tener
+características únicas difíciles de predecir.
+
+\textbf{Sobre la comparativa de hiperparámetros:} Hemos probado 3
+configuraciones con validación cruzada y nos hemos quedado con la mejor.
+La configuración conservadora (pocos árboles, poca profundidad) suele
+dar peor resultado porque el modelo se queda corto. La agresiva (muchos
+árboles, mucha profundidad) puede sobreajustar. La equilibrada suele
+funcionar bien como punto medio.
+
+    \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1.2 XGBoost para
+Clasificación}\label{xgboost-para-clasificaciuxf3n}
+
+Utilizamos el dataset \textbf{Social Network Ads} de Kaggle (Rakesh
+Rau). El objetivo es predecir si un usuario comprará un producto
+(\texttt{Purchased}) a partir de su edad (\texttt{Age}) y salario
+estimado (\texttt{EstimatedSalary}).
+
+\textbf{Nota:} Este es el mismo dataset utilizado en la UT6, donde fue
+proporcionado como ``Ensayo de Motores'' con las columnas renombradas
+(Age→RPM, EstimatedSalary→Par de carga, Purchased→Fallo Motor). Aquí
+usamos los nombres originales y lo descargamos directamente de Kaggle.
+
+    \subsubsection{1.2.1 Importar dataset}\label{importar-dataset}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{15}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Descargamos el dataset Social Network Ads desde Kaggle}
+\PY{c+c1}{\PYZsh{} Es el mismo que usamos en la UT6 (alli se llamaba \PYZdq{}Ensayo de Motores\PYZdq{})}
+\PY{n}{path\PYZus{}clf} \PY{o}{=} \PY{n}{kagglehub}\PY{o}{.}\PY{n}{dataset\PYZus{}download}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{rakeshrau/social\PYZhy{}network\PYZhy{}ads}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Dataset descargado en:}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{path\PYZus{}clf}\PY{p}{)}
+
+\PY{k}{for} \PY{n}{f} \PY{o+ow}{in} \PY{n}{os}\PY{o}{.}\PY{n}{listdir}\PY{p}{(}\PY{n}{path\PYZus{}clf}\PY{p}{)}\PY{p}{:}
+    \PY{n+nb}{print}\PY{p}{(}\PY{n}{f}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Downloading to /root/.cache/kagglehub/datasets/rakeshrau/social-network-
+ads/1.archive{\ldots}
+    \end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+100\%|██████████| 3.27k/3.27k [00:00<00:00, 3.72MB/s]
+    \end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Extracting files{\ldots}
+Dataset descargado en: /root/.cache/kagglehub/datasets/rakeshrau/social-network-
+ads/versions/1
+Social\_Network\_Ads.csv
+    \end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+
+    \end{Verbatim}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{16}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Cargamos el dataset}
+\PY{n}{df\PYZus{}clf} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{read\PYZus{}csv}\PY{p}{(}\PY{n}{os}\PY{o}{.}\PY{n}{path}\PY{o}{.}\PY{n}{join}\PY{p}{(}\PY{n}{path\PYZus{}clf}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Social\PYZus{}Network\PYZus{}Ads.csv}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Dimensiones del dataset: }\PY{l+s+si}{\PYZob{}}\PY{n}{df\PYZus{}clf}\PY{o}{.}\PY{n}{shape}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{df\PYZus{}clf}\PY{o}{.}\PY{n}{head}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Dimensiones del dataset: (400, 5)
+    \end{Verbatim}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{16}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+    User ID  Gender  Age  EstimatedSalary  Purchased
+0  15624510    Male   19            19000          0
+1  15810944    Male   35            20000          0
+2  15668575  Female   26            43000          0
+3  15603246  Female   27            57000          0
+4  15804002    Male   19            76000          0
+\end{Verbatim}
+\end{tcolorbox}
+        
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{17}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Información del dataset}
+\PY{n}{df\PYZus{}clf}\PY{o}{.}\PY{n}{info}\PY{p}{(}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{\PYZhy{}\PYZhy{}\PYZhy{} Estadísticas descriptivas \PYZhy{}\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{display}\PY{p}{(}\PY{n}{df\PYZus{}clf}\PY{o}{.}\PY{n}{describe}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{Distribución de clases:}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+si}{\PYZob{}}\PY{n}{df\PYZus{}clf}\PY{p}{[}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Purchased}\PY{l+s+s2}{\PYZdq{}}\PY{p}{]}\PY{o}{.}\PY{n}{value\PYZus{}counts}\PY{p}{(}\PY{p}{)}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 400 entries, 0 to 399
+Data columns (total 5 columns):
+ \#   Column           Non-Null Count  Dtype
+---  ------           --------------  -----
+ 0   User ID          400 non-null    int64
+ 1   Gender           400 non-null    object
+ 2   Age              400 non-null    int64
+ 3   EstimatedSalary  400 non-null    int64
+ 4   Purchased        400 non-null    int64
+dtypes: int64(4), object(1)
+memory usage: 15.8+ KB
+
+--- Estadísticas descriptivas ---
+    \end{Verbatim}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+            User ID         Age  EstimatedSalary   Purchased
+count  4.000000e+02  400.000000       400.000000  400.000000
+mean   1.569154e+07   37.655000     69742.500000    0.357500
+std    7.165832e+04   10.482877     34096.960282    0.479864
+min    1.556669e+07   18.000000     15000.000000    0.000000
+25\%    1.562676e+07   29.750000     43000.000000    0.000000
+50\%    1.569434e+07   37.000000     70000.000000    0.000000
+75\%    1.575036e+07   46.000000     88000.000000    1.000000
+max    1.581524e+07   60.000000    150000.000000    1.000000
+    \end{Verbatim}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+
+Distribución de clases:
+Purchased
+0    257
+1    143
+Name: count, dtype: int64
+    \end{Verbatim}
+
+    \subsubsection{1.2.2 Manejar datos missing}\label{manejar-datos-missing}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{18}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Comprobamos valores nulos}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Valores nulos por columna:}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{n}{df\PYZus{}clf}\PY{o}{.}\PY{n}{isnull}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{Total de valores nulos: }\PY{l+s+si}{\PYZob{}}\PY{n}{df\PYZus{}clf}\PY{o}{.}\PY{n}{isnull}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{p}{)}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Valores nulos por columna:
+User ID            0
+Gender             0
+Age                0
+EstimatedSalary    0
+Purchased          0
+dtype: int64
+
+Total de valores nulos: 0
+    \end{Verbatim}
+
+    \subsubsection{1.2.3 Manejar datos
+categóricos}\label{manejar-datos-categuxf3ricos}
+
+El dataset contiene \texttt{User\ ID} (identificador) y \texttt{Gender}
+(categórica). Eliminamos ambas: - \texttt{User\ ID}: es un identificador
+sin valor predictivo - \texttt{Gender}: la eliminamos para mantener solo
+Age y EstimatedSalary como features (coherente con el análisis de la
+UT6)
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{19}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Vemos si hay variables categoricas}
+\PY{n}{cat\PYZus{}cols\PYZus{}clf} \PY{o}{=} \PY{n}{df\PYZus{}clf}\PY{o}{.}\PY{n}{select\PYZus{}dtypes}\PY{p}{(}\PY{n}{include}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{object}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{o}{.}\PY{n}{columns}\PY{o}{.}\PY{n}{tolist}\PY{p}{(}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Variables categóricas: }\PY{l+s+si}{\PYZob{}}\PY{n}{cat\PYZus{}cols\PYZus{}clf}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Quitamos User ID (es solo un identificador, no aporta nada al modelo)}
+\PY{c+c1}{\PYZsh{} y Gender (para quedarnos con Age y EstimatedSalary, igual que en la UT6)}
+\PY{n}{cols\PYZus{}to\PYZus{}drop} \PY{o}{=} \PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{User ID}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Gender}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+\PY{k}{for} \PY{n}{col} \PY{o+ow}{in} \PY{n}{cols\PYZus{}to\PYZus{}drop}\PY{p}{:}
+    \PY{k}{if} \PY{n}{col} \PY{o+ow}{in} \PY{n}{df\PYZus{}clf}\PY{o}{.}\PY{n}{columns}\PY{p}{:}
+        \PY{n}{df\PYZus{}clf} \PY{o}{=} \PY{n}{df\PYZus{}clf}\PY{o}{.}\PY{n}{drop}\PY{p}{(}\PY{n}{col}\PY{p}{,} \PY{n}{axis}\PY{o}{=}\PY{l+m+mi}{1}\PY{p}{)}
+        \PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Columna }\PY{l+s+s1}{\PYZdq{}}\PY{l+s+si}{\PYZob{}}\PY{n}{col}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZdq{}}\PY{l+s+s1}{ eliminada.}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{Columnas finales: }\PY{l+s+si}{\PYZob{}}\PY{n}{df\PYZus{}clf}\PY{o}{.}\PY{n}{columns}\PY{o}{.}\PY{n}{tolist}\PY{p}{(}\PY{p}{)}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Tipos de datos:}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+si}{\PYZob{}}\PY{n}{df\PYZus{}clf}\PY{o}{.}\PY{n}{dtypes}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Variables categóricas: ['Gender']
+Columna "User ID" eliminada.
+Columna "Gender" eliminada.
+
+Columnas finales: ['Age', 'EstimatedSalary', 'Purchased']
+Tipos de datos:
+Age                int64
+EstimatedSalary    int64
+Purchased          int64
+dtype: object
+    \end{Verbatim}
+
+    \textbf{Nota sobre la trampa de las variables dummy:} Tras eliminar User
+ID y Gender, el dataset queda solo con variables numéricas (Age,
+EstimatedSalary), por lo que no es necesario aplicar one-hot encoding y
+la trampa de las variables dummy no aplica.
+
+    \subsubsection{1.2.4 Separar datos en conjuntos de entrenamiento y
+test}\label{separar-datos-en-conjuntos-de-entrenamiento-y-test}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{20}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Separamos features y target}
+\PY{n}{X\PYZus{}clf} \PY{o}{=} \PY{n}{df\PYZus{}clf}\PY{o}{.}\PY{n}{drop}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Purchased}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{axis}\PY{o}{=}\PY{l+m+mi}{1}\PY{p}{)}
+\PY{n}{y\PYZus{}clf} \PY{o}{=} \PY{n}{df\PYZus{}clf}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Purchased}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+
+\PY{c+c1}{\PYZsh{} Dividimos en train (75\PYZpc{}) y test (25\PYZpc{}) \PYZhy{} misma proporción que en UT6}
+\PY{n}{X\PYZus{}train\PYZus{}clf}\PY{p}{,} \PY{n}{X\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}train\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}test\PYZus{}clf} \PY{o}{=} \PY{n}{train\PYZus{}test\PYZus{}split}\PY{p}{(}
+    \PY{n}{X\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}clf}\PY{p}{,} \PY{n}{test\PYZus{}size}\PY{o}{=}\PY{l+m+mf}{0.25}\PY{p}{,} \PY{n}{random\PYZus{}state}\PY{o}{=}\PY{l+m+mi}{0}
+\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Train: }\PY{l+s+si}{\PYZob{}}\PY{n}{X\PYZus{}train\PYZus{}clf}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ muestras}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Test:  }\PY{l+s+si}{\PYZob{}}\PY{n}{X\PYZus{}test\PYZus{}clf}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ muestras}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Train: 300 muestras
+Test:  100 muestras
+    \end{Verbatim}
+
+    \subsubsection{1.2.5 Estandarizar los
+datos}\label{estandarizar-los-datos}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{21}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Estandarizamos (fit solo en train)}
+\PY{n}{scaler\PYZus{}clf} \PY{o}{=} \PY{n}{StandardScaler}\PY{p}{(}\PY{p}{)}
+\PY{n}{X\PYZus{}train\PYZus{}clf\PYZus{}scaled} \PY{o}{=} \PY{n}{scaler\PYZus{}clf}\PY{o}{.}\PY{n}{fit\PYZus{}transform}\PY{p}{(}\PY{n}{X\PYZus{}train\PYZus{}clf}\PY{p}{)}
+\PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}scaled} \PY{o}{=} \PY{n}{scaler\PYZus{}clf}\PY{o}{.}\PY{n}{transform}\PY{p}{(}\PY{n}{X\PYZus{}test\PYZus{}clf}\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Datos estandarizados correctamente.}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Datos estandarizados correctamente.
+    \end{Verbatim}
+
+    \subsubsection{1.2.6 Aplicar el modelo
+XGBoostClassifier}\label{aplicar-el-modelo-xgboostclassifier}
+
+Igual que en regresión, probamos varias configuraciones y nos quedamos
+con la mejor:
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{22}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Probamos varias configuraciones tambien para clasificacion}
+\PY{n}{configs\PYZus{}clf} \PY{o}{=} \PY{p}{\PYZob{}}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Conservador}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{n\PYZus{}estimators}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mi}{100}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{max\PYZus{}depth}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mi}{3}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{learning\PYZus{}rate}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mf}{0.1}\PY{p}{\PYZcb{}}\PY{p}{,}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Equilibrado}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{n\PYZus{}estimators}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mi}{200}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{max\PYZus{}depth}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mi}{6}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{learning\PYZus{}rate}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mf}{0.1}\PY{p}{\PYZcb{}}\PY{p}{,}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Agresivo}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:}    \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{n\PYZus{}estimators}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mi}{500}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{max\PYZus{}depth}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mi}{8}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{learning\PYZus{}rate}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mf}{0.05}\PY{p}{\PYZcb{}}\PY{p}{,}
+\PY{p}{\PYZcb{}}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{=== Comparativa de hiperparámetros XGBoostClassifier ===}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{mejor\PYZus{}config\PYZus{}clf} \PY{o}{=} \PY{k+kc}{None}
+\PY{n}{mejor\PYZus{}acc} \PY{o}{=} \PY{o}{\PYZhy{}}\PY{l+m+mi}{1}
+
+\PY{k}{for} \PY{n}{nombre}\PY{p}{,} \PY{n}{params} \PY{o+ow}{in} \PY{n}{configs\PYZus{}clf}\PY{o}{.}\PY{n}{items}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+    \PY{n}{modelo\PYZus{}tmp} \PY{o}{=} \PY{n}{XGBClassifier}\PY{p}{(}\PY{o}{*}\PY{o}{*}\PY{n}{params}\PY{p}{,} \PY{n}{random\PYZus{}state}\PY{o}{=}\PY{l+m+mi}{42}\PY{p}{,} \PY{n}{eval\PYZus{}metric}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{logloss}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n}{scores} \PY{o}{=} \PY{n}{cross\PYZus{}val\PYZus{}score}\PY{p}{(}\PY{n}{modelo\PYZus{}tmp}\PY{p}{,} \PY{n}{X\PYZus{}train\PYZus{}clf\PYZus{}scaled}\PY{p}{,} \PY{n}{y\PYZus{}train\PYZus{}clf}\PY{p}{,} \PY{n}{cv}\PY{o}{=}\PY{l+m+mi}{5}\PY{p}{,} \PY{n}{scoring}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n}{acc\PYZus{}medio} \PY{o}{=} \PY{n}{scores}\PY{o}{.}\PY{n}{mean}\PY{p}{(}\PY{p}{)}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}}\PY{n}{nombre}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{:}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{  Params: n\PYZus{}estimators=}\PY{l+s+si}{\PYZob{}}\PY{n}{params}\PY{p}{[}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{n\PYZus{}estimators}\PY{l+s+s2}{\PYZdq{}}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{, max\PYZus{}depth=}\PY{l+s+si}{\PYZob{}}\PY{n}{params}\PY{p}{[}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{max\PYZus{}depth}\PY{l+s+s2}{\PYZdq{}}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{, lr=}\PY{l+s+si}{\PYZob{}}\PY{n}{params}\PY{p}{[}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{learning\PYZus{}rate}\PY{l+s+s2}{\PYZdq{}}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{  Accuracy medio (CV 5\PYZhy{}fold): }\PY{l+s+si}{\PYZob{}}\PY{n}{acc\PYZus{}medio}\PY{l+s+si}{:}\PY{l+s+s1}{.4f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ (+/\PYZhy{} }\PY{l+s+si}{\PYZob{}}\PY{n}{scores}\PY{o}{.}\PY{n}{std}\PY{p}{(}\PY{p}{)}\PY{l+s+si}{:}\PY{l+s+s1}{.4f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{)}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{k}{if} \PY{n}{acc\PYZus{}medio} \PY{o}{\PYZgt{}} \PY{n}{mejor\PYZus{}acc}\PY{p}{:}
+        \PY{n}{mejor\PYZus{}acc} \PY{o}{=} \PY{n}{acc\PYZus{}medio}
+        \PY{n}{mejor\PYZus{}config\PYZus{}clf} \PY{o}{=} \PY{n}{params}
+        \PY{n}{mejor\PYZus{}nombre\PYZus{}clf} \PY{o}{=} \PY{n}{nombre}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZgt{}\PYZgt{}\PYZgt{} Mejor configuración: }\PY{l+s+si}{\PYZob{}}\PY{n}{mejor\PYZus{}nombre\PYZus{}clf}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZgt{}\PYZgt{}\PYZgt{} Params: }\PY{l+s+si}{\PYZob{}}\PY{n}{mejor\PYZus{}config\PYZus{}clf}\PY{l+s+si}{\PYZcb{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Entrenamos con la mejor configuracion}
+\PY{n}{xgb\PYZus{}clf} \PY{o}{=} \PY{n}{XGBClassifier}\PY{p}{(}\PY{o}{*}\PY{o}{*}\PY{n}{mejor\PYZus{}config\PYZus{}clf}\PY{p}{,} \PY{n}{random\PYZus{}state}\PY{o}{=}\PY{l+m+mi}{42}\PY{p}{,} \PY{n}{eval\PYZus{}metric}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{logloss}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{xgb\PYZus{}clf}\PY{o}{.}\PY{n}{fit}\PY{p}{(}\PY{n}{X\PYZus{}train\PYZus{}clf\PYZus{}scaled}\PY{p}{,} \PY{n}{y\PYZus{}train\PYZus{}clf}\PY{p}{)}
+\PY{n}{y\PYZus{}pred\PYZus{}clf} \PY{o}{=} \PY{n}{xgb\PYZus{}clf}\PY{o}{.}\PY{n}{predict}\PY{p}{(}\PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}scaled}\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Modelo XGBoostClassifier entrenado con la mejor configuración.}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+=== Comparativa de hiperparámetros XGBoostClassifier ===
+
+Conservador:
+  Params: n\_estimators=100, max\_depth=3, lr=0.1
+  Accuracy medio (CV 5-fold): 0.8833 (+/- 0.0606)
+
+Equilibrado:
+  Params: n\_estimators=200, max\_depth=6, lr=0.1
+  Accuracy medio (CV 5-fold): 0.8800 (+/- 0.0609)
+
+Agresivo:
+  Params: n\_estimators=500, max\_depth=8, lr=0.05
+  Accuracy medio (CV 5-fold): 0.8767 (+/- 0.0564)
+
+>>> Mejor configuración: Conservador
+>>> Params: \{'n\_estimators': 100, 'max\_depth': 3, 'learning\_rate': 0.1\}
+
+Modelo XGBoostClassifier entrenado con la mejor configuración.
+    \end{Verbatim}
+
+    \subsubsection{1.2.7 Aplicar métricas y comparar con
+UT6}\label{aplicar-muxe9tricas-y-comparar-con-ut6}
+
+Evaluamos el modelo con las métricas habituales de clasificación: -
+\textbf{Accuracy:} porcentaje de aciertos totales - \textbf{Precision:}
+de los que el modelo dice que compran, cuántos realmente compran -
+\textbf{Recall:} de los que realmente compran, cuántos detecta el modelo
+- \textbf{F1:} equilibrio entre precision y recall - \textbf{Matriz de
+confusión:} desglose de aciertos y errores por clase - \textbf{Curva ROC
+/ AUC:} capacidad del modelo para separar compradores de no compradores
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{23}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Matriz de confusión}
+\PY{n}{cm} \PY{o}{=} \PY{n}{confusion\PYZus{}matrix}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}clf}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{=== Matriz de Confusión ===}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{6}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{)}
+\PY{n}{sns}\PY{o}{.}\PY{n}{heatmap}\PY{p}{(}\PY{n}{cm}\PY{p}{,} \PY{n}{annot}\PY{o}{=}\PY{k+kc}{True}\PY{p}{,} \PY{n}{fmt}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{d}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{cmap}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Blues}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}
+            \PY{n}{xticklabels}\PY{o}{=}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{No Compra}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Compra}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,}
+            \PY{n}{yticklabels}\PY{o}{=}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{No Compra}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Compra}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{ylabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Real}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Predicción}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{title}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Matriz de Confusión \PYZhy{} XGBoostClassifier}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+=== Matriz de Confusión ===
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_43_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{24}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Reporte de clasificación}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{=== Reporte de Clasificación ===}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{n}{classification\PYZus{}report}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}clf}\PY{p}{,} \PY{n}{target\PYZus{}names}\PY{o}{=}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{No Compra}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Compra}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}\PY{p}{)}
+
+\PY{n}{acc\PYZus{}xgb} \PY{o}{=} \PY{n}{accuracy\PYZus{}score}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}clf}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy: }\PY{l+s+si}{\PYZob{}}\PY{n}{acc\PYZus{}xgb}\PY{l+s+si}{:}\PY{l+s+s1}{.4f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+=== Reporte de Clasificación ===
+              precision    recall  f1-score   support
+
+   No Compra       0.96      0.96      0.96        68
+      Compra       0.91      0.91      0.91        32
+
+    accuracy                           0.94       100
+   macro avg       0.93      0.93      0.93       100
+weighted avg       0.94      0.94      0.94       100
+
+Accuracy: 0.9400
+    \end{Verbatim}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{25}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Curva ROC}
+\PY{n}{fig}\PY{p}{,} \PY{n}{ax} \PY{o}{=} \PY{n}{plt}\PY{o}{.}\PY{n}{subplots}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{8}\PY{p}{,} \PY{l+m+mi}{6}\PY{p}{)}\PY{p}{)}
+\PY{n}{RocCurveDisplay}\PY{o}{.}\PY{n}{from\PYZus{}estimator}\PY{p}{(}\PY{n}{xgb\PYZus{}clf}\PY{p}{,} \PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}scaled}\PY{p}{,} \PY{n}{y\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{ax}\PY{o}{=}\PY{n}{ax}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{title}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Curva ROC \PYZhy{} XGBoostClassifier}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_45_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{26}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Comparación con los modelos de clasificación de la UT6}
+\PY{n}{comparativa\PYZus{}clf} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{DataFrame}\PY{p}{(}\PY{p}{\PYZob{}}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Modelo}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Logistic Regression (UT6)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{KNN (UT6)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{SVM Linear (UT6)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}
+               \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{SVM RBF (UT6)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Naive Bayes (UT6)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Decision Tree (UT6)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}
+               \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Random Forest (UT6)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{XGBoost (UT9)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{p}{[}\PY{l+m+mf}{0.89}\PY{p}{,} \PY{l+m+mf}{0.93}\PY{p}{,} \PY{l+m+mf}{0.90}\PY{p}{,} \PY{l+m+mf}{0.93}\PY{p}{,} \PY{l+m+mf}{0.90}\PY{p}{,} \PY{l+m+mf}{0.91}\PY{p}{,} \PY{l+m+mf}{0.91}\PY{p}{,} \PY{n+nb}{round}\PY{p}{(}\PY{n}{acc\PYZus{}xgb}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{]}
+\PY{p}{\PYZcb{}}\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{=== Comparativa de modelos de clasificación ===}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{display}\PY{p}{(}\PY{n}{comparativa\PYZus{}clf}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Gráfico comparativo}
+\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{10}\PY{p}{,} \PY{l+m+mi}{5}\PY{p}{)}\PY{p}{)}
+\PY{n}{colors} \PY{o}{=} \PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZsh{}3498db}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{*} \PY{l+m+mi}{7} \PY{o}{+} \PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZsh{}e74c3c}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+\PY{n}{plt}\PY{o}{.}\PY{n}{barh}\PY{p}{(}\PY{n}{comparativa\PYZus{}clf}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Modelo}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,} \PY{n}{comparativa\PYZus{}clf}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,} \PY{n}{color}\PY{o}{=}\PY{n}{colors}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{title}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Comparativa Accuracy \PYZhy{} Clasificación (mayor es mejor)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{xlim}\PY{p}{(}\PY{l+m+mf}{0.8}\PY{p}{,} \PY{l+m+mf}{1.0}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{tight\PYZus{}layout}\PY{p}{(}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+=== Comparativa de modelos de clasificación ===
+    \end{Verbatim}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+                      Modelo  Accuracy
+0  Logistic Regression (UT6)      0.89
+1                  KNN (UT6)      0.93
+2           SVM Linear (UT6)      0.90
+3              SVM RBF (UT6)      0.93
+4          Naive Bayes (UT6)      0.90
+5        Decision Tree (UT6)      0.91
+6        Random Forest (UT6)      0.91
+7              XGBoost (UT9)      0.94
+    \end{Verbatim}
+
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_46_2.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \textbf{Conclusión clasificación --- ¿qué nos dicen estos resultados?}
+
+\textbf{Sobre la matriz de confusión:} Los números en la diagonal son
+los aciertos del modelo. Los de fuera son los errores. Podemos ver
+cuántos usuarios compraron y el modelo lo predijo bien (verdaderos
+positivos), y cuántos compraron pero el modelo falló (falsos negativos,
+se nos ``escapan'' clientes). En un contexto de marketing, esos falsos
+negativos son clientes a los que no les habríamos mostrado publicidad y
+habríamos perdido la venta.
+
+\textbf{Sobre la curva ROC:} La curva se aleja bastante de la diagonal,
+lo cual indica que el modelo distingue bien entre compradores y no
+compradores. No está adivinando, realmente ha aprendido un patrón en los
+datos.
+
+\textbf{Sobre el accuracy comparado con la UT6:} XGBoost obtiene
+resultados muy parecidos a los mejores modelos de la UT6 (KNN y SVM RBF
+con 0.93). ¿Por qué no los supera claramente? Porque el dataset es muy
+sencillo: solo 2 variables (edad y salario) y 400 muestras. Con datos
+tan simples, la frontera entre ``compra'' y ``no compra'' no es muy
+complicada y casi cualquier algoritmo la encuentra bien. XGBoost brilla
+más cuando hay muchas variables y relaciones complejas entre ellas.
+
+\textbf{¿Para qué nos sirve entonces XGBoost aquí?} Para dos cosas:
+primero, demostrar que funciona bien incluso con datos sencillos.
+Segundo y más importante, porque al ser un modelo basado en árboles nos
+permite usar SHAP después para interpretar las predicciones, algo que
+con KNN o SVM sería bastante más difícil.
+
+\textbf{Sobre el desbalanceo:} Hay más usuarios que NO compran que los
+que SÍ compran. Por eso no nos fiamos solo del accuracy (podría ser alto
+simplemente diciendo ``nadie compra'') y miramos también precision,
+recall y F1 de cada clase por separado en el classification report.
+
+    \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{2. AutoML con FLAML}\label{automl-con-flaml}
+
+Utilizamos \textbf{FLAML} (Fast and Lightweight AutoML) de Microsoft
+como herramienta de AutoML para clasificación. La idea es que en vez de
+probar nosotros a mano distintos algoritmos como hicimos en la UT6,
+dejamos que FLAML lo haga automáticamente.
+
+\textbf{Nota:} Se utiliza FLAML en lugar de auto-sklearn o PyCaret
+porque: - \textbf{auto-sklearn} fue abandonado en 2022 y no es
+compatible con Python 3.10+ - \textbf{PyCaret 3.3.2} no soporta Python
+3.12 (la versión que trae Google Colab actualmente) - \textbf{FLAML} es
+compatible, ligero y hace lo mismo: probar modelos y encontrar el mejor
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{27}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{k+kn}{from}\PY{+w}{ }\PY{n+nn}{flaml}\PY{+w}{ }\PY{k+kn}{import} \PY{n}{AutoML}
+\PY{k+kn}{from}\PY{+w}{ }\PY{n+nn}{sklearn}\PY{n+nn}{.}\PY{n+nn}{metrics}\PY{+w}{ }\PY{k+kn}{import} \PY{n}{confusion\PYZus{}matrix}\PY{p}{,} \PY{n}{classification\PYZus{}report}\PY{p}{,} \PY{n}{accuracy\PYZus{}score}\PY{p}{,} \PY{n}{RocCurveDisplay}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{FLAML importado correctamente.}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+FLAML importado correctamente.
+    \end{Verbatim}
+
+    \subsubsection{2.1 Preparar los datos}\label{preparar-los-datos}
+
+Utilizamos el mismo dataset Social Network Ads. FLAML acepta datos
+escalados directamente.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{28}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Usamos los datos ya preparados de la sección 1.2 (Social Network Ads)}
+\PY{c+c1}{\PYZsh{} X\PYZus{}train\PYZus{}clf\PYZus{}scaled, X\PYZus{}test\PYZus{}clf\PYZus{}scaled, y\PYZus{}train\PYZus{}clf, y\PYZus{}test\PYZus{}clf ya están definidos}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Datos de entrenamiento: }\PY{l+s+si}{\PYZob{}}\PY{n}{X\PYZus{}train\PYZus{}clf\PYZus{}scaled}\PY{o}{.}\PY{n}{shape}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Datos de test: }\PY{l+s+si}{\PYZob{}}\PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}scaled}\PY{o}{.}\PY{n}{shape}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Datos de entrenamiento: (300, 2)
+Datos de test: (100, 2)
+    \end{Verbatim}
+
+    \subsubsection{2.2 Definir y entrenar el modelo FLAML
+AutoML}\label{definir-y-entrenar-el-modelo-flaml-automl}
+
+FLAML explora automáticamente múltiples algoritmos (Random Forest,
+XGBoost, LightGBM, Extra Trees, etc.) y sus hiperparámetros dentro de un
+presupuesto de tiempo definido.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Parámetro
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Valor
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Justificación
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{time\_budget=120} & 120 segundos de búsqueda. Con un dataset de
+400 muestras y 2 features, es tiempo más que suficiente para explorar
+decenas de configuraciones. & \\
+\texttt{metric=\textquotesingle{}accuracy\textquotesingle{}} & Usamos
+accuracy como métrica de optimización para mantener coherencia con la
+comparativa de la UT6. & \\
+\texttt{task=\textquotesingle{}classification\textquotesingle{}} &
+Indicamos que es un problema de clasificación binaria. & \\
+\end{longtable}
+}
+
+A diferencia del XGBoost manual (donde nosotros elegimos los
+hiperparámetros), FLAML los busca automáticamente y selecciona la mejor
+combinación.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{29}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Configuramos FLAML para que busque el mejor modelo automaticamente}
+\PY{c+c1}{\PYZsh{} Le damos 120 segundos de tiempo para probar distintos algoritmos y configuraciones}
+\PY{c+c1}{\PYZsh{} Algo parecido a lo que hace PyCaret con compare\PYZus{}models(), pero mas ligero}
+\PY{n}{automl} \PY{o}{=} \PY{n}{AutoML}\PY{p}{(}\PY{p}{)}
+
+\PY{n}{settings} \PY{o}{=} \PY{p}{\PYZob{}}
+    \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{time\PYZus{}budget}\PY{l+s+s2}{\PYZdq{}}\PY{p}{:} \PY{l+m+mi}{120}\PY{p}{,}          \PY{c+c1}{\PYZsh{} 2 minutos de busqueda}
+    \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{metric}\PY{l+s+s2}{\PYZdq{}}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}        \PY{c+c1}{\PYZsh{} Optimizamos accuracy para comparar con la UT6}
+    \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{task}\PY{l+s+s2}{\PYZdq{}}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{classification}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}    \PY{c+c1}{\PYZsh{} Problema de clasificacion binaria}
+    \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{verbose}\PY{l+s+s2}{\PYZdq{}}\PY{p}{:} \PY{l+m+mi}{0}                 \PY{c+c1}{\PYZsh{} Para que no llene la pantalla de logs}
+\PY{p}{\PYZcb{}}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Iniciando optimización AutoML con FLAML...}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Probando múltiples algoritmos y configuraciones...}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+
+\PY{n}{automl}\PY{o}{.}\PY{n}{fit}\PY{p}{(}\PY{n}{X\PYZus{}train}\PY{o}{=}\PY{n}{X\PYZus{}train\PYZus{}clf\PYZus{}scaled}\PY{p}{,} \PY{n}{y\PYZus{}train}\PY{o}{=}\PY{n}{y\PYZus{}train\PYZus{}clf}\PY{p}{,} \PY{o}{*}\PY{o}{*}\PY{n}{settings}\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s2}{Optimización completada.}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Mejor modelo: }\PY{l+s+si}{\PYZob{}}\PY{n}{automl}\PY{o}{.}\PY{n}{best\PYZus{}estimator}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Mejor configuración: }\PY{l+s+si}{\PYZob{}}\PY{n}{automl}\PY{o}{.}\PY{n}{best\PYZus{}config}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Iniciando optimización AutoML con FLAML{\ldots}
+Probando múltiples algoritmos y configuraciones{\ldots}
+    \end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+INFO:flaml.tune.searcher.blendsearch:No low-cost partial config given to the
+search algorithm. For cost-frugal search, consider providing low-cost values for
+cost-related hps via 'low\_cost\_partial\_config'. More info can be found at
+https://microsoft.github.io/FLAML/docs/FAQ\#about-low\_cost\_partial\_config-in-tune
+INFO:flaml.tune.searcher.blendsearch:No low-cost partial config given to the
+search algorithm. For cost-frugal search, consider providing low-cost values for
+cost-related hps via 'low\_cost\_partial\_config'. More info can be found at
+https://microsoft.github.io/FLAML/docs/FAQ\#about-low\_cost\_partial\_config-in-tune
+    \end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+
+Optimización completada.
+Mejor modelo: xgboost
+Mejor configuración: \{'n\_estimators': 5, 'max\_leaves': 6, 'min\_child\_weight':
+np.float64(0.27412241581403696), 'learning\_rate':
+np.float64(0.32006481654872115), 'subsample': np.float64(0.8960658749171345),
+'colsample\_bylevel': np.float64(0.9864070218258665), 'colsample\_bytree': 1.0,
+'reg\_alpha': 0.0009765625, 'reg\_lambda': np.float64(0.04222314963298577)\}
+    \end{Verbatim}
+
+    \subsubsection{2.3 Evaluar el modelo
+AutoML}\label{evaluar-el-modelo-automl}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{30}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Predicciones del modelo AutoML}
+\PY{n}{y\PYZus{}pred\PYZus{}automl} \PY{o}{=} \PY{n}{automl}\PY{o}{.}\PY{n}{predict}\PY{p}{(}\PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}scaled}\PY{p}{)}
+\PY{n}{acc\PYZus{}automl} \PY{o}{=} \PY{n}{accuracy\PYZus{}score}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}automl}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Matriz de confusión}
+\PY{n}{cm\PYZus{}automl} \PY{o}{=} \PY{n}{confusion\PYZus{}matrix}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}automl}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{6}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{)}
+\PY{n}{sns}\PY{o}{.}\PY{n}{heatmap}\PY{p}{(}\PY{n}{cm\PYZus{}automl}\PY{p}{,} \PY{n}{annot}\PY{o}{=}\PY{k+kc}{True}\PY{p}{,} \PY{n}{fmt}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{d}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{cmap}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Greens}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}
+            \PY{n}{xticklabels}\PY{o}{=}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{No Compra}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Compra}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,}
+            \PY{n}{yticklabels}\PY{o}{=}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{No Compra}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Compra}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{ylabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Real}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Predicción}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{title}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Matriz de Confusión \PYZhy{} FLAML AutoML (}\PY{l+s+si}{\PYZob{}}\PY{n}{automl}\PY{o}{.}\PY{n}{best\PYZus{}estimator}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Reporte de clasificación}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{=== Reporte de Clasificación \PYZhy{} FLAML AutoML ===}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{n}{classification\PYZus{}report}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}automl}\PY{p}{,} \PY{n}{target\PYZus{}names}\PY{o}{=}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{No Compra}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Compra}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{)}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy: }\PY{l+s+si}{\PYZob{}}\PY{n}{acc\PYZus{}automl}\PY{l+s+si}{:}\PY{l+s+s1}{.4f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_55_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+=== Reporte de Clasificación - FLAML AutoML ===
+              precision    recall  f1-score   support
+
+   No Compra       0.97      0.94      0.96        68
+      Compra       0.88      0.94      0.91        32
+
+    accuracy                           0.94       100
+   macro avg       0.93      0.94      0.93       100
+weighted avg       0.94      0.94      0.94       100
+
+Accuracy: 0.9400
+    \end{Verbatim}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{31}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Curva ROC del modelo AutoML}
+\PY{n}{fig}\PY{p}{,} \PY{n}{ax} \PY{o}{=} \PY{n}{plt}\PY{o}{.}\PY{n}{subplots}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{8}\PY{p}{,} \PY{l+m+mi}{6}\PY{p}{)}\PY{p}{)}
+\PY{n}{RocCurveDisplay}\PY{o}{.}\PY{n}{from\PYZus{}predictions}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{automl}\PY{o}{.}\PY{n}{predict\PYZus{}proba}\PY{p}{(}\PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}scaled}\PY{p}{)}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{,} \PY{n}{ax}\PY{o}{=}\PY{n}{ax}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{title}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Curva ROC \PYZhy{} FLAML AutoML (}\PY{l+s+si}{\PYZob{}}\PY{n}{automl}\PY{o}{.}\PY{n}{best\PYZus{}estimator}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_56_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{32}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} === COMPARATIVA FINAL DETALLADA ===}
+
+\PY{c+c1}{\PYZsh{} Resumen de modelos explorados por FLAML}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{=== Modelos explorados por FLAML ===}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{k}{if} \PY{n+nb}{hasattr}\PY{p}{(}\PY{n}{automl}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{best\PYZus{}config\PYZus{}per\PYZus{}estimator}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{:}
+    \PY{k}{for} \PY{n}{estimator}\PY{p}{,} \PY{n}{config} \PY{o+ow}{in} \PY{n}{automl}\PY{o}{.}\PY{n}{best\PYZus{}config\PYZus{}per\PYZus{}estimator}\PY{o}{.}\PY{n}{items}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+        \PY{k}{if} \PY{n}{config}\PY{p}{:}
+            \PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{  }\PY{l+s+si}{\PYZob{}}\PY{n}{estimator}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{: }\PY{l+s+si}{\PYZob{}}\PY{n}{config}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{Mejor modelo seleccionado por FLAML: }\PY{l+s+si}{\PYZob{}}\PY{n}{automl}\PY{o}{.}\PY{n}{best\PYZus{}estimator}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Hiperparámetros óptimos encontrados: }\PY{l+s+si}{\PYZob{}}\PY{n}{automl}\PY{o}{.}\PY{n}{best\PYZus{}config}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Comparativa completa con todas las métricas}
+\PY{k+kn}{from}\PY{+w}{ }\PY{n+nn}{sklearn}\PY{n+nn}{.}\PY{n+nn}{metrics}\PY{+w}{ }\PY{k+kn}{import} \PY{n}{precision\PYZus{}score}\PY{p}{,} \PY{n}{recall\PYZus{}score}\PY{p}{,} \PY{n}{f1\PYZus{}score}
+
+\PY{n}{modelos} \PY{o}{=} \PY{p}{\PYZob{}}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Logistic Regression (UT6)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mf}{0.89}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Tipo}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Manual}\PY{l+s+s1}{\PYZsq{}}\PY{p}{\PYZcb{}}\PY{p}{,}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{KNN (UT6)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mf}{0.93}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Tipo}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Manual}\PY{l+s+s1}{\PYZsq{}}\PY{p}{\PYZcb{}}\PY{p}{,}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{SVM Linear (UT6)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mf}{0.90}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Tipo}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Manual}\PY{l+s+s1}{\PYZsq{}}\PY{p}{\PYZcb{}}\PY{p}{,}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{SVM RBF (UT6)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mf}{0.93}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Tipo}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Manual}\PY{l+s+s1}{\PYZsq{}}\PY{p}{\PYZcb{}}\PY{p}{,}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Naive Bayes (UT6)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mf}{0.90}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Tipo}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Manual}\PY{l+s+s1}{\PYZsq{}}\PY{p}{\PYZcb{}}\PY{p}{,}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Decision Tree (UT6)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mf}{0.91}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Tipo}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Manual}\PY{l+s+s1}{\PYZsq{}}\PY{p}{\PYZcb{}}\PY{p}{,}
+    \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Random Forest (UT6)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+m+mf}{0.91}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Tipo}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Manual}\PY{l+s+s1}{\PYZsq{}}\PY{p}{\PYZcb{}}\PY{p}{,}
+\PY{p}{\PYZcb{}}
+
+\PY{c+c1}{\PYZsh{} Métricas detalladas para XGBoost}
+\PY{n}{prec\PYZus{}xgb} \PY{o}{=} \PY{n}{precision\PYZus{}score}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}clf}\PY{p}{)}
+\PY{n}{rec\PYZus{}xgb} \PY{o}{=} \PY{n}{recall\PYZus{}score}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}clf}\PY{p}{)}
+\PY{n}{f1\PYZus{}xgb} \PY{o}{=} \PY{n}{f1\PYZus{}score}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}clf}\PY{p}{)}
+\PY{n}{modelos}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{XGBoost (UT9)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{n+nb}{round}\PY{p}{(}\PY{n}{acc\PYZus{}xgb}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Precision}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{n+nb}{round}\PY{p}{(}\PY{n}{prec\PYZus{}xgb}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{,}
+                             \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Recall}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{n+nb}{round}\PY{p}{(}\PY{n}{rec\PYZus{}xgb}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{F1}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{n+nb}{round}\PY{p}{(}\PY{n}{f1\PYZus{}xgb}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Tipo}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Manual}\PY{l+s+s1}{\PYZsq{}}\PY{p}{\PYZcb{}}
+
+\PY{c+c1}{\PYZsh{} Métricas detalladas para FLAML}
+\PY{n}{prec\PYZus{}flaml} \PY{o}{=} \PY{n}{precision\PYZus{}score}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}automl}\PY{p}{)}
+\PY{n}{rec\PYZus{}flaml} \PY{o}{=} \PY{n}{recall\PYZus{}score}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}automl}\PY{p}{)}
+\PY{n}{f1\PYZus{}flaml} \PY{o}{=} \PY{n}{f1\PYZus{}score}\PY{p}{(}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{p}{,} \PY{n}{y\PYZus{}pred\PYZus{}automl}\PY{p}{)}
+\PY{n}{modelos}\PY{p}{[}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{FLAML (}\PY{l+s+si}{\PYZob{}}\PY{n}{automl}\PY{o}{.}\PY{n}{best\PYZus{}estimator}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{) (UT9)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{n+nb}{round}\PY{p}{(}\PY{n}{acc\PYZus{}automl}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Precision}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{n+nb}{round}\PY{p}{(}\PY{n}{prec\PYZus{}flaml}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{,}
+                                                      \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Recall}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{n+nb}{round}\PY{p}{(}\PY{n}{rec\PYZus{}flaml}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{F1}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{n+nb}{round}\PY{p}{(}\PY{n}{f1\PYZus{}flaml}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{)}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Tipo}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{AutoML}\PY{l+s+s1}{\PYZsq{}}\PY{p}{\PYZcb{}}
+
+\PY{c+c1}{\PYZsh{} Tabla comparativa}
+\PY{n}{df\PYZus{}comp} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{DataFrame}\PY{p}{(}\PY{n}{modelos}\PY{p}{)}\PY{o}{.}\PY{n}{T}
+\PY{n}{df\PYZus{}comp}\PY{o}{.}\PY{n}{index}\PY{o}{.}\PY{n}{name} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Modelo}\PY{l+s+s1}{\PYZsq{}}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{=== Comparativa Final de Modelos de Clasificación ===}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{display}\PY{p}{(}\PY{n}{df\PYZus{}comp}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Gráfico comparativo}
+\PY{n}{fig}\PY{p}{,} \PY{n}{ax} \PY{o}{=} \PY{n}{plt}\PY{o}{.}\PY{n}{subplots}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{12}\PY{p}{,} \PY{l+m+mi}{6}\PY{p}{)}\PY{p}{)}
+\PY{n}{colors} \PY{o}{=} \PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZsh{}3498db}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{*} \PY{l+m+mi}{7} \PY{o}{+} \PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZsh{}e74c3c}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZsh{}2ecc71}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+\PY{n}{ax}\PY{o}{.}\PY{n}{barh}\PY{p}{(}\PY{n}{df\PYZus{}comp}\PY{o}{.}\PY{n}{index}\PY{p}{,} \PY{n}{df\PYZus{}comp}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{,} \PY{n}{color}\PY{o}{=}\PY{n}{colors}\PY{p}{)}
+\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}title}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Comparativa de Accuracy \PYZhy{} Todos los modelos (UT6 vs UT9)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{ax}\PY{o}{.}\PY{n}{set\PYZus{}xlim}\PY{p}{(}\PY{l+m+mf}{0.8}\PY{p}{,} \PY{l+m+mf}{1.0}\PY{p}{)}
+\PY{n}{ax}\PY{o}{.}\PY{n}{axvline}\PY{p}{(}\PY{n}{x}\PY{o}{=}\PY{l+m+mf}{0.93}\PY{p}{,} \PY{n}{color}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{gray}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{linestyle}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{alpha}\PY{o}{=}\PY{l+m+mf}{0.5}\PY{p}{,} \PY{n}{label}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Mejor UT6 (0.93)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{ax}\PY{o}{.}\PY{n}{legend}\PY{p}{(}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{tight\PYZus{}layout}\PY{p}{(}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Comparativa XGBoost vs FLAML detallada}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{=== XGBoost manual vs FLAML AutoML (detalle) ===}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Métrica}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+si}{:}\PY{l+s+s1}{\PYZlt{}12}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ }\PY{l+s+si}{\PYZob{}}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{XGBoost}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+si}{:}\PY{l+s+s1}{\PYZgt{}10}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ }\PY{l+s+si}{\PYZob{}}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{FLAML}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+si}{:}\PY{l+s+s1}{\PYZgt{}10}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ }\PY{l+s+si}{\PYZob{}}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Diferencia}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+si}{:}\PY{l+s+s1}{\PYZgt{}12}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{*} \PY{l+m+mi}{46}\PY{p}{)}
+\PY{k}{for} \PY{n}{metric} \PY{o+ow}{in} \PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Accuracy}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Precision}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Recall}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{F1}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{p}{:}
+    \PY{n}{v\PYZus{}xgb} \PY{o}{=} \PY{n}{modelos}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{XGBoost (UT9)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{get}\PY{p}{(}\PY{n}{metric}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n}{v\PYZus{}flaml} \PY{o}{=} \PY{n}{modelos}\PY{p}{[}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{FLAML (}\PY{l+s+si}{\PYZob{}}\PY{n}{automl}\PY{o}{.}\PY{n}{best\PYZus{}estimator}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{) (UT9)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}\PY{o}{.}\PY{n}{get}\PY{p}{(}\PY{n}{metric}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{k}{if} \PY{n+nb}{isinstance}\PY{p}{(}\PY{n}{v\PYZus{}xgb}\PY{p}{,} \PY{n+nb}{float}\PY{p}{)} \PY{o+ow}{and} \PY{n+nb}{isinstance}\PY{p}{(}\PY{n}{v\PYZus{}flaml}\PY{p}{,} \PY{n+nb}{float}\PY{p}{)}\PY{p}{:}
+        \PY{n}{diff} \PY{o}{=} \PY{n}{v\PYZus{}flaml} \PY{o}{\PYZhy{}} \PY{n}{v\PYZus{}xgb}
+        \PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}}\PY{n}{metric}\PY{l+s+si}{:}\PY{l+s+s1}{\PYZlt{}12}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ }\PY{l+s+si}{\PYZob{}}\PY{n}{v\PYZus{}xgb}\PY{l+s+si}{:}\PY{l+s+s1}{\PYZgt{}10.4f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ }\PY{l+s+si}{\PYZob{}}\PY{n}{v\PYZus{}flaml}\PY{l+s+si}{:}\PY{l+s+s1}{\PYZgt{}10.4f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ }\PY{l+s+si}{\PYZob{}}\PY{n}{diff}\PY{l+s+si}{:}\PY{l+s+s1}{\PYZgt{}+12.4f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{k}{else}\PY{p}{:}
+        \PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+si}{\PYZob{}}\PY{n}{metric}\PY{l+s+si}{:}\PY{l+s+s1}{\PYZlt{}12}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ }\PY{l+s+si}{\PYZob{}}\PY{n}{v\PYZus{}xgb}\PY{l+s+si}{:}\PY{l+s+s1}{\PYZgt{}10}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ }\PY{l+s+si}{\PYZob{}}\PY{n}{v\PYZus{}flaml}\PY{l+s+si}{:}\PY{l+s+s1}{\PYZgt{}10}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+=== Modelos explorados por FLAML ===
+  lgbm: \{'n\_estimators': 8, 'num\_leaves': 8, 'min\_child\_samples': 10,
+'learning\_rate': np.float64(0.18420323200628366), 'log\_max\_bin': 7,
+'colsample\_bytree': np.float64(0.7539027007502843), 'reg\_alpha': 0.0009765625,
+'reg\_lambda': np.float64(7.9629870251538035)\}
+  rf: \{'n\_estimators': 4, 'max\_features': np.float64(0.6853299841049987),
+'max\_leaves': 6, 'criterion': np.str\_('gini')\}
+  xgboost: \{'n\_estimators': 5, 'max\_leaves': 6, 'min\_child\_weight':
+np.float64(0.27412241581403696), 'learning\_rate':
+np.float64(0.32006481654872115), 'subsample': np.float64(0.8960658749171345),
+'colsample\_bylevel': np.float64(0.9864070218258665), 'colsample\_bytree': 1.0,
+'reg\_alpha': 0.0009765625, 'reg\_lambda': np.float64(0.04222314963298577)\}
+  extra\_tree: \{'n\_estimators': 4, 'max\_features': 1.0, 'max\_leaves': 9,
+'criterion': np.str\_('entropy')\}
+  xgb\_limitdepth: \{'n\_estimators': 4, 'max\_depth': 5, 'min\_child\_weight':
+np.float64(7.833102153875076), 'learning\_rate': np.float64(0.6168561220049336),
+'subsample': 1.0, 'colsample\_bylevel': 1.0, 'colsample\_bytree': 1.0,
+'reg\_alpha': np.float64(0.0024251361957650626), 'reg\_lambda':
+np.float64(0.6040983387803027)\}
+  sgd: \{'penalty': np.str\_('l2'), 'alpha': np.float64(7.303047050810383e-05),
+'l1\_ratio': np.float64(0.04895032752817157), 'epsilon': 0.1, 'learning\_rate':
+np.str\_('constant'), 'eta0': 0.1, 'power\_t': np.float64(0.3816461369188729),
+'average': False, 'loss': np.str\_('modified\_huber')\}
+  lrl1: \{'C': np.float64(1.0)\}
+
+Mejor modelo seleccionado por FLAML: xgboost
+Hiperparámetros óptimos encontrados: \{'n\_estimators': 5, 'max\_leaves': 6,
+'min\_child\_weight': np.float64(0.27412241581403696), 'learning\_rate':
+np.float64(0.32006481654872115), 'subsample': np.float64(0.8960658749171345),
+'colsample\_bylevel': np.float64(0.9864070218258665), 'colsample\_bytree': 1.0,
+'reg\_alpha': 0.0009765625, 'reg\_lambda': np.float64(0.04222314963298577)\}
+
+=== Comparativa Final de Modelos de Clasificación ===
+    \end{Verbatim}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+                          Accuracy    Tipo Precision  Recall      F1
+Modelo                                                              
+Logistic Regression (UT6)     0.89  Manual       NaN     NaN     NaN
+KNN (UT6)                     0.93  Manual       NaN     NaN     NaN
+SVM Linear (UT6)               0.9  Manual       NaN     NaN     NaN
+SVM RBF (UT6)                 0.93  Manual       NaN     NaN     NaN
+Naive Bayes (UT6)              0.9  Manual       NaN     NaN     NaN
+Decision Tree (UT6)           0.91  Manual       NaN     NaN     NaN
+Random Forest (UT6)           0.91  Manual       NaN     NaN     NaN
+XGBoost (UT9)                 0.94  Manual    0.9062  0.9062  0.9062
+FLAML (xgboost) (UT9)         0.94  AutoML    0.8824  0.9375  0.9091
+    \end{Verbatim}
+
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_57_2.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+
+=== XGBoost manual vs FLAML AutoML (detalle) ===
+Métrica         XGBoost      FLAML   Diferencia
+----------------------------------------------
+Accuracy         0.9400     0.9400      +0.0000
+Precision        0.9062     0.8824      -0.0238
+Recall           0.9062     0.9375      +0.0313
+F1               0.9062     0.9091      +0.0029
+    \end{Verbatim}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{33}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Guardamos el modelo para uso futuro}
+\PY{k+kn}{import}\PY{+w}{ }\PY{n+nn}{joblib}
+\PY{n}{joblib}\PY{o}{.}\PY{n}{dump}\PY{p}{(}\PY{n}{automl}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{mejor\PYZus{}modelo\PYZus{}flaml\PYZus{}social\PYZus{}network.pkl}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Modelo guardado como mejor\PYZus{}modelo\PYZus{}flaml\PYZus{}social\PYZus{}network.pkl}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Modelo guardado como mejor\_modelo\_flaml\_social\_network.pkl
+    \end{Verbatim}
+
+    \subsubsection{2.4 Conclusiones AutoML}\label{conclusiones-automl}
+
+FLAML ha explorado automáticamente múltiples algoritmos de clasificación
+y ha seleccionado el mejor según la métrica de Accuracy en 120 segundos.
+
+\textbf{¿Qué ha pasado durante esos 120 segundos?} FLAML ha probado por
+nosotros varios algoritmos (Random Forest, XGBoost, LightGBM, Extra
+Trees, etc.) con distintas configuraciones de hiperparámetros. En la UT6
+hicimos esto manualmente: probamos KNN, SVM, Naive Bayes, Decision
+Tree\ldots{} uno por uno, ajustando parámetros a mano. FLAML automatiza
+todo ese proceso.
+
+\textbf{¿El resultado de FLAML es mejor que el manual?} No
+necesariamente. Con un dataset tan pequeño (400 muestras, 2 variables),
+la diferencia entre modelos es mínima. Donde AutoML realmente marca la
+diferencia es en datasets grandes con muchas variables, donde probar
+manualmente todas las combinaciones sería inviable.
+
+\textbf{¿Por qué FLAML y no auto-sklearn o PyCaret?} -
+\textbf{auto-sklearn} fue la primera gran librería de AutoML en Python,
+pero su desarrollo se detuvo en 2022. No funciona con Python 3.10 o
+superior, lo que lo hace incompatible con Google Colab actual (Python
+3.12). - \textbf{PyCaret} es más reciente y completa, pero la versión
+3.3.2 bloquea explícitamente Python 3.12 con un error que dice ``Please
+DOWNGRADE your Python version''. - \textbf{FLAML} es de Microsoft
+Research, se mantiene activamente, funciona con Python 3.9 a 3.12, y es
+especialmente eficiente: consigue buenos resultados con poco tiempo de
+cómputo.
+
+\textbf{Comparativa de resultados:} - \textbf{UT6 (manual):} Mejor
+modelo KNN/SVM RBF con Accuracy 0.93 - \textbf{UT9 (XGBoost manual):}
+Accuracy comparable - \textbf{UT9 (FLAML AutoML):} FLAML selecciona
+automáticamente el algoritmo y los hiperparámetros óptimos
+
+\textbf{Ventajas de AutoML en general:} 1. Automatiza la selección de
+algoritmos y la búsqueda de hiperparámetros 2. Reduce el tiempo de
+experimentación (de horas a minutos) 3. Puede encontrar combinaciones
+que no habríamos probado manualmente 4. Permite al data scientist
+centrarse en lo que importa: entender los datos y los resultados
+
+    \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{3. Valores SHAP}\label{valores-shap}
+
+SHAP (SHapley Additive exPlanations) viene de la teoría de juegos y nos
+permite explicar las predicciones de un modelo. La idea es que a cada
+variable se le asigna un valor SHAP que indica cuánto ha contribuido (a
+favor o en contra) a la predicción. Es algo parecido a lo que vimos con
+el interpret\_model de PyCaret en clase, pero aplicándolo directamente
+con la librería SHAP.
+
+Vamos a usarlo sobre el modelo XGBoostClassifier que hemos entrenado con
+el dataset Social Network Ads.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{34}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Inicializamos SHAP para que funcionen las visualizaciones en el notebook}
+\PY{n}{shap}\PY{o}{.}\PY{n}{initjs}\PY{p}{(}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Creamos el explainer para nuestro modelo XGBoost}
+\PY{c+c1}{\PYZsh{} TreeExplainer esta optimizado para modelos de arboles (XGBoost, Random Forest, etc.)}
+\PY{n}{explainer} \PY{o}{=} \PY{n}{shap}\PY{o}{.}\PY{n}{TreeExplainer}\PY{p}{(}\PY{n}{xgb\PYZus{}clf}\PY{p}{)}
+
+\PY{c+c1}{\PYZsh{} Calculamos los valores SHAP para todo el conjunto de test}
+\PY{c+c1}{\PYZsh{} Los pasamos a DataFrame con nombres de columnas para que los graficos se entiendan}
+\PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}df} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{DataFrame}\PY{p}{(}\PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}scaled}\PY{p}{,} \PY{n}{columns}\PY{o}{=}\PY{n}{X\PYZus{}clf}\PY{o}{.}\PY{n}{columns}\PY{p}{)}
+\PY{n}{shap\PYZus{}values} \PY{o}{=} \PY{n}{explainer}\PY{p}{(}\PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}df}\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{SHAP values shape: }\PY{l+s+si}{\PYZob{}}\PY{n}{shap\PYZus{}values}\PY{o}{.}\PY{n}{values}\PY{o}{.}\PY{n}{shape}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Valores SHAP calculados correctamente.}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+<IPython.core.display.HTML object>
+    \end{Verbatim}
+
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+SHAP values shape: (100, 2)
+Valores SHAP calculados correctamente.
+    \end{Verbatim}
+
+    \subsection{3.1 Explicar una única
+predicción}\label{explicar-una-uxfanica-predicciuxf3n}
+
+    \subsubsection{3.1.1 Gráficos de fuerzas (Force
+Plots)}\label{gruxe1ficos-de-fuerzas-force-plots}
+
+Los force plots muestran cómo cada variable contribuye a empujar la
+predicción desde el valor base (media) hacia el valor predicho. Las
+variables en rojo empujan hacia la clase positiva (compra) y las azules
+hacia la clase negativa (no compra).
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{35}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Buscamos casos interesantes: aciertos y fallos del modelo}
+\PY{n}{aciertos} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+\PY{n}{fallos} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+\PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{y\PYZus{}pred\PYZus{}clf}\PY{p}{)}\PY{p}{)}\PY{p}{:}
+    \PY{k}{if} \PY{n}{y\PYZus{}pred\PYZus{}clf}\PY{p}{[}\PY{n}{i}\PY{p}{]} \PY{o}{==} \PY{n}{y\PYZus{}test\PYZus{}clf}\PY{o}{.}\PY{n}{values}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{:}
+        \PY{n}{aciertos}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{i}\PY{p}{)}
+    \PY{k}{else}\PY{p}{:}
+        \PY{n}{fallos}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{i}\PY{p}{)}
+
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Aciertos: }\PY{l+s+si}{\PYZob{}}\PY{n+nb}{len}\PY{p}{(}\PY{n}{aciertos}\PY{p}{)}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ | Fallos: }\PY{l+s+si}{\PYZob{}}\PY{n+nb}{len}\PY{p}{(}\PY{n}{fallos}\PY{p}{)}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Indices de fallos: }\PY{l+s+si}{\PYZob{}}\PY{n}{fallos}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Aciertos: 94 | Fallos: 6
+Indices de fallos: [9, 15, 31, 81, 85, 95]
+    \end{Verbatim}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{36}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} CASO 1: Un acierto claro \PYZhy{} el modelo predice bien}
+\PY{n}{idx\PYZus{}acierto} \PY{o}{=} \PY{n}{aciertos}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{=== ACIERTO: Observación }\PY{l+s+si}{\PYZob{}}\PY{n}{idx\PYZus{}acierto}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ ===}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Predicción: }\PY{l+s+si}{\PYZob{}}\PY{n}{y\PYZus{}pred\PYZus{}clf}\PY{p}{[}\PY{n}{idx\PYZus{}acierto}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ | Real: }\PY{l+s+si}{\PYZob{}}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{o}{.}\PY{n}{values}\PY{p}{[}\PY{n}{idx\PYZus{}acierto}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Datos: Age=}\PY{l+s+si}{\PYZob{}}\PY{n}{X\PYZus{}test\PYZus{}clf}\PY{o}{.}\PY{n}{values}\PY{p}{[}\PY{n}{idx\PYZus{}acierto}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{l+s+si}{:}\PY{l+s+s1}{.0f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{, Salary=}\PY{l+s+si}{\PYZob{}}\PY{n}{X\PYZus{}test\PYZus{}clf}\PY{o}{.}\PY{n}{values}\PY{p}{[}\PY{n}{idx\PYZus{}acierto}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{l+s+si}{:}\PY{l+s+s1}{.0f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{shap}\PY{o}{.}\PY{n}{force\PYZus{}plot}\PY{p}{(}\PY{n}{explainer}\PY{o}{.}\PY{n}{expected\PYZus{}value}\PY{p}{,} \PY{n}{shap\PYZus{}values}\PY{o}{.}\PY{n}{values}\PY{p}{[}\PY{n}{idx\PYZus{}acierto}\PY{p}{]}\PY{p}{,} \PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}df}\PY{o}{.}\PY{n}{iloc}\PY{p}{[}\PY{n}{idx\PYZus{}acierto}\PY{p}{]}\PY{p}{,} \PY{n}{matplotlib}\PY{o}{=}\PY{k+kc}{True}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+=== ACIERTO: Observación 0 ===
+Predicción: 0 | Real: 0
+Datos: Age=30, Salary=87000
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_65_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{37}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} CASO 2: Otro acierto con valores diferentes}
+\PY{n}{idx\PYZus{}acierto2} \PY{o}{=} \PY{n}{aciertos}\PY{p}{[}\PY{n+nb}{len}\PY{p}{(}\PY{n}{aciertos}\PY{p}{)}\PY{o}{/}\PY{o}{/}\PY{l+m+mi}{2}\PY{p}{]}  \PY{c+c1}{\PYZsh{} cogemos uno del medio}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{=== ACIERTO: Observación }\PY{l+s+si}{\PYZob{}}\PY{n}{idx\PYZus{}acierto2}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ ===}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Predicción: }\PY{l+s+si}{\PYZob{}}\PY{n}{y\PYZus{}pred\PYZus{}clf}\PY{p}{[}\PY{n}{idx\PYZus{}acierto2}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ | Real: }\PY{l+s+si}{\PYZob{}}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{o}{.}\PY{n}{values}\PY{p}{[}\PY{n}{idx\PYZus{}acierto2}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Datos: Age=}\PY{l+s+si}{\PYZob{}}\PY{n}{X\PYZus{}test\PYZus{}clf}\PY{o}{.}\PY{n}{values}\PY{p}{[}\PY{n}{idx\PYZus{}acierto2}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{l+s+si}{:}\PY{l+s+s1}{.0f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{, Salary=}\PY{l+s+si}{\PYZob{}}\PY{n}{X\PYZus{}test\PYZus{}clf}\PY{o}{.}\PY{n}{values}\PY{p}{[}\PY{n}{idx\PYZus{}acierto2}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{l+s+si}{:}\PY{l+s+s1}{.0f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{shap}\PY{o}{.}\PY{n}{force\PYZus{}plot}\PY{p}{(}\PY{n}{explainer}\PY{o}{.}\PY{n}{expected\PYZus{}value}\PY{p}{,} \PY{n}{shap\PYZus{}values}\PY{o}{.}\PY{n}{values}\PY{p}{[}\PY{n}{idx\PYZus{}acierto2}\PY{p}{]}\PY{p}{,} \PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}df}\PY{o}{.}\PY{n}{iloc}\PY{p}{[}\PY{n}{idx\PYZus{}acierto2}\PY{p}{]}\PY{p}{,} \PY{n}{matplotlib}\PY{o}{=}\PY{k+kc}{True}\PY{p}{)}
+\PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+=== ACIERTO: Observación 50 ===
+Predicción: 1 | Real: 1
+Datos: Age=57, Salary=122000
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_66_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{38}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} CASO 3: Un FALLO del modelo \PYZhy{} aqui es donde SHAP es mas util}
+\PY{c+c1}{\PYZsh{} Nos permite entender POR QUE el modelo se ha equivocado}
+\PY{k}{if} \PY{n+nb}{len}\PY{p}{(}\PY{n}{fallos}\PY{p}{)} \PY{o}{\PYZgt{}} \PY{l+m+mi}{0}\PY{p}{:}
+    \PY{n}{idx\PYZus{}fallo} \PY{o}{=} \PY{n}{fallos}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{=== FALLO: Observación }\PY{l+s+si}{\PYZob{}}\PY{n}{idx\PYZus{}fallo}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ ===}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Predicción: }\PY{l+s+si}{\PYZob{}}\PY{n}{y\PYZus{}pred\PYZus{}clf}\PY{p}{[}\PY{n}{idx\PYZus{}fallo}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ | Real: }\PY{l+s+si}{\PYZob{}}\PY{n}{y\PYZus{}test\PYZus{}clf}\PY{o}{.}\PY{n}{values}\PY{p}{[}\PY{n}{idx\PYZus{}fallo}\PY{p}{]}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{ ← EL MODELO SE EQUIVOCA}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Datos: Age=}\PY{l+s+si}{\PYZob{}}\PY{n}{X\PYZus{}test\PYZus{}clf}\PY{o}{.}\PY{n}{values}\PY{p}{[}\PY{n}{idx\PYZus{}fallo}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{l+s+si}{:}\PY{l+s+s1}{.0f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{, Salary=}\PY{l+s+si}{\PYZob{}}\PY{n}{X\PYZus{}test\PYZus{}clf}\PY{o}{.}\PY{n}{values}\PY{p}{[}\PY{n}{idx\PYZus{}fallo}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{l+s+si}{:}\PY{l+s+s1}{.0f}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n}{shap}\PY{o}{.}\PY{n}{force\PYZus{}plot}\PY{p}{(}\PY{n}{explainer}\PY{o}{.}\PY{n}{expected\PYZus{}value}\PY{p}{,} \PY{n}{shap\PYZus{}values}\PY{o}{.}\PY{n}{values}\PY{p}{[}\PY{n}{idx\PYZus{}fallo}\PY{p}{]}\PY{p}{,} \PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}df}\PY{o}{.}\PY{n}{iloc}\PY{p}{[}\PY{n}{idx\PYZus{}fallo}\PY{p}{]}\PY{p}{,} \PY{n}{matplotlib}\PY{o}{=}\PY{k+kc}{True}\PY{p}{)}
+    \PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{¿Por qué ha fallado? Mirando los valores SHAP podemos ver que las}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{variables empujaban en una direccion pero la realidad era la contraria.}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Probablemente es un usuario con caracteristicas }\PY{l+s+s1}{\PYZdq{}}\PY{l+s+s1}{fronterizas}\PY{l+s+s1}{\PYZdq{}}\PY{l+s+s1}{ donde}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{la decision no es clara.}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{k}{else}\PY{p}{:}
+    \PY{n+nb}{print}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{El modelo no ha cometido ningun fallo en el test (poco probable pero posible)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+=== FALLO: Observación 9 ===
+Predicción: 1 | Real: 0 ← EL MODELO SE EQUIVOCA
+Datos: Age=47, Salary=43000
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_67_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+
+¿Por qué ha fallado? Mirando los valores SHAP podemos ver que las
+variables empujaban en una direccion pero la realidad era la contraria.
+Probablemente es un usuario con caracteristicas "fronterizas" donde
+la decision no es clara.
+    \end{Verbatim}
+
+    \subsubsection{3.1.2 Gráficos de dependencias (Dependence
+Plots)}\label{gruxe1ficos-de-dependencias-dependence-plots}
+
+Los dependence plots muestran la relación entre el valor de una variable
+y su impacto SHAP. Permiten ver cómo influye cada variable en la
+predicción a lo largo de su rango de valores.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{39}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Grafico de dependencia para cada variable}
+\PY{c+c1}{\PYZsh{} Muestra como influye el valor de cada variable en la prediccion}
+\PY{c+c1}{\PYZsh{} Parecido al interpret\PYZus{}model(catb, plot=\PYZsq{}correlation\PYZsq{}, feature=...) que vimos con PyCaret}
+\PY{k}{for} \PY{n}{col} \PY{o+ow}{in} \PY{n}{X\PYZus{}clf}\PY{o}{.}\PY{n}{columns}\PY{p}{:}
+    \PY{n}{shap}\PY{o}{.}\PY{n}{dependence\PYZus{}plot}\PY{p}{(}\PY{n}{col}\PY{p}{,} \PY{n}{shap\PYZus{}values}\PY{o}{.}\PY{n}{values}\PY{p}{,} \PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}df}\PY{p}{,} \PY{n}{show}\PY{o}{=}\PY{k+kc}{False}\PY{p}{)}
+    \PY{n}{plt}\PY{o}{.}\PY{n}{title}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Dependencia SHAP: }\PY{l+s+si}{\PYZob{}}\PY{n}{col}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+    \PY{n}{plt}\PY{o}{.}\PY{n}{show}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_69_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_69_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \subsubsection{3.1.3 Conclusiones - Predicción
+individual}\label{conclusiones---predicciuxf3n-individual}
+
+Los gráficos de fuerza nos permiten entender \textbf{por qué} el modelo
+toma una decisión concreta para cada usuario. Esto es algo que con las
+métricas globales (accuracy, precision\ldots) no podíamos hacer.
+
+\textbf{¿Qué hemos visto?} - Cuando un usuario tiene \textbf{edad alta y
+salario alto}, ambas variables empujan la predicción hacia ``sí compra''
+(valores SHAP positivos). Esto tiene sentido: personas con más edad y
+más poder adquisitivo tienen más probabilidad de comprar productos
+anunciados en redes sociales. - Cuando un usuario es \textbf{joven y con
+salario bajo}, ambas variables empujan hacia ``no compra'' (valores SHAP
+negativos). También es lógico: un estudiante de 20 años con poco salario
+tiene menos probabilidad de comprar. - Los casos más interesantes son
+los \textbf{intermedios}: un usuario joven con salario alto, o uno mayor
+con salario bajo. Ahí vemos cómo las variables ``compiten'' entre sí, y
+el modelo pondera cuál tiene más peso.
+
+\textbf{Los gráficos de dependencia} confirman estas relaciones: - La
+relación entre Age y la predicción no es perfectamente lineal: hay un
+``salto'' alrededor de los 35-40 años donde la probabilidad de compra
+sube significativamente. - EstimatedSalary también tiene un efecto no
+lineal: a partir de cierto umbral de salario, la probabilidad de compra
+aumenta mucho.
+
+Estas relaciones no lineales son precisamente lo que XGBoost captura
+bien y lo que una regresión logística simple no podría modelar con la
+misma precisión.
+
+    \subsection{3.2 Explicar el dataset
+completo}\label{explicar-el-dataset-completo}
+
+    \subsubsection{3.2.1 Summary Plot}\label{summary-plot}
+
+El summary plot es la visualización global más importante de SHAP.
+Muestra: - \textbf{Eje Y:} Variables ordenadas por importancia (de
+arriba a abajo) - \textbf{Eje X:} Valor SHAP (impacto en la predicción)
+- \textbf{Color:} Valor de la variable (rojo = alto, azul = bajo)
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{40}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Summary plot tipo beeswarm (el mas importante)}
+\PY{c+c1}{\PYZsh{} Cada punto es una observacion, color rojo = valor alto, azul = valor bajo}
+\PY{c+c1}{\PYZsh{} Parecido al interpret\PYZus{}model(catb) que vimos en clase con PyCaret}
+\PY{n}{shap}\PY{o}{.}\PY{n}{summary\PYZus{}plot}\PY{p}{(}\PY{n}{shap\PYZus{}values}\PY{o}{.}\PY{n}{values}\PY{p}{,} \PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}df}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_73_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{41}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Summary plot en formato de barras (importancia media de cada variable)}
+\PY{c+c1}{\PYZsh{} Mas facil de leer que el beeswarm para ver rapidamente que variable pesa mas}
+\PY{n}{shap}\PY{o}{.}\PY{n}{summary\PYZus{}plot}\PY{p}{(}\PY{n}{shap\PYZus{}values}\PY{o}{.}\PY{n}{values}\PY{p}{,} \PY{n}{X\PYZus{}test\PYZus{}clf\PYZus{}df}\PY{p}{,} \PY{n}{plot\PYZus{}type}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{bar}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_74_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{42}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Waterfall plot \PYZhy{} muestra paso a paso como se construye la prediccion}
+\PY{c+c1}{\PYZsh{} Partiendo del valor base, va sumando/restando la contribucion de cada variable}
+\PY{n}{shap}\PY{o}{.}\PY{n}{waterfall\PYZus{}plot}\PY{p}{(}\PY{n}{shap\PYZus{}values}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{UT9_autor_XXXXXXXXX_files/UT9_autor_XXXXXXXXX_75_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \subsubsection{3.2.2 Conclusiones - Dataset
+completo}\label{conclusiones---dataset-completo}
+
+Del análisis SHAP global del modelo XGBoost sobre el dataset Social
+Network Ads podemos concluir:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Importancia de variables:} El summary plot nos muestra de un
+  vistazo qué variable pesa más en las decisiones del modelo. Podemos
+  ver si la edad del usuario influye más que su salario (o al revés) a
+  la hora de predecir si comprará el producto.
+\item
+  \textbf{Dirección del impacto:} Los puntos rojos a la derecha nos
+  dicen que valores altos de esa variable empujan hacia ``sí compra'', y
+  los azules a la izquierda hacia ``no compra''. Esto nos permite
+  entender la lógica del modelo: por ejemplo, si usuarios con mayor edad
+  y mayor salario tienen más probabilidad de comprar.
+\item
+  \textbf{De caja negra a modelo explicable:} Sin SHAP, XGBoost es una
+  ``caja negra'' que nos da un resultado pero no sabemos por qué. Con
+  SHAP podemos justificar cada predicción. Esto es muy importante en la
+  vida real: imagina que una empresa de marketing necesita explicar a su
+  cliente \emph{por qué} el modelo recomienda mostrar publicidad a un
+  usuario concreto.
+\item
+  \textbf{Más allá de las métricas globales:} En la UT6 evaluamos los
+  modelos solo con métricas como accuracy o precision. SHAP nos da un
+  nivel de detalle mucho mayor: no solo sabemos \emph{cuánto} acierta el
+  modelo, sino \emph{por qué} toma cada decisión.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{4. Conclusiones finales}\label{conclusiones-finales}
+
+\subsection{¿Qué hemos hecho en este
+trabajo?}\label{quuxe9-hemos-hecho-en-este-trabajo}
+
+Este trabajo conecta lo aprendido en la \textbf{UT5} (regresión), la
+\textbf{UT6} (clasificación) y la \textbf{UT9} (XGBoost, AutoML y SHAP).
+Hemos usado los mismos datasets de las prácticas anteriores para poder
+comparar resultados directamente.
+
+\subsection{4.1 Sobre XGBoost}\label{sobre-xgboost}
+
+XGBoost es un algoritmo de \emph{gradient boosting} que construye muchos
+árboles de decisión, donde cada nuevo árbol intenta corregir los errores
+del anterior. Es como un equipo donde cada miembro se especializa en
+resolver lo que los demás fallan.
+
+\textbf{En regresión (House Prices):} - Obtuvimos un R² competitivo para
+predecir precios de vivienda. El modelo captura relaciones no lineales
+(por ejemplo, que tener garaje sube el precio, pero no de forma
+proporcional al número de plazas). - En la UT5 ya vimos que los modelos
+ensemble (Random Forest, Stacking) superaban a la regresión lineal.
+XGBoost sigue esa misma línea: combinar varios modelos simples da mejor
+resultado que uno solo complejo. - Hemos probado 3 configuraciones de
+hiperparámetros con validación cruzada para no quedarnos con valores por
+defecto sin justificar.
+
+\textbf{En clasificación (Social Network Ads):} - XGBoost alcanza un
+accuracy comparable a los mejores modelos de la UT6 (KNN y SVM RBF con
+0.93). - La ventaja de XGBoost sobre SVM es que es más interpretable
+(podemos ver la importancia de cada variable) y escala mejor a datasets
+grandes.
+
+\subsection{4.2 Sobre AutoML con FLAML}\label{sobre-automl-con-flaml}
+
+La idea de AutoML es sencilla: en vez de que nosotros probemos a mano
+diferentes algoritmos y configuraciones (como hicimos en la UT6 probando
+KNN, SVM, Naive Bayes, etc.), dejamos que un sistema automático lo haga
+por nosotros.
+
+FLAML ha probado automáticamente múltiples algoritmos (Random Forest,
+XGBoost, LightGBM, Extra Trees\ldots) y ha buscado los mejores
+hiperparámetros para cada uno, todo en 120 segundos. Lo que a nosotros
+nos llevó varias prácticas, FLAML lo hace en 2 minutos.
+
+\textbf{¿Significa que AutoML reemplaza al data scientist?} No.~AutoML
+automatiza la parte más mecánica (probar modelos), pero sigue siendo
+necesario: - Entender el problema y elegir bien los datos - Preparar y
+limpiar el dataset - Interpretar los resultados (ahí es donde entra
+SHAP)
+
+\textbf{Sobre la elección de FLAML:} El enunciado proponía auto-sklearn
+o PyCaret, pero ambas librerías son incompatibles con Python 3.12 (la
+versión actual de Google Colab). auto-sklearn fue abandonado en 2022 y
+PyCaret 3.3.2 bloquea explícitamente Python 3.12. FLAML de Microsoft es
+la alternativa más actual y funcional.
+
+\subsection{4.3 Sobre SHAP y la
+interpretabilidad}\label{sobre-shap-y-la-interpretabilidad}
+
+SHAP responde a la pregunta más importante en Machine Learning aplicado:
+\textbf{¿por qué el modelo ha tomado esta decisión?}
+
+\begin{itemize}
+\tightlist
+\item
+  Los \textbf{force plots} nos permiten explicar una predicción
+  concreta, tanto aciertos como fallos. Hemos visto que cuando el modelo
+  falla, SHAP nos ayuda a entender que el usuario tenía características
+  ``fronterizas'' donde la decisión no era clara.
+\item
+  Los \textbf{summary plots} nos dan la foto global: qué variables son
+  las más importantes y cómo influyen en general.
+\item
+  Los \textbf{dependence plots} muestran si la relación es lineal (a más
+  edad, más compra) o tiene matices (compra más a partir de cierta edad,
+  pero luego se estabiliza).
+\end{itemize}
+
+\subsection{4.4 Sobre los datasets
+utilizados}\label{sobre-los-datasets-utilizados}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Dataset
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Usado en
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Problema
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Objetivo
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+House Prices & UT5 y UT9 & Regresión & Predecir el precio de venta de
+una vivienda \\
+Social Network Ads & UT6 y UT9 & Clasificación & Predecir si un usuario
+comprará un producto \\
+\end{longtable}
+}
+
+Ambos se descargan automáticamente desde Kaggle con \texttt{kagglehub}.
+El dataset de clasificación fue proporcionado en la UT6 como ``Ensayo de
+Motores'' con columnas renombradas (Age→RPM, EstimatedSalary→Par de
+carga), pero al descargarlo de Kaggle descubrí que es el dataset Social
+Network Ads original. He optado por usar los nombres originales porque
+tienen más sentido con los datos reales.
+
+\subsection{4.5 Resumen: evolución a lo largo del
+curso}\label{resumen-evoluciuxf3n-a-lo-largo-del-curso}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+UT
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué hicimos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Qué aprendimos
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{UT5} & Regresión con varios modelos (Lineal, SVR, Random Forest)
+& A predecir valores numéricos y comparar modelos con RMSE y R² \\
+\textbf{UT6} & Clasificación con 7 modelos diferentes (KNN, SVM, etc.) &
+A predecir categorías y evaluar con accuracy, precision, recall \\
+\textbf{UT9} & XGBoost + FLAML AutoML + SHAP & Gradient boosting (mejor
+rendimiento), AutoML (automatizar la búsqueda) y SHAP (explicar las
+decisiones) \\
+\end{longtable}
+}
+
+La progresión es clara: primero aprendimos a entrenar modelos
+manualmente, luego a automatizar ese proceso con AutoML, y finalmente a
+explicar \emph{por qué} los modelos toman las decisiones que toman. En
+un proyecto real de Machine Learning, las tres habilidades son
+necesarias.
+
+
+    % Add a bibliography block to the postdoc
+    
+    
+    
+\end{document}

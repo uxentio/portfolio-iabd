@@ -1,0 +1,969 @@
+{
+  "name": "Cosmic Briefing - Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# Cosmic Briefing\n\n**Autor:** autor · Programación para IA · Unidad 9.\n\nUn único workflow con tres ramas independientes:\n- **Rama A — Briefing diario** (Schedule trigger 08:00): 8 APIs → embeddings → clustering → LLM → Telegram + Sheets.\n- **Rama B — Chatbot** (Telegram Trigger): AI Agent con memoria + 2 tools que consultan el histórico.\n- **Rama C — Errores** (Error Trigger): notifica fallos por Telegram.",
+        "height": 240,
+        "width": 760,
+        "color": 6
+      },
+      "id": "0c555db6-ce6f-45a9-be38-32474e16ec65",
+      "name": "Sticky: cabecera",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -9648,
+        2880
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Rama A — 8 fuentes científicas externas\n\nNASA APOD · Where-ISS · NASA NeoWs · Launch Library 2 · Open-Meteo · Sunrise-Sunset · arXiv · SpaceNews.\n\nTodos los HTTP llevan `onError: continueRegularOutput`: si una API cae, las demás siguen y la consolidación se adapta.",
+        "height": 116,
+        "width": 1700,
+        "color": 5
+      },
+      "id": "e6edcd8f-2141-4974-8ae7-7611b7ca9d5f",
+      "name": "Sticky: 8 fuentes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -9648,
+        3264
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## IA local con Ollama\n\n**Embeddings**: `nomic-embed-text` (768 dimensiones) sobre los titulares de papers, noticias, lanzamientos y asteroides.\n\n**Clustering**: agrupación greedy por similitud coseno con umbral 0,70 para detectar temas que se repiten en distintas fuentes.\n\n**LLM**: `qwen2.5:1.5b` ejecutado en CPU porque la GPU GTX 960M ya no la soporta Ollama.",
+        "height": 172,
+        "width": 700,
+        "color": 3
+      },
+      "id": "3ffd8831-92e2-4adb-832d-95c5d56abc54",
+      "name": "Sticky: IA local",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7456,
+        3200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Salida del briefing\n\n- **Telegram**: mensaje con el briefing, imagen APOD y enlace al panel HTML.\n- **Google Sheets** (Apps Script `doPost`): guarda cada briefing en una fila. Esta misma hoja la consultan después las 2 tools del chatbot.\n- **Panel HTML** (Apps Script `?action=dashboard`): se enlaza dentro del mensaje de Telegram, así el usuario puede abrir el histórico desde el propio chat.",
+        "height": 220,
+        "width": 460,
+        "color": 6
+      },
+      "id": "bec8fd18-decb-40c4-93f7-1629530e9bd6",
+      "name": "Sticky: salida del briefing",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -6560,
+        3008
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Rama B — Chatbot Cosmic\n\nEl **Telegram Trigger** registra el webhook automáticamente cuando se activa el workflow. Cualquier mensaje al bot llega aquí y se pasa al **AI Agent**.\n\nLa memoria conversacional usa `chat.id` como sessionKey, así cada usuario tiene su propio hilo de conversación.",
+        "height": 108,
+        "width": 1500,
+        "color": 6
+      },
+      "id": "93fd1688-8aef-4d3a-b2e4-97276c24cc27",
+      "name": "Sticky: chatbot",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8880,
+        3856
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ¿Por qué Groq aquí en lugar de Ollama?\n\nLa GTX 960M (2 GB de VRAM) ya no la soporta Ollama, así que todo corre en CPU.\n\n- `qwen2.5:1.5b` en CPU genera el briefing en unos segundos pero su tool calling es flojo y el agente le falla al elegir herramientas.\n- `qwen2.5:3b` en CPU tarda 30-60 s y rompe el webhook de Telegram, que cierra la conexión antes de tener respuesta.\n\nGroq tiene un tier gratuito que va en milisegundos y soporta tool calling sin problemas, así que el chatbot lo usa como motor.",
+        "height": 280,
+        "width": 460,
+        "color": 4
+      },
+      "id": "b583f21c-28dc-48ab-ab42-e79be7a0acfe",
+      "name": "Sticky: justificación Groq",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8544,
+        4448
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 2 tools del agente\n\n- **ultimos_briefings(n)** → GET Sheets `?action=last`\n- **buscar_briefing(q)** → GET Sheets `?action=search`\n\nDescripciones en castellano; el LLM decide qué herramienta llamar según el mensaje del usuario.",
+        "height": 156,
+        "width": 500,
+        "color": 6
+      },
+      "id": "2df1bd71-6c1d-4732-980a-87c18cc40085",
+      "name": "Sticky: tools agente",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8016,
+        4448
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Rama C — Manejo de errores\n\nError Trigger se dispara si cualquier nodo del workflow falla. Avisa por Telegram al admin.\n\nAdemás cada HTTP tiene `onError: continueRegularOutput` y los nodos Code llevan `try/catch` con defaults defensivos.",
+        "height": 120,
+        "width": 700,
+        "color": 4
+      },
+      "id": "f90125ef-efca-422e-a93a-9e5460a8c5ca",
+      "name": "Sticky: errores",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -9664,
+        4144
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "0aa514f2-837e-4ec7-be4e-e0cb8615c685",
+      "name": "1. Schedule 08:00 diario",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -9648,
+        3408
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Devuelve la configuracion que necesitan los nodos siguientes:\n// - lat / lon / ciudad: para personalizar Open-Meteo, Sunrise-Sunset y el prompt del LLM.\n// - tono: estilo del briefing (divulgativo).\n// - hoy: fecha actual en formato YYYY-MM-DD para la URL de NeoWs.\nreturn [{\n  json: {\n    lat: 37.608,\n    lon: -0.987,\n    ciudad: 'Cartagena, España',\n    tono: 'divulgativo',\n    hoy: new Date().toISOString().slice(0, 10)\n  }\n}];"
+      },
+      "id": "1a2447e7-8d9a-4570-83c0-93a943830550",
+      "name": "2. Configuración",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9440,
+        3408
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.nasa.gov/planetary/apod?api_key=YOUR_NASA_API_KEY",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (n8n-cosmic-briefing)"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "maxRedirects": 5
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "82f8a121-caab-4cb1-91ca-f7c9e9e220e8",
+      "name": "3. NASA APOD",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -9248,
+        3408
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://api.wheretheiss.at/v1/satellites/25544",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (n8n-cosmic-briefing)"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "maxRedirects": 5
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "58344f56-38d9-454e-9cf8-7c1aa7b42605",
+      "name": "4. Where-ISS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -9040,
+        3408
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.nasa.gov/neo/rest/v1/feed?start_date={{ $('2. Configuración').first().json.hoy }}&end_date={{ $('2. Configuración').first().json.hoy }}&api_key=YOUR_NASA_API_KEY",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (n8n-cosmic-briefing)"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "maxRedirects": 5
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "575b33a3-c03d-4b48-87b5-10522738506b",
+      "name": "5. NASA NeoWs (asteroides)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8848,
+        3408
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=3&mode=list",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (n8n-cosmic-briefing)"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "maxRedirects": 5
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "2be0e71f-094d-4f1f-bf6a-f5e4e0c82996",
+      "name": "6. Launch Library 2 (lanzamientos)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8640,
+        3408
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.open-meteo.com/v1/forecast?latitude={{ $('2. Configuración').first().json.lat }}&longitude={{ $('2. Configuración').first().json.lon }}&hourly=cloud_cover&timezone=auto&forecast_days=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (n8n-cosmic-briefing)"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "979a8754-4503-4a0b-b4a2-894fee4de0a1",
+      "name": "7. Open-Meteo (nubes nocturnas)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8448,
+        3408
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.sunrise-sunset.org/json?lat={{ $('2. Configuración').first().json.lat }}&lng={{ $('2. Configuración').first().json.lon }}&formatted=0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (n8n-cosmic-briefing)"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "49cfbeb4-e945-4c37-976f-3a3e7201d871",
+      "name": "8. Sunrise-Sunset (crepúsculo)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8240,
+        3408
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://rss.arxiv.org/rss/astro-ph",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (n8n-cosmic-briefing)"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "id": "0874960e-6d35-476d-b5aa-846f2ede9555",
+      "name": "9. arXiv astro-ph RSS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8048,
+        3408
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://spacenews.com/feed/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (n8n-cosmic-briefing)"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "id": "0cb89129-6fdb-4c7a-8467-75b7e0b8b371",
+      "name": "10. SpaceNews RSS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7840,
+        3408
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Junta los datos de las 8 fuentes y los deja preparados para el LLM.\n// Cada bloque va dentro de try/catch porque las HTTP llevan onError: continueRegularOutput,\n// asi que si una API cae, su entrada llega vacia y aqui se ignora sin romper el resto.\nconst ubic = $('2. Configuración').first().json;\nconst getJson = (nodo) => { try { return $(nodo).first().json || {}; } catch(e) { return {}; } };\n\nconst apodR = getJson('3. NASA APOD');\nconst issR = getJson('4. Where-ISS');\nconst neoR = getJson('5. NASA NeoWs (asteroides)');\nconst launchR = getJson('6. Launch Library 2 (lanzamientos)');\nconst meteoR = getJson('7. Open-Meteo (nubes nocturnas)');\nconst sunR = getJson('8. Sunrise-Sunset (crepúsculo)');\nconst arxivXml = (getJson('9. arXiv astro-ph RSS').data) || getJson('9. arXiv astro-ph RSS');\nconst spaceXml = (getJson('10. SpaceNews RSS').data) || getJson('10. SpaceNews RSS');\n\n// APOD - imagen astronomica del dia\nconst apod = {\n  titulo: apodR.title || 'Sin título',\n  fecha: apodR.date || ubic.hoy,\n  url: apodR.url || '',\n  explicacion: (apodR.explanation || '').slice(0, 400)\n};\n\n// ISS + distancia a la ciudad del usuario (haversine)\nconst iss = {\n  lat: typeof issR.latitude === 'number' ? issR.latitude : 0,\n  lon: typeof issR.longitude === 'number' ? issR.longitude : 0,\n  altitud_km: Math.round(issR.altitude || 0),\n  api_ok: typeof issR.latitude === 'number'\n};\nconst toRad = d => d * Math.PI / 180;\nconst dLat = toRad(iss.lat - ubic.lat);\nconst dLon = toRad(iss.lon - ubic.lon);\nconst hav = Math.sin(dLat/2)**2 + Math.cos(toRad(ubic.lat)) * Math.cos(toRad(iss.lat)) * Math.sin(dLon/2)**2;\niss.distancia_a_ti_km = iss.api_ok ? Math.round(6371 * 2 * Math.atan2(Math.sqrt(hav), Math.sqrt(1-hav))) : null;\niss.sobre_zona = iss.api_ok && iss.distancia_a_ti_km !== null && iss.distancia_a_ti_km < 2000;\n\n// NASA NeoWs - asteroides cercanos hoy\nconst asteroides = [];\ntry {\n  const dia = (neoR.near_earth_objects && neoR.near_earth_objects[ubic.hoy]) || [];\n  dia.slice(0, 3).forEach(a => {\n    const ca = (a.close_approach_data && a.close_approach_data[0]) || {};\n    const dia_min = (a.estimated_diameter && a.estimated_diameter.meters && a.estimated_diameter.meters.estimated_diameter_min) || 0;\n    const dia_max = (a.estimated_diameter && a.estimated_diameter.meters && a.estimated_diameter.meters.estimated_diameter_max) || 0;\n    asteroides.push({\n      nombre: a.name,\n      diametro_m: Math.round((dia_min + dia_max) / 2),\n      distancia_lunar: ca.miss_distance ? parseFloat(ca.miss_distance.lunar || 0).toFixed(2) : null,\n      velocidad_kmh: ca.relative_velocity ? Math.round(parseFloat(ca.relative_velocity.kilometers_per_hour || 0)) : null,\n      peligroso: !!a.is_potentially_hazardous_asteroid\n    });\n  });\n} catch (e) {}\n\n// Launch Library 2 - proximos lanzamientos\nconst lanzamientos = [];\ntry {\n  (launchR.results || []).slice(0, 3).forEach(l => {\n    lanzamientos.push({\n      nombre: l.name,\n      fecha: (l.net || '').slice(0, 16).replace('T', ' '),\n      lugar: (l.pad && l.pad.location && l.pad.location.name) || (l.pad && l.pad.name) || '?',\n      cohete: (l.rocket && l.rocket.configuration && l.rocket.configuration.name) || '?',\n      status: (l.status && l.status.name) || '?'\n    });\n  });\n} catch (e) {}\n\n// Open-Meteo - nubosidad media de 21h a 03h\nlet nubes = null;\ntry {\n  const cc = (meteoR.hourly && meteoR.hourly.cloud_cover) || [];\n  const horas = (meteoR.hourly && meteoR.hourly.time) || [];\n  const nocturnos = [];\n  horas.forEach((h, i) => {\n    const hora = parseInt(h.slice(11, 13), 10);\n    if (hora >= 21 || hora <= 3) nocturnos.push(cc[i]);\n  });\n  if (nocturnos.length) {\n    const avg = Math.round(nocturnos.reduce((a, b) => a + b, 0) / nocturnos.length);\n    nubes = {\n      cobertura_pct: avg,\n      cielo: avg < 25 ? 'despejado' : avg < 60 ? 'parcialmente nublado' : 'cubierto',\n      buena_observacion: avg < 40\n    };\n  }\n} catch (e) {}\n\n// Sunrise-Sunset - crepusculo astronomico\nlet luz = null;\ntry {\n  const r = sunR.results || {};\n  const fmt = iso => iso ? iso.slice(11, 16) : '?';\n  luz = {\n    amanecer: fmt(r.sunrise),\n    atardecer: fmt(r.sunset),\n    crepusculo_astro_inicio: fmt(r.astronomical_twilight_end),\n    duracion_dia_horas: r.day_length ? Math.round(r.day_length / 360) / 10 : null\n  };\n} catch (e) {}\n\n// Parser RSS muy simple, solo extrae el campo title de cada item\nfunction parseRss(xml, maxItems) {\n  if (!xml || typeof xml !== 'string') return [];\n  const items = [];\n  const re = /<item[^>]*>([\\s\\S]*?)<\\/item>/g;\n  let m; let c = 0;\n  while ((m = re.exec(xml)) && c < maxItems) {\n    const b = m[1];\n    const tit = (b.match(/<title[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/title>/) || [,''])[1].trim();\n    if (tit) items.push({ titulo: tit });\n    c++;\n  }\n  return items;\n}\n\nconst arxiv = parseRss(arxivXml, 6);\nconst space = parseRss(spaceXml, 5);\n\nconst titulos = [\n  ...arxiv.map(i => 'PAPER: ' + i.titulo),\n  ...space.map(i => 'NOTICIA: ' + i.titulo),\n  ...lanzamientos.map(l => 'LANZAMIENTO: ' + l.nombre + ' (' + l.cohete + ')'),\n  ...asteroides.map(a => 'ASTEROIDE: ' + a.nombre + ' a ' + a.distancia_lunar + ' distancias lunares')\n];\n\nreturn [{\n  json: { ubic, apod, iss, asteroides, lanzamientos, nubes, luz, arxiv, space, titulos }\n}];"
+      },
+      "id": "7adfeb76-7aac-442c-8952-b8e4ea6339df",
+      "name": "11. Consolidar datos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7648,
+        3408
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/embed",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'nomic-embed-text', input: $json.titulos }) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "749cc3f5-204d-476f-87ee-a3e85abf4ae9",
+      "name": "12. Embeddings Ollama (nomic-embed-text)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7440,
+        3408
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Clustering greedy por similitud coseno + construccion del prompt para el LLM.\nconst embRes = $input.first().json;\nconst d = $('11. Consolidar datos').first().json;\n\nconst embs = embRes.embeddings || [];\n\nfunction cos(a, b) {\n  if (!a.length || !b.length) return 0;\n  let dot=0, na=0, nb=0;\n  for (let i=0; i<a.length; i++) { dot+=a[i]*b[i]; na+=a[i]*a[i]; nb+=b[i]*b[i]; }\n  return dot / (Math.sqrt(na) * Math.sqrt(nb));\n}\n\nconst UMBRAL = 0.70;\nconst clusters = [];\nfor (let i=0; i<d.titulos.length; i++) {\n  if (!embs[i]) continue;\n  let asignado = false;\n  for (const c of clusters) {\n    if (cos(embs[i], c.centroide) > UMBRAL) {\n      c.items.push(d.titulos[i]);\n      for (let j=0; j<c.centroide.length; j++) {\n        c.centroide[j] = (c.centroide[j] * (c.items.length - 1) + embs[i][j]) / c.items.length;\n      }\n      asignado = true;\n      break;\n    }\n  }\n  if (!asignado) clusters.push({ centroide: [...embs[i]], items: [d.titulos[i]] });\n}\n\nconst instrucciones = 'Explica de forma clara y accesible, para público aficionado a la ciencia.';\n\nlet grupos = 'Grupos temáticos detectados por clustering semántico:';\nclusters.slice(0, 5).forEach((c, i) => {\n  grupos += `\\nGrupo ${i+1} (${c.items.length} ítems):`;\n  c.items.slice(0, 3).forEach(t => grupos += `\\n - ${t}`);\n});\n\nlet bloqueAsteroides = '';\nif (d.asteroides.length) {\n  bloqueAsteroides = '\\n\\nAsteroides cercanos hoy (NASA NeoWs):';\n  d.asteroides.forEach(a => {\n    bloqueAsteroides += `\\n - ${a.nombre}: ~${a.diametro_m} m, a ${a.distancia_lunar} distancias lunares` + (a.peligroso ? ' (catalogado como potencialmente peligroso)' : '');\n  });\n}\n\nlet bloqueLanzamientos = '';\nif (d.lanzamientos.length) {\n  bloqueLanzamientos = '\\n\\nPróximos lanzamientos espaciales:';\n  d.lanzamientos.forEach(l => {\n    bloqueLanzamientos += `\\n - ${l.nombre} (${l.cohete}) — ${l.fecha} desde ${l.lugar}`;\n  });\n}\n\nlet bloqueCielo = '';\nif (d.nubes || d.luz) {\n  bloqueCielo = '\\n\\nCondiciones para observación esta noche en ' + d.ubic.ciudad + ':';\n  if (d.nubes) bloqueCielo += `\\n - Nubosidad media nocturna: ${d.nubes.cobertura_pct}% (${d.nubes.cielo})`;\n  if (d.luz) bloqueCielo += `\\n - Atardecer ${d.luz.atardecer}, oscuridad astronómica desde ${d.luz.crepusculo_astro_inicio}`;\n  if (d.nubes && d.nubes.buena_observacion) bloqueCielo += '\\n - Cielo favorable para observación astronómica';\n}\n\nlet bloqueIss = '';\nif (d.iss.api_ok) {\n  bloqueIss = `\\n\\nEstación Espacial Internacional (ISS) ahora mismo:\\n - Latitud ${d.iss.lat.toFixed(2)}, longitud ${d.iss.lon.toFixed(2)}\\n - Altitud: ${d.iss.altitud_km} km\\n - Distancia desde ${d.ubic.ciudad}: ${d.iss.distancia_a_ti_km.toLocaleString()} km` + (d.iss.sobre_zona ? ' (sobrevolando tu zona)' : '');\n} else {\n  bloqueIss = '\\n\\n(Datos de la ISS no disponibles ahora mismo.)';\n}\n\nconst prompt = `Eres un asistente de ciencia y espacio. Hablas en castellano a un usuario en ${d.ubic.ciudad}.\\n\\nTONO: ${instrucciones}\\n\\nREGLAS ESTRICTAS:\\n- Usa SOLO los datos que te paso abajo. NO inventes organizaciones, sitios, nombres ni cifras.\\n- La ISS es un satélite, no un observatorio en tierra.\\n- No uses emojis ni asteriscos ni markdown. Texto plano.\\n- Máximo 9 frases.\\n- Cubre: imagen del día, ISS, asteroides si los hay, lanzamientos si los hay, condiciones del cielo, 1-2 noticias o papers destacados.\\n\\nDATOS REALES DE HOY:\\n\\nImagen astronómica del día (NASA APOD): \"${d.apod.titulo}\" (${d.apod.fecha})\\nDescripción: ${d.apod.explicacion}${bloqueIss}${bloqueAsteroides}${bloqueLanzamientos}${bloqueCielo}\\n\\n${grupos}\\n\\nEstructura: saludo breve, imagen del día (cita el título exacto), dónde está la ISS, asteroide o lanzamiento destacado, condiciones del cielo, 1-2 noticias o papers, cierre corto.`;\n\nreturn [{\n  json: {\n    prompt,\n    ciudad: d.ubic.ciudad,\n    apod: d.apod,\n    iss: d.iss,\n    asteroides: d.asteroides,\n    lanzamientos: d.lanzamientos,\n    nubes: d.nubes,\n    luz: d.luz,\n    arxiv: d.arxiv,\n    space: d.space,\n    num_titulos: d.titulos.length,\n    num_grupos: clusters.length,\n    embedding_dim: embs[0] ? embs[0].length : 0\n  }\n}];"
+      },
+      "id": "e2fa9c43-6fb1-4323-a550-04d568db7e6a",
+      "name": "13. Clustering y prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7248,
+        3408
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'qwen2.5:1.5b', prompt: $json.prompt, stream: false, keep_alive: '30m', options: { temperature: 0.5, num_predict: 500, num_ctx: 3072, num_gpu: 0 } }) }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "id": "78e4f32b-0995-4f4d-bb7f-2f60f362b45d",
+      "name": "14. LLM Ollama (qwen2.5:1.5b)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7040,
+        3408
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/sendMessage",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "<TELEGRAM_CHAT_ID>"
+            },
+            {
+              "name": "text",
+              "value": "={{ 'COSMIC BRIEFING — ' + $('13. Clustering y prompt').first().json.ciudad + '\\n\\n' + $json.response.replace(/\\*+/g, '').replace(/^#+\\s*/gm, '').trim() + '\\n\\n---\\nImagen del día: ' + $('13. Clustering y prompt').first().json.apod.url + '\\nPanel completo de briefings: https://script.google.com/macros/s/AKfycbxyxBY-ktwHwRxIDpdzS38CyVp7s-h7sJXN7QGONkiiOLCaAcvz2nr-qI3OcOJ0bG5MXQ/exec?action=dashboard\\n' + $('13. Clustering y prompt').first().json.num_titulos + ' ítems en ' + $('13. Clustering y prompt').first().json.num_grupos + ' grupos | Embeddings: nomic-embed-text (dim ' + $('13. Clustering y prompt').first().json.embedding_dim + ') | LLM: qwen2.5:1.5b' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9a17c818-9b6d-4bcd-b96b-d49c40def144",
+      "name": "15. Telegram (briefing)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6544,
+        3264
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://script.google.com/macros/s/AKfycbxyxBY-ktwHwRxIDpdzS38CyVp7s-h7sJXN7QGONkiiOLCaAcvz2nr-qI3OcOJ0bG5MXQ/exec",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ timestamp: new Date().toISOString(), fecha: $('2. Configuración').first().json.hoy, ciudad: $('13. Clustering y prompt').first().json.ciudad, apod_titulo: $('13. Clustering y prompt').first().json.apod.titulo, apod_url: $('13. Clustering y prompt').first().json.apod.url, papers: $('13. Clustering y prompt').first().json.arxiv.slice(0,3).map(p => p.titulo).join(' | '), noticias: $('13. Clustering y prompt').first().json.space.slice(0,3).map(n => n.titulo).join(' | '), iss_visible: $('13. Clustering y prompt').first().json.iss.sobre_zona ? 'SI' : 'NO', briefing_llm: $json.response, tokens: ($json.eval_count || 0) + ($json.prompt_eval_count || 0) }) }}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "maxRedirects": 5
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "d742684b-82bb-4717-9038-a71cd2293c86",
+      "name": "16. Google Sheets (log)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6544,
+        3504
+      ]
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "f7d4ddd2-b1d4-4b09-ba9e-07fd39cac93f",
+      "name": "17. Telegram Trigger (chatbot)",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -8848,
+        4000
+      ],
+      "webhookId": "cosmic-chatbot",
+      "credentials": {
+        "telegramApi": {
+          "id": "RZZRLh4uGilS1YVr",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "id": "6fb1a0e8-4446-45e0-be7e-e905085c1652",
+      "name": "Groq Chat Model (llama-3.3-70b)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -8352,
+        4256
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "lJy2TnNDICySC9u2",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('17. Telegram Trigger (chatbot)').first().json.message.chat.id }}",
+        "contextWindowLength": 6
+      },
+      "id": "8d51dec7-0c90-44b4-910a-32c33ed66702",
+      "name": "Memoria conversacional",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -8144,
+        4256
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://script.google.com/macros/s/AKfycbxyxBY-ktwHwRxIDpdzS38CyVp7s-h7sJXN7QGONkiiOLCaAcvz2nr-qI3OcOJ0bG5MXQ/exec?action=last&n={n}",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "n",
+              "description": "Número de briefings a devolver (1-30). Por defecto 5.",
+              "type": "string"
+            }
+          ]
+        },
+        "optimizeResponse": true,
+        "dataField": "rows"
+      },
+      "id": "7b27a2dd-9037-4f61-9bbf-4e8ef28d5034",
+      "name": "Tool: ultimos_briefings",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        -7952,
+        4256
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://script.google.com/macros/s/AKfycbxyxBY-ktwHwRxIDpdzS38CyVp7s-h7sJXN7QGONkiiOLCaAcvz2nr-qI3OcOJ0bG5MXQ/exec?action=search&q={q}",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "q",
+              "description": "Texto o palabra clave a buscar en el historial de briefings.",
+              "type": "string"
+            }
+          ]
+        },
+        "optimizeResponse": true,
+        "dataField": "rows"
+      },
+      "id": "7ee45377-cf1c-44ba-804f-a43096deee5e",
+      "name": "Tool: buscar_briefing",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        -7744,
+        4256
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "Eres COSMIC, un asistente conversacional experto en astronomía, espacio y ciencia. Hablas en castellano con tono cercano pero riguroso. Ayudas al usuario a consultar el histórico de Cosmic Briefings (briefings diarios sobre NASA, ISS, asteroides, lanzamientos, papers de arXiv y noticias espaciales).\n\nREGLAS:\n- Si el usuario pregunta por contenido del briefing (algo concreto del pasado), USA las herramientas (ultimos_briefings o buscar_briefing). NO inventes contenido.\n- Si te saludan o hacen small talk, responde sin llamar herramientas.\n- Cuando devuelvas resultados de herramientas, RESÚMELOS de forma natural, no pegues JSON crudo.\n- Máximo 6 frases por respuesta. Sin markdown, sin asteriscos.\n- Si no sabes algo, dilo. No alucines."
+        }
+      },
+      "id": "222650d7-9601-46e2-9d80-381c2000995b",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -8048,
+        4000
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/sendMessage",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $('17. Telegram Trigger (chatbot)').first().json.message.chat.id }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ ($json.output || $json.text || 'Sin respuesta').replace(/\\*+/g, '').replace(/^#+\\s*/gm, '').trim() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "64308357-2f19-4f8d-a959-abdc18209336",
+      "name": "18. Telegram (respuesta chatbot)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7552,
+        4000
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "35de6a9b-8cf0-4517-9bf8-eaec3a2ac7a1",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -9648,
+        4336
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/sendMessage",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "<TELEGRAM_CHAT_ID>"
+            },
+            {
+              "name": "text",
+              "value": "={{ 'Error Cosmic Briefing\\n\\n' + ($json.execution?.error?.message || 'Error desconocido') + '\\nNodo: ' + ($json.execution?.lastNodeExecuted || '?') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3275bd22-07d9-475f-92b9-6d6894eb950b",
+      "name": "Notificar error Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -9248,
+        4336
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "1. Schedule 08:00 diario": {
+      "main": [
+        [
+          {
+            "node": "2. Configuración",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Configuración": {
+      "main": [
+        [
+          {
+            "node": "3. NASA APOD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. NASA APOD": {
+      "main": [
+        [
+          {
+            "node": "4. Where-ISS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Where-ISS": {
+      "main": [
+        [
+          {
+            "node": "5. NASA NeoWs (asteroides)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5. NASA NeoWs (asteroides)": {
+      "main": [
+        [
+          {
+            "node": "6. Launch Library 2 (lanzamientos)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6. Launch Library 2 (lanzamientos)": {
+      "main": [
+        [
+          {
+            "node": "7. Open-Meteo (nubes nocturnas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7. Open-Meteo (nubes nocturnas)": {
+      "main": [
+        [
+          {
+            "node": "8. Sunrise-Sunset (crepúsculo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8. Sunrise-Sunset (crepúsculo)": {
+      "main": [
+        [
+          {
+            "node": "9. arXiv astro-ph RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "9. arXiv astro-ph RSS": {
+      "main": [
+        [
+          {
+            "node": "10. SpaceNews RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "10. SpaceNews RSS": {
+      "main": [
+        [
+          {
+            "node": "11. Consolidar datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "11. Consolidar datos": {
+      "main": [
+        [
+          {
+            "node": "12. Embeddings Ollama (nomic-embed-text)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "12. Embeddings Ollama (nomic-embed-text)": {
+      "main": [
+        [
+          {
+            "node": "13. Clustering y prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "13. Clustering y prompt": {
+      "main": [
+        [
+          {
+            "node": "14. LLM Ollama (qwen2.5:1.5b)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "14. LLM Ollama (qwen2.5:1.5b)": {
+      "main": [
+        [
+          {
+            "node": "15. Telegram (briefing)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "16. Google Sheets (log)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "17. Telegram Trigger (chatbot)": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "18. Telegram (respuesta chatbot)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model (llama-3.3-70b)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria conversacional": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: ultimos_briefings": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: buscar_briefing": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Notificar error Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c6cfede4-0ef8-443c-9ea0-3d9a339e189d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "UCfHUxYvyeVrDHFP",
+  "tags": []
+}

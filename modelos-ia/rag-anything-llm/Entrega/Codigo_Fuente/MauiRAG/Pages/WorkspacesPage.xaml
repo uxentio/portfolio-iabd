@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:modelos="clr-namespace:MauiRAG.Modelos"
+             xmlns:vm="clr-namespace:MauiRAG.ViewModels"
+             x:Class="MauiRAG.Pages.WorkspacesPage"
+             x:DataType="vm:WorkspacesViewModel"
+             Title="Workspaces">
+
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*" RowSpacing="15">
+
+        <Label Text="Gestion de Workspaces" FontSize="24" FontAttributes="Bold" Grid.Row="0"/>
+
+        <!-- para crear un workspace nuevo -->
+        <HorizontalStackLayout Grid.Row="1" Spacing="10">
+            <Entry Placeholder="Nombre del nuevo workspace" WidthRequest="250"
+                   Text="{Binding NuevoNombre}"/>
+            <Button Text="Crear" Command="{Binding CrearCommand}"
+                    BackgroundColor="#512BD4" TextColor="White"/>
+            <Button Text="Refrescar" Command="{Binding RefrescarCommand}"/>
+        </HorizontalStackLayout>
+
+        <!-- lista de workspaces con binding al viewmodel -->
+        <CollectionView ItemsSource="{Binding Workspaces}" Grid.Row="2">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="modelos:WorkspaceItem">
+                    <Border Margin="0,5" Padding="10" StrokeShape="RoundRectangle 8"
+                            Stroke="LightGray">
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                            <VerticalStackLayout Grid.Column="0" VerticalOptions="Center">
+                                <Label Text="{Binding Nombre}" FontSize="16" FontAttributes="Bold"/>
+                                <Label Text="{Binding Slug}" FontSize="12" TextColor="Gray"/>
+                            </VerticalStackLayout>
+                            <Button Text="Renombrar" Grid.Column="1"
+                                    Clicked="btnRenombrar_Click" CommandParameter="{Binding .}"/>
+                            <Button Text="Eliminar" Grid.Column="2"
+                                    Clicked="btnEliminar_Click" CommandParameter="{Binding .}"
+                                    BackgroundColor="Red" TextColor="White"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+
+</ContentPage>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:modelos="clr-namespace:MauiRAG.Modelos"
+             xmlns:vm="clr-namespace:MauiRAG.ViewModels"
+             x:Class="MauiRAG.Pages.DocumentosPage"
+             x:DataType="vm:DocumentosViewModel"
+             Title="Documentos">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <Label Text="Gestion de Documentos" FontSize="24" FontAttributes="Bold"/>
+
+            <!-- seccion para subir un documento -->
+            <Border Padding="15" StrokeShape="RoundRectangle 8" Stroke="LightGray">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Subir Documento" FontSize="18" FontAttributes="Bold"/>
+
+                    <Label Text="Workspace destino:"/>
+                    <Picker Title="Selecciona un workspace"
+                            ItemsSource="{Binding NombresWorkspaces}"
+                            SelectedIndex="{Binding WorkspaceSeleccionado}"/>
+
+                    <Button Text="Seleccionar Archivo" Clicked="btnSeleccionar_Click"/>
+                    <Label Text="{Binding NombreArchivo}" TextColor="Gray"/>
+                    <Label Text="{Binding TipoArchivoTexto}" FontSize="12"
+                           TextColor="{Binding ColorTipoArchivo}"/>
+
+                    <!-- checkbox para PDFs: procesar con marcas de pagina -->
+                    <HorizontalStackLayout Spacing="5" IsVisible="{Binding EsPdfSeleccionado}">
+                        <CheckBox IsChecked="{Binding ProcesarPdfConMarcas}" VerticalOptions="Center"
+                                  Color="#7C3AED"/>
+                        <VerticalStackLayout VerticalOptions="Center">
+                            <Label Text="Procesar PDF con marcas [Pagina XX]" FontSize="13"
+                                   FontAttributes="Bold" TextColor="#7C3AED"/>
+                            <Label Text="Anade la pagina de origen a cada linea para mejorar la trazabilidad"
+                                   FontSize="11" TextColor="Gray"/>
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+
+                    <Button Text="Subir y Procesar" Clicked="btnSubir_Click"
+                            BackgroundColor="#512BD4" TextColor="White"/>
+                    <ActivityIndicator IsRunning="{Binding Subiendo}" IsVisible="{Binding Subiendo}"
+                                       Color="#512BD4"/>
+                    <Label Text="{Binding EstadoSubida}" FontSize="14"
+                           TextColor="{Binding ColorEstado}"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- campo para pegar URL de YouTube -->
+            <Border Padding="15" StrokeShape="RoundRectangle 8" Stroke="LightGray">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="O pega una URL de YouTube:" FontSize="13" TextColor="Gray"/>
+                    <Entry Placeholder="https://www.youtube.com/watch?v=..."
+                           Text="{Binding UrlYouTube}" Keyboard="Url"/>
+
+                    <!-- info que aparece solo cuando detecta URL de YouTube valida -->
+                    <Border Padding="10" StrokeShape="RoundRectangle 6" Stroke="#DC2626"
+                            BackgroundColor="#FEF2F2"
+                            IsVisible="{Binding EsUrlYouTubeValida}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="URL de YouTube detectada" FontSize="14" FontAttributes="Bold"
+                                   TextColor="#DC2626"/>
+                            <Label Text="Se descargaran los subtitulos del video, se agruparan en bloques de 30 segundos con marcas [Minuto XX:XX] y se subiran al workspace seleccionado."
+                                   FontSize="12" TextColor="Gray"/>
+                            <Button Text="Procesar y Subir al Workspace" Clicked="btnProcesarYouTube_Click"
+                                    BackgroundColor="#DC2626" TextColor="White"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- seccion para ver los documentos que hay -->
+            <Border Padding="15" StrokeShape="RoundRectangle 8" Stroke="LightGray">
+                <VerticalStackLayout Spacing="10">
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Documentos en el Sistema" FontSize="18" FontAttributes="Bold"
+                               VerticalOptions="Center"/>
+                        <Button Text="Refrescar" Command="{Binding RefrescarCommand}"/>
+                    </HorizontalStackLayout>
+
+                    <CollectionView ItemsSource="{Binding Documentos}" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="modelos:DocumentoItem">
+                                <Border Margin="0,3" Padding="8" StrokeShape="RoundRectangle 5"
+                                        Stroke="LightGray">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                        <CheckBox Grid.Column="0" VerticalOptions="Center"
+                                                  CheckedChanged="chkDoc_CheckedChanged"
+                                                  BindingContext="{Binding .}"/>
+                                        <Label Text="{Binding Nombre}" FontSize="14"
+                                               VerticalOptions="Center" Grid.Column="1"/>
+                                        <Button Text="X" Grid.Column="2" FontSize="12"
+                                                BackgroundColor="#DC2626" TextColor="White"
+                                                WidthRequest="35" HeightRequest="35" Padding="0"
+                                                Clicked="btnEliminarDoc_Click"
+                                                CommandParameter="{Binding .}"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <Button Text="{Binding TextoEliminarSeleccion}"
+                            BackgroundColor="#DC2626" TextColor="White"
+                            Clicked="btnEliminarSeleccion_Click"
+                            IsVisible="{Binding MostrarEliminarSeleccion}"/>
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

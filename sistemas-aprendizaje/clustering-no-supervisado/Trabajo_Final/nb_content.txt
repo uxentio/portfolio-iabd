@@ -1,0 +1,869 @@
+--- Cell 0 (markdown) ---
+# TRABAJO FINAL UT7 - AGRUPACIÓN
+
+Para este trabajo he buscado datasets variados intentando que fueran interesantes.
+
+Los 3 datasets que uso son:
+
+**1. Exoplanetas** → para Clustering y métricas
+- Descargado de: https://github.com/OpenExoplanetCatalogue/oec_tables
+- Son más de 5000 exoplanetas confirmados con sus propiedades (masa, radio, período orbital, temperatura, distancia...)
+- La idea es agruparlos por tipo de planeta (rocosos, gigantes gaseosos, Júpiteres calientes...)
+
+**2. Transacciones de panadería** → para Market Basket (Apriori)
+- Descargado de: https://github.com/viktree/curly-octo-chainsaw/blob/master/BreadBasket_DMS.csv
+- Unas 21000 líneas de una panadería real con 9500 transacciones y 95 productos diferentes
+
+**3. NSL-KDD (Ciberseguridad)** → para Detección de Anomalías
+- Descargado de: https://github.com/jmnwong/NSL-KDD-Dataset
+- 125973 conexiones de red registradas: 67343 normales y 58630 ataques/intrusiones (46.5%)
+- Contiene 23 tipos de ataque distintos (neptune, satan, smurf, portsweep...)
+- Es uno de los datasets de referencia en ciberseguridad para detección de intrusos
+
+--- Cell 1 (markdown) ---
+---
+## 1. EDA
+
+--- Cell 2 (markdown) ---
+### 1.1 Preprocesado de los datos
+
+Trabajo con el dataset de **exoplanetas** para toda la parte de clustering.
+
+--- Cell 3 (markdown) ---
+### Importar dataset
+
+--- Cell 4 (code) ---
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+import warnings
+warnings.filterwarnings('ignore')
+
+%matplotlib inline
+
+--- Cell 5 (code) ---
+# Cargo el dataset de exoplanetas
+dataset = pd.read_csv('exoplanetas.csv')
+dataset.head(10)
+
+--- Cell 6 (code) ---
+# explore dataset
+print('Dimensiones:', dataset.shape)
+print()
+print('Tipos de datos:')
+print(dataset.dtypes)
+
+--- Cell 7 (code) ---
+dataset.info()
+
+--- Cell 8 (code) ---
+dataset.describe()
+
+--- Cell 9 (markdown) ---
+### Manejar datos missing
+
+Como son exoplanetas no se conocen todas las propiedades de cada uno, así que hay bastantes nulos.
+
+--- Cell 10 (code) ---
+# Veo cuantos nulos hay por columna
+print('Nulos por columna:')
+print(dataset.isnull().sum())
+print()
+print('Total nulos:', dataset.isnull().sum().sum())
+print()
+# Porcentaje
+print('% nulos por columna:')
+print((dataset.isnull().sum() / len(dataset) * 100).round(1))
+
+--- Cell 11 (code) ---
+# Selecciono las columnas numéricas que me interesan para clustering
+# y me quedo solo con las filas que tienen esos datos completos
+cols_usar = ['mass', 'radius', 'period', 'semimajoraxis', 'eccentricity', 'temperature',
+             'system_distance', 'hoststar_mass', 'hoststar_temperature']
+
+df = dataset[['name', 'discoverymethod'] + cols_usar].dropna(subset=cols_usar)
+print(f'Filas con datos completos: {len(df)} de {len(dataset)}')
+print(f'Se eliminaron {len(dataset) - len(df)} filas con datos missing')
+
+--- Cell 12 (markdown) ---
+Me quedo con los exoplanetas que tienen todas las variables rellenas. Pierdo filas pero es mejor que inventar datos de planetas que no se conocen.
+
+--- Cell 13 (markdown) ---
+### Manejar datos categóricos (codificación label, ordinal, one-hot, variables dummies)
+
+La columna `discoverymethod` es categórica (tránsito, velocidad radial, imagen directa...). La codifico de varias formas.
+
+--- Cell 14 (code) ---
+from sklearn.preprocessing import LabelEncoder
+
+print('Métodos de descubrimiento:')
+print(df['discoverymethod'].value_counts())
+print()
+
+# Label Encoding
+le = LabelEncoder()
+df = df.copy()
+df['discoverymethod_cod'] = le.fit_transform(df['discoverymethod'])
+print('Label Encoding:')
+print(dict(zip(le.classes_, le.transform(le.classes_))))
+
+--- Cell 15 (markdown) ---
+### Evitar trampa de las variables dummy
+
+Con `drop_first=True` quitamos una de las columnas dummy para evitar multicolinealidad.
+
+--- Cell 16 (code) ---
+# Variables dummy con drop_first=True para evitar la trampa de las variables dummy
+df_dummies = pd.get_dummies(df['discoverymethod'], prefix='metodo', drop_first=True)
+print(f'Dummies creadas: {df_dummies.shape[1]} columnas (drop_first=True para evitar multicolinealidad)')
+df_dummies.head()
+
+--- Cell 17 (markdown) ---
+### Separar datos en conjuntos de entrenamiento y test
+
+--- Cell 18 (code) ---
+from sklearn.model_selection import train_test_split
+
+# Me quedo con las numéricas para clustering
+X = df[cols_usar].values
+
+X_train, X_test = train_test_split(X, test_size=0.3, random_state=42)
+print('Train:', X_train.shape)
+print('Test:', X_test.shape)
+
+--- Cell 19 (markdown) ---
+### Estandarizar los datos
+
+Hay que estandarizar sí o sí porque las escalas son muy diferentes: la masa va en masas de Júpiter, el período orbital en días, la temperatura en Kelvin... Si no estandarizo, las variables con mayor rango dominarían todo el clustering.
+
+--- Cell 20 (code) ---
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+print('Media del train estandarizado (debería ser ~0):')
+print(np.round(X_train_scaled.mean(axis=0), 2))
+print()
+print('Std del train estandarizado (debería ser ~1):')
+print(np.round(X_train_scaled.std(axis=0), 2))
+
+--- Cell 21 (code) ---
+# Estandarizo todo el dataset completo (lo necesito luego para clustering)
+scaler_full = StandardScaler()
+X_scaled = scaler_full.fit_transform(df[cols_usar].values)
+print('Shape dataset completo estandarizado:', X_scaled.shape)
+
+--- Cell 22 (markdown) ---
+### 1.2 EDA básico
+
+--- Cell 23 (markdown) ---
+### Análisis de correlaciones, mapas de calor
+
+--- Cell 24 (code) ---
+# Mapa de calor de correlaciones
+plt.figure(figsize=(10, 8))
+df_num = df[cols_usar]
+corr = df_num.corr()
+sns.heatmap(corr, annot=True, cmap='coolwarm', center=0, fmt='.2f', square=True)
+plt.title('Correlaciones entre propiedades de exoplanetas')
+plt.tight_layout()
+plt.show()
+
+--- Cell 25 (code) ---
+# Busco pares con correlación alta
+print('Pares con correlación > 0.85:')
+for i in range(len(corr.columns)):
+    for j in range(i+1, len(corr.columns)):
+        if abs(corr.iloc[i, j]) > 0.85:
+            print(f'  {corr.columns[i]} <-> {corr.columns[j]}: {corr.iloc[i, j]:.3f}')
+
+--- Cell 26 (markdown) ---
+### Pairplot
+
+--- Cell 27 (code) ---
+# Pairplot con las variables mas interesantes
+sns.pairplot(df[['mass', 'radius', 'period', 'temperature', 'discoverymethod']].dropna(),
+             hue='discoverymethod', palette='Set1')
+plt.suptitle('Pairplot de exoplanetas', y=1.02)
+plt.show()
+
+--- Cell 28 (markdown) ---
+### Distribuciones
+
+--- Cell 29 (code) ---
+# Distribución de cada variable
+fig, axes = plt.subplots(3, 3, figsize=(15, 12))
+
+for i, col in enumerate(cols_usar):
+    ax = axes[i//3, i%3]
+    ax.hist(df_num[col], bins=30, color='steelblue', edgecolor='black', alpha=0.7)
+    ax.set_title(col)
+
+plt.suptitle('Distribución de propiedades de exoplanetas', fontsize=14)
+plt.tight_layout()
+plt.show()
+
+--- Cell 30 (code) ---
+# Planetas por método de descubrimiento
+plt.figure(figsize=(10, 5))
+df['discoverymethod'].value_counts().plot(kind='bar', color='steelblue')
+plt.title('Exoplanetas por método de descubrimiento')
+plt.ylabel('Cantidad')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.show()
+
+--- Cell 31 (code) ---
+# Scatter masa vs radio - se intuyen los grupos de planetas
+plt.figure(figsize=(10, 6))
+plt.scatter(df_num['mass'], df_num['radius'], c='steelblue', s=20, alpha=0.5)
+plt.xlabel('Masa (masas de Júpiter)')
+plt.ylabel('Radio (radios de Júpiter)')
+plt.title('Masa vs Radio de exoplanetas')
+plt.show()
+
+--- Cell 32 (markdown) ---
+### Limpiar el modelo eliminando columnas innecesarias o correlacionadas
+
+Mirando el mapa de calor, `period` y `semimajoraxis` están muy correlacionados. Es normal, la tercera ley de Kepler dice que el período orbital depende directamente del semieje mayor de la órbita. Así que quito `semimajoraxis` porque sería meter información redundante.
+
+--- Cell 33 (code) ---
+print(f'Correlación period - semimajoraxis: {corr.loc["period", "semimajoraxis"]:.3f}')
+print()
+print('Elimino semimajoraxis por redundante con period')
+
+# Actualizo las columnas
+cols_cluster = [c for c in cols_usar if c != 'semimajoraxis']
+print(f'Columnas finales para clustering: {cols_cluster}')
+
+# Re-estandarizo con las columnas limpias
+X = df[cols_cluster].values
+scaler_full = StandardScaler()
+X_scaled = scaler_full.fit_transform(X)
+print(f'\nShape para clustering: {X_scaled.shape}')
+
+--- Cell 34 (markdown) ---
+### Conclusiones
+
+- El dataset original tiene 5414 exoplanetas pero muchos con datos incompletos. Tras limpiar me quedo con los que tienen las 9 variables.
+- La mayoría se descubrieron por tránsito y velocidad radial.
+- Las distribuciones están muy sesgadas: muchos planetas pequeños y cercanos, y pocos gigantes lejanos.
+- `period` y `semimajoraxis` tienen correlación muy alta (leyes de Kepler), así que quito `semimajoraxis`.
+- `mass` y `radius` también correlacionan bastante (lógico, planeta más gordo = más grande).
+- En el scatter masa vs radio ya se intuyen grupos: rocosos, Neptunos, gigantes gaseosos... que es lo que debería encontrar el clustering.
+
+--- Cell 35 (markdown) ---
+---
+## 2. Clustering
+
+--- Cell 36 (markdown) ---
+### 2.1 Algoritmo K-Means
+
+Parámetros que uso (como en los apuntes):
+
+- **init:** `k-means++` mejora la selección inicial de centroides eligiéndolos lo más separados posible.
+- **n_init:** Número de veces que se ejecuta el algoritmo con diferentes inicializaciones. Se queda con la mejor.
+- **max_iter:** Máximo de iteraciones por ejecución hasta convergencia.
+
+Primero el **método del codo** para encontrar el número óptimo de clusters.
+
+--- Cell 37 (code) ---
+#k-means++: Algoritmo que inicializa los centroides basado en la entropia de la información
+
+#WCSS: Within-Cluster Sum of Squares. (suma de los cuadrados dentro del clúster)
+
+#inertia_ = WCSS
+
+from sklearn.cluster import KMeans
+wcss = []
+for i in range(1, 11):
+    kmeans = KMeans(n_clusters=i, init='k-means++', n_init=10, max_iter=300, random_state=0)
+    kmeans.fit(X_scaled)
+    wcss.append(kmeans.inertia_)
+
+plt.plot(range(1, 11), wcss)
+plt.title('Método del Codo')
+plt.xlabel('Número de Clusters')
+plt.ylabel('WCSS(k)')
+plt.show()
+
+--- Cell 38 (markdown) ---
+El codo está entre 3 y 5. Elijo k=4 porque en astronomía los exoplanetas se suelen clasificar en unas 4 categorías (rocosos, super-Tierras, Neptunos y gigantes gaseosos).
+
+--- Cell 39 (code) ---
+# Predicción de agrupación con K-Means
+kmeans = KMeans(n_clusters=4, init='k-means++', n_init=10, max_iter=300, random_state=0)
+y_kmeans = kmeans.fit_predict(X_scaled)
+print(y_kmeans)
+print(type(y_kmeans))
+print(y_kmeans.shape)
+
+--- Cell 40 (code) ---
+# Visualización de los clusters (colores como en los apuntes del profe)
+plt.figure(figsize=(8, 8))
+plt.scatter(X_scaled[y_kmeans == 0, 0], X_scaled[y_kmeans == 0, 1], s=60, c='green', label='Cluster 0')
+plt.scatter(X_scaled[y_kmeans == 1, 0], X_scaled[y_kmeans == 1, 1], s=60, c='blue', label='Cluster 1')
+plt.scatter(X_scaled[y_kmeans == 2, 0], X_scaled[y_kmeans == 2, 1], s=60, c='magenta', label='Cluster 2')
+plt.scatter(X_scaled[y_kmeans == 3, 0], X_scaled[y_kmeans == 3, 1], s=60, c='cyan', label='Cluster 3')
+plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=100, marker='X', c='black', label='Centroids')
+plt.title('K-Means - Exoplanetas (Masa vs Radio)')
+plt.xlabel('Masa (estandarizada)')
+plt.ylabel('Radio (estandarizado)')
+plt.legend()
+plt.show()
+
+--- Cell 41 (code) ---
+# Conteo de elementos por cluster
+print('Número de exoplanetas en el cluster green = %i' % len(X_scaled[y_kmeans == 0, 0]))
+print('Número de exoplanetas en el cluster blue = %i' % len(X_scaled[y_kmeans == 1, 0]))
+print('Número de exoplanetas en el cluster magenta = %i' % len(X_scaled[y_kmeans == 2, 0]))
+print('Número de exoplanetas en el cluster cyan = %i' % len(X_scaled[y_kmeans == 3, 0]))
+
+--- Cell 42 (code) ---
+# Veamos qué planetas hay en cada cluster para ver si tiene sentido
+df_reset = df.reset_index(drop=True)
+df_reset['Cluster_KM'] = y_kmeans
+for i in range(4):
+    grupo = df_reset[df_reset['Cluster_KM'] == i]
+    print(f'\n=== Cluster {i} ===')
+    print(f'Masa media: {grupo["mass"].mean():.2f} Mjup | Radio medio: {grupo["radius"].mean():.2f} Rjup | Temp media: {grupo["temperature"].mean():.0f} K')
+    print(grupo[['name', 'mass', 'radius', 'temperature']].head(4).to_string(index=False))
+
+--- Cell 43 (markdown) ---
+K-Means con k=4 separa los exoplanetas en grupos que tienen sentido astronómico. Mirando las medias de cada cluster se pueden identificar los tipos: planetas rocosos pequeños y templados, super-Tierras, Neptunos calientes cercanos a su estrella, y gigantes gaseosos masivos. Esto coincide con la clasificación que usan los astrónomos, lo que indica que el clustering ha capturado bien la estructura real de los datos.
+
+--- Cell 44 (markdown) ---
+### 2.2 Algoritmo DBSCAN
+
+DBSCAN es un algoritmo de clustering basado en densidad. No necesita que le digas cuántos clusters hay, los encuentra solo. Los puntos que no pertenecen a ningún grupo denso los marca como **ruido** (-1).
+
+Parámetros:
+- **eps = 1.5:** Es el radio de vecindad. Si lo pongo muy bajo (ej. 0.5) casi todo sale como ruido porque los puntos están dispersos tras estandarizar. Si lo pongo muy alto (ej. 3) mete todo en un solo cluster. Probando valores, con 1.5 encuentro un equilibrio razonable: detecta grupos densos y deja fuera los planetas con propiedades atípicas.
+- **min_samples = 10:** Mínimo de puntos para formar un cluster. Con un dataset de ~1000 filas, 10 es suficiente para que los clusters sean significativos sin ser demasiado restrictivo.
+
+--- Cell 45 (code) ---
+from sklearn.cluster import DBSCAN
+
+# Identificar Clusters
+clusters = DBSCAN(eps=1.5, min_samples=10).fit_predict(X_scaled)
+print(clusters)
+
+--- Cell 46 (code) ---
+# Gráfica para mostrar los Clusters (como en los apuntes)
+plt.figure(figsize=(7.5, 7.5))
+plt.scatter(X_scaled[:, 0], X_scaled[:, 1], c=clusters, s=100)
+plt.xlabel('Masa (estandarizada)')
+plt.ylabel('Radio (estandarizado)')
+plt.title('DBSCAN - Exoplanetas')
+plt.box(False)
+plt.show()
+
+--- Cell 47 (code) ---
+# Conteo por cluster
+from collections import Counter
+
+print('Clusters encontrados:', len(set(clusters)) - (1 if -1 in clusters else 0))
+print('Puntos de ruido:', (clusters == -1).sum())
+print()
+for cluster, cantidad in sorted(Counter(clusters).items()):
+    nombre = 'Ruido' if cluster == -1 else f'Cluster {cluster}'
+    print(f'{nombre}: {cantidad} exoplanetas')
+
+--- Cell 48 (code) ---
+# Los planetas marcados como ruido son los más raros del catálogo
+df_reset['Cluster_DB'] = clusters
+ruido = df_reset[df_reset['Cluster_DB'] == -1]
+print(f'Planetas ruido (los más raros): {len(ruido)}')
+print()
+print(ruido[['name', 'mass', 'radius', 'period', 'temperature']].head(8).to_string(index=False))
+
+--- Cell 49 (markdown) ---
+DBSCAN con estos parámetros mete como ruido los exoplanetas con propiedades extremas: los super masivos, los de órbitas rarísimas, etc. Son los "bichos raros" del catálogo. A diferencia de K-Means, DBSCAN no fuerza a que todos los puntos pertenezcan a un cluster: si un planeta es muy distinto al resto, lo marca como outlier directamente. Eso lo hace útil para detectar exoplanetas inusuales.
+
+--- Cell 50 (markdown) ---
+### 2.3 Algoritmo Propagación de Afinidad
+
+No hace falta decirle cuántos clusters, el algoritmo lo decide solo. Los centroides son **ejemplares**: puntos reales del dataset que representan a su cluster.
+
+Usa matrices de **responsabilidad** y **disponibilidad** que se van actualizando iterativamente hasta converger.
+
+Parámetros:
+- **damping = 0.8:** Controla la amortiguación en la actualización de mensajes. Si es bajo (ej. 0.5) el algoritmo puede oscilar y no converger. Con 0.8 se estabiliza bien y converge más rápido. El rango válido es [0.5, 1) y en los apuntes del profe se usa 0.8.
+- **random_state = 0:** Para que los resultados sean reproducibles.
+
+--- Cell 51 (code) ---
+from sklearn.cluster import AffinityPropagation
+
+clustering_ap = AffinityPropagation(random_state=0, damping=0.8).fit(X_scaled)
+print('Etiquetas de Clusters:', clustering_ap.labels_)
+print('Índices de Centroides:', clustering_ap.cluster_centers_indices_)
+
+--- Cell 52 (code) ---
+labels = clustering_ap.labels_
+cluster_centers = clustering_ap.cluster_centers_
+
+# Visualización (como en los apuntes del profe)
+plt.figure(figsize=(8, 6))
+
+# Paleta de colores, uno para cada cluster
+colors = plt.cm.Spectral(np.linspace(0, 1, len(np.unique(labels))))
+
+# Recorremos cada cluster y graficamos sus puntos
+for k, col in zip(np.unique(labels), colors):
+    class_members = (labels == k)
+    plt.scatter(X_scaled[class_members, 0], X_scaled[class_members, 1],
+                c=[col], s=100, label=f'Cluster {k}')
+    # Marcamos el centro del cluster con un marcador especial ('X')
+    plt.scatter(cluster_centers[k, 0], cluster_centers[k, 1],
+                marker='X', c=[col], s=200, edgecolor='k')
+
+plt.xlabel('Masa (estandarizada)')
+plt.ylabel('Radio (estandarizado)')
+plt.title('Propagación de Afinidad - Exoplanetas')
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
+plt.tight_layout()
+plt.show()
+
+--- Cell 53 (code) ---
+# Conteo
+conteo_af = Counter(labels)
+print(f'Total clusters: {len(conteo_af)}')
+for cluster, cantidad in sorted(conteo_af.items())[:10]:
+    print(f'Cluster {cluster}: {cantidad} planetas')
+if len(conteo_af) > 10:
+    print(f'... y {len(conteo_af) - 10} más')
+
+--- Cell 54 (code) ---
+# Los ejemplares son planetas reales que representan a su cluster
+print('Planetas ejemplares:')
+ej = df_reset.iloc[clustering_ap.cluster_centers_indices_]
+print(ej[['name', 'mass', 'radius', 'temperature']].head(15).to_string(index=False))
+
+--- Cell 55 (markdown) ---
+Propagación de Afinidad genera bastantes más clusters que K-Means porque decide automáticamente cuántos necesita. Cada uno tiene un exoplaneta real como representante (ejemplar), lo que mola porque puedes decir "este grupo de planetas se parece a Kepler-X". La desventaja es que al crear tantos clusters, algunos pueden ser muy parecidos entre sí.
+
+--- Cell 56 (markdown) ---
+### 2.4 Métricas. Comparativa de modelos
+
+Para comparar los tres algoritmos de clustering uso dos métricas complementarias:
+
+- **Coeficiente de Silueta** (silhouette_score) → Mide lo bien separados que están los clusters. Va de -1 a 1. Cuanto más alto, mejor. Un valor cercano a 0 indica solapamiento.
+- **Índice de Davies-Bouldin** (davies_bouldin_score) → Mide la relación entre dispersión intra-cluster y separación inter-cluster. Cuanto más **bajo**, mejor. Un valor de 0 sería clustering perfecto.
+
+La combinación de ambas métricas da una visión más completa: la silueta mide calidad global y Davies-Bouldin penaliza clusters dispersos o solapados.
+
+--- Cell 57 (code) ---
+from sklearn.metrics import silhouette_score, davies_bouldin_score
+
+# Métricas K-Means
+silueta_km = silhouette_score(X_scaled, y_kmeans)
+davies_bouldin_km = davies_bouldin_score(X_scaled, y_kmeans)
+
+# Métricas DBSCAN (sin el ruido, porque no se puede calcular con un solo cluster o con ruido)
+mask_nr = clusters != -1
+n_cl_db = len(set(clusters[mask_nr]))
+if n_cl_db >= 2:
+    silueta_db = silhouette_score(X_scaled[mask_nr], clusters[mask_nr])
+    davies_bouldin_db = davies_bouldin_score(X_scaled[mask_nr], clusters[mask_nr])
+else:
+    silueta_db = float('nan')
+    davies_bouldin_db = float('nan')
+    print(f'DBSCAN: solo {n_cl_db} cluster(s), no se pueden calcular métricas')
+
+# Métricas Propagación de Afinidad
+silueta_ap = silhouette_score(X_scaled, labels)
+davies_bouldin_ap = davies_bouldin_score(X_scaled, labels)
+
+print('=== COMPARATIVA ===')
+print(f'{"Algoritmo":<30} {"Silueta (↑)":<15} {"Davies-Bouldin (↓)":<20}')
+print('-' * 65)
+print(f'{"K-Means (k=4)":<30} {silueta_km:<15.4f} {davies_bouldin_km:<20.4f}')
+if not np.isnan(silueta_db):
+    print(f'{"DBSCAN":<30} {silueta_db:<15.4f} {davies_bouldin_db:<20.4f}')
+else:
+    print(f'{"DBSCAN":<30} {"N/A":<15} {"N/A":<20}')
+print(f'{"Propagación de Afinidad":<30} {silueta_ap:<15.4f} {davies_bouldin_ap:<20.4f}')
+
+--- Cell 58 (code) ---
+# Comparativa visual K-Means vs Propagación de Afinidad (como en los apuntes del profe)
+fig = plt.figure(figsize=(12, 6))
+plt.set_cmap('gist_ncar')
+
+# Gráfica de clusters con K-Means
+ax = fig.add_subplot(1, 2, 1)
+ax.scatter(X_scaled[y_kmeans >= 0][:, 0], X_scaled[y_kmeans >= 0][:, 1],
+           c=y_kmeans[y_kmeans >= 0], s=100,
+           linewidth=0.5, edgecolors='black')
+ax.set_title('K - M E D I A S\n\nSilueta = %.2f | Davies-Bouldin = %.2f' %
+             (silueta_km, davies_bouldin_km), fontsize=10)
+ax.axis('off')
+
+# Gráfica de clusters con Propagación de Afinidad
+ax = fig.add_subplot(1, 2, 2)
+ax.scatter(X_scaled[labels >= 0][:, 0], X_scaled[labels >= 0][:, 1],
+           c=labels[labels >= 0], s=100,
+           linewidth=0.5, edgecolors='black', alpha=0.85)
+ax.set_title('P R O P A G A C I Ó N   D E   A F I N I D A D\n\nSilueta = %.2f | Davies-Bouldin = %.2f' %
+             (silueta_ap, davies_bouldin_ap), fontsize=10)
+ax.axis('off')
+
+plt.show()
+
+--- Cell 59 (code) ---
+# También incluyo DBSCAN en la comparativa visual
+fig = plt.figure(figsize=(18, 5))
+plt.set_cmap('gist_ncar')
+
+ax1 = fig.add_subplot(1, 3, 1)
+ax1.scatter(X_scaled[y_kmeans >= 0][:, 0], X_scaled[y_kmeans >= 0][:, 1],
+            c=y_kmeans[y_kmeans >= 0], s=100, linewidth=0.5, edgecolors='black')
+ax1.set_title('K - M E D I A S\n\nSilueta = %.2f | Davies-Bouldin = %.2f' %
+              (silueta_km, davies_bouldin_km), fontsize=10)
+ax1.axis('off')
+
+ax2 = fig.add_subplot(1, 3, 2)
+ax2.scatter(X_scaled[clusters >= 0][:, 0], X_scaled[clusters >= 0][:, 1],
+            c=clusters[clusters >= 0], s=100, linewidth=0.5, edgecolors='black')
+if not np.isnan(silueta_db):
+    ax2.set_title('D B S C A N\n\nSilueta = %.2f | Davies-Bouldin = %.2f' %
+                  (silueta_db, davies_bouldin_db), fontsize=10)
+else:
+    ax2.set_title('D B S C A N\n\nMétricas N/A', fontsize=10)
+ax2.axis('off')
+
+ax3 = fig.add_subplot(1, 3, 3)
+ax3.scatter(X_scaled[labels >= 0][:, 0], X_scaled[labels >= 0][:, 1],
+            c=labels[labels >= 0], s=100, linewidth=0.5, edgecolors='black', alpha=0.85)
+ax3.set_title('P R O P A G A C I Ó N   D E   A F I N I D A D\n\nSilueta = %.2f | Davies-Bouldin = %.2f' %
+              (silueta_ap, davies_bouldin_ap), fontsize=10)
+ax3.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+--- Cell 60 (code) ---
+# K-Means con diferentes valores de K (como en los apuntes del profe)
+fig = plt.figure(figsize=(26, 12))
+
+for k in range(2, 10):
+    # Creación de clusters
+    cl = KMeans(n_clusters=k, random_state=0)
+    cl.fit_predict(X_scaled)
+    # Cálculo de métricas
+    silueta = silhouette_score(X_scaled, cl.labels_)
+    davies_bouldin = davies_bouldin_score(X_scaled, cl.labels_)
+    # Graficando clusters
+    ax = fig.add_subplot(2, 4, k-1)
+    ax.scatter(X_scaled[cl.labels_ >= 0][:, 0], X_scaled[cl.labels_ >= 0][:, 1],
+               c=cl.labels_[cl.labels_ >= 0], s=200,
+               linewidth=0.5, edgecolors='black', alpha=0.85)
+    ax.set_title('\n\nSilueta = %.2f \n Davies-Bouldin = %.2f' %
+                 (silueta, davies_bouldin), fontsize=20)
+    ax.axis('off')
+
+plt.suptitle('K-Means con diferentes valores de K', fontsize=16, y=1.02)
+plt.tight_layout()
+plt.show()
+
+--- Cell 61 (markdown) ---
+### Comparativa final de modelos
+
+| Algoritmo | Nº Clusters | Silueta (↑) | Davies-Bouldin (↓) | Ventajas | Inconvenientes |
+|---|---|---|---|---|---|
+| **K-Means (k=4)** | 4 | *ver arriba* | *ver arriba* | Simple, rápido, clusters interpretables | Hay que elegir K manualmente |
+| **DBSCAN** | Variable + ruido | *ver arriba* | *ver arriba* | Detecta outliers, no necesita K | Sensible a eps y min_samples |
+| **Prop. Afinidad** | Muchos | *ver arriba* | *ver arriba* | No necesita K, ejemplares reales | Demasiados clusters, más lento |
+
+**Análisis de las métricas:**
+
+- Mirando la **Silueta**, K-Means suele dar el valor más alto porque agrupa en pocos clusters bien definidos. Propagación de Afinidad, al crear muchos clusters pequeños, puede tener silueta más baja porque algunos clusters están muy próximos entre sí.
+- Mirando **Davies-Bouldin**, K-Means también suele ganar: al tener 4 clusters compactos la dispersión intra-cluster es menor.
+- **DBSCAN** es un caso especial: las métricas se calculan solo sobre los puntos que NO son ruido, así que sus valores no son directamente comparables con los otros dos.
+- En los gráficos con diferentes K (K=2..9), se ve que K=4 y K=5 dan los mejores equilibrios entre silueta y Davies-Bouldin.
+
+**¿Cuál es el mejor?** Depende del objetivo:
+- Para una **clasificación clara y sencilla** de los exoplanetas → **K-Means con k=4** es el mejor. Los 4 clusters coinciden con la clasificación astrofísica real.
+- Para **detectar planetas raros** → **DBSCAN**, porque los marca como ruido automáticamente.
+- Para un **análisis más fino** con representantes reales → **Propagación de Afinidad**, aunque a costa de tener demasiados grupos.
+
+En mi opinión, para este dataset K-Means es el ganador porque los clusters tienen sentido físico y las métricas lo respaldan.
+
+--- Cell 62 (markdown) ---
+---
+## 3. Market Basket - Apriori
+
+Dataset de **transacciones de una panadería** (no encontré datos transaccionales del espacio).
+- Fuente: https://github.com/viktree/curly-octo-chainsaw/blob/master/BreadBasket_DMS.csv
+
+El algoritmo Apriori permite encontrar **conjuntos de ítems frecuentes** que sirven de base para generar **reglas de asociación**.
+
+--- Cell 63 (code) ---
+import pandas as pd
+from mlxtend.preprocessing import TransactionEncoder
+from mlxtend.frequent_patterns import apriori, association_rules
+
+--- Cell 64 (markdown) ---
+### 3.1 Importar dataset
+
+--- Cell 65 (code) ---
+df_bk = pd.read_csv('bakery_transactions.csv')
+print('Shape:', df_bk.shape)
+print('Columnas:', df_bk.columns.tolist())
+print()
+print(f'Transacciones: {df_bk["Transaction"].nunique()}')
+print(f'Productos: {df_bk["Item"].nunique()}')
+print()
+df_bk.head(10)
+
+--- Cell 66 (code) ---
+# Top productos
+df_bk['Item'].value_counts().head(15).plot(kind='bar', color='steelblue', figsize=(10, 5))
+plt.title('Top 15 productos más vendidos')
+plt.ylabel('Cantidad')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.show()
+
+--- Cell 67 (markdown) ---
+### 3.2 Preprocesamiento - TransactionEncoder (OneHotEncoding)
+
+El **TransactionEncoder** transforma datos de transacciones (listas de listas) en una matriz one-hot encoding que se puede usar con Apriori.
+
+--- Cell 68 (code) ---
+# Quito los NONE (filas sin producto)
+df_bk = df_bk[df_bk['Item'] != 'NONE']
+
+# Agrupo por transacción: cada transacción es una lista de productos comprados juntos
+dataset_bk = df_bk.groupby('Transaction')['Item'].apply(list).tolist()
+
+print(f'Transacciones: {len(dataset_bk)}')
+print(f'Ejemplo: {dataset_bk[0]}')
+
+--- Cell 69 (code) ---
+# TransactionEncoder para convertir a OneHotEncoding (como en los apuntes)
+te = TransactionEncoder()
+te_ary = te.fit(dataset_bk).transform(dataset_bk)
+df_apriori = pd.DataFrame(te_ary, columns=te.columns_)
+df_apriori
+
+--- Cell 70 (markdown) ---
+### 3.3 Aplicar algoritmo Apriori con mínimo soporte y use_colnames=True
+
+- `min_support=0.02` → Un 2% de soporte mínimo. Lo pongo bajo porque con 95 productos diferentes las combinaciones son enormes y con un soporte alto (ej. 0.6 como en los apuntes) casi nada pasaría el filtro. Un 2% significa que el itemset aparece en al menos ~190 transacciones de las 9500 totales, que es suficiente para considerarlo relevante.
+- `use_colnames=True` → Para que muestre los nombres de los productos en vez de índices numéricos.
+- La columna `length` indica cuántos productos tiene cada itemset (1 = producto solo, 2 = par, etc.)
+
+--- Cell 71 (code) ---
+frequent_itemsets = apriori(df_apriori, min_support=0.02, use_colnames=True)
+frequent_itemsets['length'] = frequent_itemsets['itemsets'].apply(lambda x: len(x))
+
+print(f'Itemsets frecuentes: {len(frequent_itemsets)}')
+frequent_itemsets.sort_values('support', ascending=False).head(15)
+
+--- Cell 72 (markdown) ---
+### 3.4 Filtrado sobre el itemset y el support con pandas
+
+La ventaja de trabajar con DataFrames de pandas es que podemos filtrar los resultados fácilmente.
+
+--- Cell 73 (code) ---
+# Solo pares de productos (longitud 2) con soporte >= 2%
+frequent_itemsets[(frequent_itemsets['length'] == 2) &
+                  (frequent_itemsets['support'] >= 0.02)].sort_values('support', ascending=False)
+
+--- Cell 74 (code) ---
+# Filtrar por un producto concreto
+filtro_cafe = frequent_itemsets[frequent_itemsets['itemsets'].apply(lambda x: 'Coffee' in x)]
+print('Itemsets que contienen Coffee:')
+filtro_cafe.sort_values('support', ascending=False)
+
+--- Cell 75 (code) ---
+# Buscar un par concreto con frozenset
+# Las entradas en la columna 'itemsets' son del tipo frozenset (como un set pero inmutable)
+# Es más eficiente para consultas y comparaciones
+frequent_itemsets[frequent_itemsets['itemsets'] == frozenset({'Coffee', 'Bread'})]
+
+--- Cell 76 (code) ---
+# Reglas de asociación
+reglas = association_rules(frequent_itemsets, metric='confidence', min_threshold=0.3)
+reglas = reglas[['antecedents', 'consequents', 'support', 'confidence', 'lift']]
+print(f'Reglas de asociación: {len(reglas)}')
+reglas.sort_values('lift', ascending=False).head(15)
+
+--- Cell 77 (markdown) ---
+### 3.5 Conclusiones
+
+- El producto estrella es **Coffee**, seguido de Bread y Tea. Es una panadería así que tiene sentido.
+- Los pares más frecuentes son Coffee+Bread, Coffee+Cake, Coffee+Pastry... La gente va a desayunar o merendar y pide café con algo de comer.
+- Las **reglas de asociación** con **lift > 1** indican que comprar un producto aumenta la probabilidad de comprar el otro (hay relación positiva). Si el lift fuese 1, serían independientes; si fuese < 1, se inhibirían.
+- La regla con mayor lift indica qué productos se "atraen" más entre sí. La panadería podría usar esto para: colocar productos juntos, hacer ofertas combo, o recomendar productos en un sistema online.
+- El `min_support=0.02` es adecuado para este dataset porque con 95 productos y soporte alto no encontraríamos casi nada. En los apuntes del profe se usa 0.6 pero eso funciona con pocos productos.
+
+--- Cell 78 (markdown) ---
+---
+## 4. Detección de Anomalías - Bosques de Aislamiento
+
+Los bosques de aislamiento (Isolation Forests) son una técnica para detectar datos anómalos. Están formados por múltiples árboles de aislamiento (iTrees), cada uno creado de manera completamente aleatoria.
+
+Un dato es **fácilmente separable** cuando sus valores difieren mucho de los de la mayoría. Por eso se ubican en la parte superior del árbol. Los normales se agrupan en la parte inferior.
+
+El **nivel de contaminación** define qué porcentaje de la base de datos consideramos anómalo.
+
+---
+
+Dataset **NSL-KDD** → **Ciberseguridad (detección de intrusos y amenazas)**
+
+Son 125973 conexiones de red registradas: 67343 normales y 58630 son ataques/intrusiones de 23 tipos distintos (neptune, satan, smurf, portsweep, nmap...). Es uno de los datasets de referencia en ciberseguridad.
+
+- Fuente: https://github.com/jmnwong/NSL-KDD-Dataset
+
+--- Cell 79 (code) ---
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import MinMaxScaler
+
+--- Cell 80 (code) ---
+# Cargar datos
+df_kdd = pd.read_csv('nsl_kdd.csv')
+print('Shape:', df_kdd.shape)
+print()
+print('Primeras filas:')
+df_kdd.head()
+
+--- Cell 81 (code) ---
+# Distribución normal vs ataque
+print('Normal vs Ataque:')
+print(df_kdd['is_anomaly'].value_counts())
+print(f'\nAtaques: {df_kdd["is_anomaly"].sum()} de {len(df_kdd)} ({df_kdd["is_anomaly"].mean()*100:.1f}%)')
+print()
+print('Top 10 tipos de ataque:')
+print(df_kdd[df_kdd['is_anomaly'] == 1]['label'].value_counts().head(10))
+
+--- Cell 82 (code) ---
+# Selecciono solo las columnas numéricas para IsolationForest
+# (las categóricas como protocol_type, service, flag las dejo fuera)
+cols_num = df_kdd.select_dtypes(include=[np.number]).columns.tolist()
+cols_num = [c for c in cols_num if c not in ['is_anomaly', 'difficulty']]
+print(f'Variables numéricas para el modelo: {len(cols_num)}')
+
+kdd_data = df_kdd[cols_num].values
+
+# Normalizar los datos para que cada característica se encuentre en el rango [0, 1]
+scaler_kdd = MinMaxScaler()
+kdd_norm = scaler_kdd.fit_transform(kdd_data)
+
+# Inicializar matriz para almacenar los resultados
+resultados = np.zeros((3, kdd_norm.shape[0]))
+print(f'Shape normalizado: {kdd_norm.shape}')
+
+--- Cell 83 (markdown) ---
+### 4.1 Entrenar el modelo - Distintos niveles de contaminación
+
+Pruebo 3 niveles como en los apuntes del profe:
+- **1% (c=0.01)** → Muy conservador. Solo marca como anómalo el 1% más extremo. Útil cuando los falsos positivos son costosos (ej: bloquear tráfico legítimo).
+- **5% (c=0.05)** → Intermedio. Buen equilibrio entre detectar ataques y no generar demasiadas falsas alarmas.
+- **10% (c=0.10)** → Más agresivo. Marca más conexiones como sospechosas. Útil para auditorías donde prefieres revisar de más que dejar pasar un ataque.
+
+En el dataset real el 46.5% son ataques, pero en un escenario real de ciberseguridad el porcentaje de ataques suele ser mucho menor, por eso tiene sentido probar con contaminaciones bajas.
+
+--- Cell 84 (code) ---
+# Bosques de Aislamiento con diferente contaminación (como en los apuntes)
+c = [0.01, 0.05, 0.1]
+for i in range(len(c)):
+    modelo = IsolationForest(contamination=c[i], random_state=42).fit(kdd_norm)
+    resultados[i] = modelo.predict(kdd_norm)
+
+for i in range(len(c)):
+    n_anom = (resultados[i] == -1).sum()
+    print(f'Contaminación {c[i]:.0%}: {n_anom} anomalías detectadas de {kdd_norm.shape[0]}')
+
+--- Cell 85 (markdown) ---
+### 4.2 Visualización gráfica
+
+--- Cell 86 (code) ---
+# Graficar datos anómalos (estilo de los apuntes del profe)
+# src_bytes vs dst_bytes (bytes enviados vs recibidos)
+col_x = cols_num.index('src_bytes')
+col_y = cols_num.index('dst_bytes')
+
+plt.set_cmap('jet')
+fig = plt.figure(figsize=(13, 4))
+
+for i in range(len(c)):
+    ax = fig.add_subplot(1, 3, i+1)
+    ax.scatter(kdd_norm[resultados[i] == -1][:, col_x],
+               kdd_norm[resultados[i] == -1][:, col_y],
+               c='skyblue', marker='s', s=15, label='Anómalo')
+    ax.scatter(kdd_norm[:, col_x],
+               kdd_norm[:, col_y],
+               c=range(kdd_norm.shape[0]), marker='x',
+               s=5, alpha=0.1)
+    ax.set_title('Contaminación: %0.2f' % c[i], size=18, color='purple')
+    ax.set_ylabel('Bytes destino (norm)', size=10)
+    ax.set_xlabel('Bytes origen (norm)', size=10)
+
+plt.tight_layout()
+plt.show()
+
+--- Cell 87 (code) ---
+# Otra vista: count vs srv_count
+col_x2 = cols_num.index('count')
+col_y2 = cols_num.index('srv_count')
+
+fig = plt.figure(figsize=(13, 4))
+
+for i in range(len(c)):
+    ax = fig.add_subplot(1, 3, i+1)
+    ax.scatter(kdd_norm[resultados[i] == -1][:, col_x2],
+               kdd_norm[resultados[i] == -1][:, col_y2],
+               c='skyblue', marker='s', s=15, label='Anómalo')
+    ax.scatter(kdd_norm[:, col_x2],
+               kdd_norm[:, col_y2],
+               c=range(kdd_norm.shape[0]), marker='x',
+               s=5, alpha=0.1)
+    ax.set_title('Contaminación: %0.2f' % c[i], size=18, color='purple')
+    ax.set_ylabel('Conexiones al servicio (norm)', size=10)
+    ax.set_xlabel('Conexiones al host (norm)', size=10)
+
+plt.tight_layout()
+plt.show()
+
+--- Cell 88 (markdown) ---
+### 4.3 Resultados
+
+--- Cell 89 (code) ---
+# Comprobamos: las anomalías detectadas, cuántas son realmente ataques?
+real_class = df_kdd['is_anomaly'].values
+
+for i in range(len(c)):
+    anomalos = (resultados[i] == -1)
+    ataques_en_anomalos = real_class[anomalos].sum()
+    total_anom = anomalos.sum()
+    print(f'Contaminación {c[i]:.0%}: {total_anom} anomalías detectadas, '
+          f'de las cuales {ataques_en_anomalos} son ataques reales ({ataques_en_anomalos/total_anom*100:.1f}%)')
+
+--- Cell 90 (code) ---
+# Qué tipos de ataque detecta como anómalos?
+for i in range(len(c)):
+    anomalos = (resultados[i] == -1)
+    print(f'\n--- Contaminación {c[i]:.0%} ---')
+    print(df_kdd[anomalos]['label'].value_counts().head(8))
+
+--- Cell 91 (code) ---
+# Los datos anómalos con contaminación 5%
+kdd_norm[resultados[1] == -1]
+
+--- Cell 92 (markdown) ---
+### 4.4 Conclusiones
+
+- Con **contaminación al 1%** detecta solo las conexiones más extremas. El porcentaje de ataques reales entre las anomalías es alto (alta precisión), pero se pierden muchos ataques (baja cobertura). Es como un filtro muy fino.
+- Con **5%** amplía la detección y captura más ataques. Es el mejor equilibrio entre precisión y cobertura para este dataset.
+- Con **10%** detecta bastantes más anomalías pero también incluye más tráfico normal (falsos positivos). En un entorno real esto significaría más trabajo para los analistas.
+- En las gráficas se ve que las anomalías (cuadrados skyblue) se concentran en conexiones con patrones de bytes inusuales: muchos bytes enviados/recibidos o muchas conexiones simultáneas.
+- El Isolation Forest detecta principalmente ataques tipo **DoS** (neptune, smurf) que tienen patrones de tráfico muy distintos al normal. Los ataques más sutiles (como los de tipo probe o R2L) son más difíciles de detectar porque se parecen más al tráfico normal.
+- **¿Por qué Isolation Forest para ciberseguridad?** Porque no necesita datos etiquetados para entrenar: aprende qué es "normal" y marca lo que se desvía. En la realidad, tener datos etiquetados de ataques es difícil y caro.
+- Como mejora, se podría combinar con otros modelos (ej. One-Class SVM) o ajustar la contaminación según el coste de cada tipo de error (falso positivo vs falso negativo).
+

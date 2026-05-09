@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FacturasOCR.Paginas.PaginaDetalle"
+             Title="Detalle de Factura">
+
+    <Grid RowDefinitions="Auto,200,Auto,*,Auto" Padding="15" RowSpacing="10">
+
+        <!-- Fila 0: Info resumen -->
+        <VerticalStackLayout Spacing="4">
+            <Label x:Name="lblFileName"
+                   FontSize="18"
+                   FontAttributes="Bold" />
+            <Label x:Name="lblDate"
+                   FontSize="13"
+                   TextColor="Gray" />
+        </VerticalStackLayout>
+
+        <!-- Fila 1: Imagen original de la factura -->
+        <Border Grid.Row="1"
+                Stroke="LightGray"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 8">
+            <Image x:Name="imgInvoice"
+                   Aspect="AspectFit"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" />
+        </Border>
+
+        <!-- Fila 2: Campos clave extraidos -->
+        <Border Grid.Row="2"
+                Stroke="#4B5563"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 8"
+                BackgroundColor="#1F2937"
+                Padding="12">
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" RowSpacing="8" ColumnSpacing="12">
+                <VerticalStackLayout>
+                    <Label x:Name="lblProviderLabel" Text="Proveedor" FontSize="11" TextColor="#9CA3AF" />
+                    <Label x:Name="lblVendor" FontSize="14" FontAttributes="Bold" TextColor="White" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label x:Name="lblInvoiceNumLabel" Text="N. Factura" FontSize="11" TextColor="#9CA3AF" />
+                    <Label x:Name="lblInvoiceId" FontSize="14" FontAttributes="Bold" TextColor="White" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Row="1">
+                    <Label x:Name="lblDateLabel" Text="Fecha" FontSize="11" TextColor="#9CA3AF" />
+                    <Label x:Name="lblInvoiceDate" FontSize="14" FontAttributes="Bold" TextColor="White" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Row="1" Grid.Column="1">
+                    <Label x:Name="lblTotalLabel" Text="Total" FontSize="11" TextColor="#9CA3AF" />
+                    <Label x:Name="lblTotal" FontSize="18" FontAttributes="Bold" TextColor="#34D399" />
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+
+        <!-- Fila 3: Texto completo extraido -->
+        <ScrollView Grid.Row="3">
+            <Editor x:Name="editorFullText"
+                    IsReadOnly="True"
+                    FontFamily="Consolas"
+                    FontSize="12"
+                    AutoSize="TextChanges" />
+        </ScrollView>
+
+        <!-- Fila 4: Botones de accion -->
+        <HorizontalStackLayout Grid.Row="4" Spacing="10">
+            <Button x:Name="btnBack" Text="Volver"
+                    Clicked="OnBackClicked"
+                    BackgroundColor="#6B7280"
+                    TextColor="White" />
+            <Button x:Name="btnShare" Text="Compartir"
+                    Clicked="OnShareClicked"
+                    BackgroundColor="#2563EB"
+                    TextColor="White" />
+            <Button x:Name="btnDelete" Text="Eliminar"
+                    Clicked="OnDeleteClicked"
+                    BackgroundColor="#DC2626"
+                    TextColor="White" />
+        </HorizontalStackLayout>
+
+    </Grid>
+
+</ContentPage>

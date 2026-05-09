@@ -1,0 +1,81 @@
+# Entornos virtuales
+venv/
+.venv/
+env/
+ENV/
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Node
+node_modules/
+dist/
+build/
+.next/
+out/
+.cache/
+
+# .NET
+bin/
+obj/
+*.pdb
+*.user
+*.suo
+
+# IDE
+.vs/
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Binarios pesados / datasets / artefactos
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.iso
+*.bin
+*.exe
+*.dll
+*.mp4
+*.mov
+
+# Credenciales (defensa en profundidad)
+kaggle.json
+credentials.json
+credentials*.json
+secrets.json
+secrets*.yaml
+*.pem
+*.key
+*.p12
+*.pfx
+service-account*.json
+
+# Logs
+*.log
+logs/
+
+# Obsidian
+.obsidian/plugins/
+.obsidian/workspace*

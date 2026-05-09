@@ -1,0 +1,115 @@
+============================================================
+TRANSCRIPCION DE VIDEO: Programacion Orientada a Objetos (POO) Explicada - Fazt
+URL: https://www.youtube.com/watch?v=SI7O81GMG2A
+Duracion: 9:28
+============================================================
+
+INDICE DE CONTENIDOS:
+- Minuto 00:00 - Introduccion a la POO
+- Minuto 01:00 - Clases, objetos e instancias
+- Minuto 02:00 - Herencia
+- Minuto 03:30 - Encapsulamiento
+- Minuto 05:30 - Abstraccion
+- Minuto 07:00 - Polimorfismo
+- Minuto 08:30 - Resumen y cierre
+
+------------------------------------------------------------
+
+[Minuto 00:00 - 00:28]
+La programación orientada a  objetos, POO para los amigos, es un paradigma de programación que modula  nuestro código haciéndolo más entendible y reutilizable. ¿Te apetece aprender sus  principios? ¿Te entra depresión cada vez que intentas aprenderlos? Venga  que esta vez si te vas a enterar La programación orientada a objetos, se basa en  crear tipos nuevos de datos a los que llamaremos,
+
+[Minuto 00:30 - 00:31]
+¡OBJETOS!
+
+[Minuto 00:31 - 01:04]
+Para ello trataremos a nuestro código como un  módulo con dos partes, propiedades y funciones. A los datos los llamaremos, atributos y  a las funciones, métodos. Los atributos son las propiedades que definen al objeto y  los métodos las acciones que puede realizar. Por ejemplo para una taza, los atributos  que son importantes para nosotros pueden ser el volumen total de la taza,  el líquido con el que esté rellena, y la cantidad de ese líquido. Los métodos  pueden ser llenar, beber o vaciar.
+
+[Minuto 01:04 - 01:10]
+Para especificar que queremos crear  un tipo de dato nuevo se usa la clase.
+
+[Minuto 01:10 - 01:36]
+La clase es la plantilla donde definiremos los  atributos y los métodos. Con esta plantilla se pueden crear objetos de ese tipo, dándole valores  a sus atributos, esto es conocido como instanciar. Para instanciarlo se hace  uso del método constructor, un método que sirve para crear el objeto y  darle los valores necesarios para iniciarlo.
+
+[Minuto 01:36 - 01:40]
+El nombre del método constructor  depende del lenguaje que estés usando,
+
+[Minuto 01:40 - 02:11]
+como init en Python o con el mismo nombre de  la clase en Java pero eso lo veremos en otro vídeo dedicado al lenguaje, nosotros,  por ahora, lo llamaremos constructor. Es importante que sepas que una vez creado  un objeto puedes acceder con un punto a sus atributos ya sea para consultarlos,... modificarlos,... o para utilizar sus métodos.
+
+[Minuto 02:13 - 02:15]
+¿Fácil hasta ahora, no?
+
+[Minuto 02:15 - 02:44]
+Ahora vamos a ver los 4 pilares de POO: Empecemos con, la Abstracción. Cuando nosotros hacemos una clase, tenemos que  seleccionar los atributos y métodos que va a tener. Si queremos definir qué es una Canción, no  es necesario incluir todas las características, tenemos que abstraernos, añadiendo solo las  necesarias para el objetivo que tengamos planeado. Por ejemplo, si tu objetivo es,  hacer una biblioteca de música,
+
+[Minuto 02:44 - 02:50]
+los atributos pueden ser, el nombre,  el artista, la duración y el género,
+
+[Minuto 02:50 - 03:16]
+como métodos pueden ser escuchar y el  constructor. En cambio si tu objetivo es usarlo como base de datos para una página  de ventas, los atributos pueden ser el nombre, el artista y el precio, como métodos pueden ser  comprar y el constructor. Con la abstracción, elegimos cuáles serán los atributos y los métodos  que definirán qué es una Canción para nosotros.
+
+[Minuto 03:16 - 03:23]
+Otro ejemplo es un Personaje para un juego.  Necesito un nombre, estadística de fuerza,
+
+[Minuto 03:23 - 03:50]
+inteligencia y defensa, una cantidad de vida, la  posición dónde está y un contador de acciones que pueda realizar. Sus métodos pueden ser Atacar,  Moverse y Turno. Añadimos el constructor y listo. Esta clase nos va a venir bien para  el siguiente pilar, la Encapsulación. Nosotros podemos hacer un programa por medio  de varias clases que se comuniquen entre sí,
+
+[Minuto 03:50 - 03:58]
+a esto se le llama Modularidad. Es bastante útil,  si falla algo en nuestro programa es más fácil
+
+[Minuto 03:58 - 04:21]
+detectar dónde y qué debemos arreglar. Cada clase  debe tener control propio de lo que sucede dentro de ella y tener los métodos adecuados para poder  ser utilizada desde fuera. Si nosotros usamos un punto con nuestra clase Personaje podríamos  tener acceso a todos los atributos y métodos que contiene, lo cuál puede ser peligroso, porque  podríamos alterar su comportamiento interno.
+
+[Minuto 04:21 - 04:28]
+Para solucionarlo, podemos declarar cuáles de  nuestros atributos y métodos van a ser privados.
+
+[Minuto 04:29 - 04:54]
+Esto es lo que se conoce como Encapsulación. Por ejemplo, para nuestra clase Personaje, queremos que entre sus 4 métodos,  solo sea accesible el constructor para poder crear el objeto y turno que  gestiona la funcionalidad de la clase. Turno, dependiendo del atributo contador, y los  deseos del usuario, controla las acciones de
+
+[Minuto 04:54 - 05:02]
+atacar y moverse gastando contadores cada vez que  se usen, si no hay contadores, el método termina.
+
+[Minuto 05:02 - 05:27]
+Como turno es quien controla la ejecución de los  métodos atacar y moverse, estos deben ser privados ya que no queremos que estos métodos se ejecuten  desde fuera sin ser gestionados por turno. Desde fuera no serían accesibles a través  del punto, evitando que se pudiera atacar o moverse sin restar contadores, pero turno al  estar dentro de la clase sí los podría usar.
+
+[Minuto 05:28 - 05:32]
+Al igual que con los métodos se puede  hacer lo mismo con los atributos.
+
+[Minuto 05:32 - 06:03]
+Puedes crear métodos de acceso y modificación de los atributos. Dentro de estos métodos  podemos tener control sobre ellos. Estos métodos se suelen nombrar con el  prefijo, get para acceder y set para modificar. Por ejemplo nosotros queremos que contador pueda  consultarse y modificarse desde fuera ya que es
+
+[Minuto 06:03 - 06:07]
+importante para que funcione correctamente  turno pero no queremos que se introduzca un
+
+[Minuto 06:07 - 06:36]
+número negativo. Dentro del método setContador  podemos incluir un if para asegurar que si se introduce un número negativo, no cambie el  valor de contador e informe que hay un fallo. En resumen, si no declaramos  los atributos como privados, podemos usar los atributos desde fuera sin ningún  tipo de control. Pero al declararlo como privado, estos no podrán consultarse ni modificarse  a no ser que usemos los métodos get y set.
+
+[Minuto 06:37 - 06:44]
+Definir atributos y métodos como  públicos o privados depende del lenguaje,
+
+[Minuto 06:44 - 07:10]
+eso lo veremos en otro vídeo, en este no veremos  nada de código. Pasemos a la, Herencia. Ahora queremos crear la clase Guerrero y Mago,  que tienen todos los atributos y métodos que tiene nuestra clase Personaje, más algunos  atributos y métodos nuevos. En vez de crear todo de nuevo, podemos reutilizar  la clase Personaje con la herencia.
+
+[Minuto 07:11 - 07:19]
+Tanto la clase Guerrero como Mago heredarán de  la clase Personaje todos sus atributos y métodos,
+
+[Minuto 07:19 - 07:45]
+y ya solo nos quedaría añadir los nuevos. A  la clase que hereda se le conoce como clase Padre o superclase y a la clase heredada  se le conoce como clase Hija o subclase. Por último queda el pilar del Polimorfismo,  esto permite a un método ser diferente según qué clase lo esté usando. Es decir,  puede tener muchas formas de usarse.
+
+[Minuto 07:46 - 07:52]
+Volviendo al ejemplo del Personaje, el  Guerrero y el Mago. Las tres clases tienen
+
+[Minuto 07:52 - 08:22]
+el método atacar que realizan la misma  acción, tienen el mismo código. Pero, después de la herencia podemos volver  a definir los métodos heredados. Por ejemplo, podemos cambiar la funcionalidad  del método atacar. Personaje usaba la estadística fuerza para atacar con las manos pero queremos  que el método atacar de la clase Guerrero haga otra cosa, como incrementar el daño a partir del  arma que use. O por ejemplo que la clase Mago,
+
+[Minuto 08:22 - 08:26]
+al usar libros pueda atacar por  medio de la estadística inteligencia.
+
+[Minuto 08:26 - 08:58]
+Esta ventaja se puede explotar sobre todo en  lenguajes fuertemente tipados como Java donde hay que declarar el tipo de la variable.  Si creas una variable de tipo Personaje, no podría recibir un objeto tipo canción, sólo  un objeto tipo Personaje o que herede de él. Si nosotros justo después llamamos al método  atacar para calcular cuánto daño ha realizado, según qué clase reciba, lo calculará  de distintas formas, guiño guiño.
+
+[Minuto 09:01 - 09:06]
+Esto es muy útil ya que así se puede  crear una función que calcule el daño
+
+[Minuto 09:06 - 09:35]
+independientemente de qué clase reciba.  Si no utilizáramos el polimorfismo por herencia, tendríamos que hacer una  función diferente por cada Clase. ¡Felicidades! Con estos cuatro pilares ya  sabes los principios de la Programación Orientada a Objetos. Ahora págame, o suscríbete, ¡es gratis! Y así podrás ver, en el siguiente  vídeo, toda esta teoría en Python, ¡nos vemos!

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RpaChatApp.LogsPage"
+             Title="Logs y observabilidad"
+             BackgroundColor="#0B141A">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+
+            <!-- Cabecera con estado y botón refrescar -->
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                    <Label Text="Estado del runner RPA"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#00A884"/>
+                    <Label Text="{Binding LogPath}"
+                           TextColor="#8696A0"
+                           FontSize="11"/>
+                    <Label Text="{Binding StatusText}"
+                           TextColor="#8696A0"
+                           FontSize="11"/>
+                </VerticalStackLayout>
+                <Button Grid.Column="1"
+                        Text="Refrescar"
+                        Command="{Binding RefreshCommand}"
+                        BackgroundColor="#10B981"
+                        TextColor="White"
+                        VerticalOptions="Center"/>
+            </Grid>
+
+            <!-- Log del runner -->
+            <Border Stroke="#2A3942" StrokeThickness="1" Padding="10"
+                    BackgroundColor="#0F1A1F" StrokeShape="RoundRectangle 8">
+                <ScrollView Orientation="Vertical" HeightRequest="280">
+                    <CollectionView ItemsSource="{Binding LogLines}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding .}"
+                                       FontFamily="Consolas, Courier New, monospace"
+                                       FontSize="11"
+                                       TextColor="#B7C2C9"
+                                       LineBreakMode="WordWrap"/>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </ScrollView>
+            </Border>
+
+            <!-- Capturas de pantalla en errores -->
+            <Border Stroke="#2A3942" StrokeThickness="1" Padding="15"
+                    BackgroundColor="#1F2C34" StrokeShape="RoundRectangle 10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Capturas de pantalla (errores del runner)"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           TextColor="#00A884"/>
+                    <Label Text="El runner guarda un PNG cada vez que un paso del workflow falla. Lo encontrarás también en data/screenshots/ del servidor."
+                           TextColor="#8696A0"
+                           FontSize="11"/>
+                    <CollectionView ItemsSource="{Binding Screenshots}"
+                                    HeightRequest="220">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <VerticalStackLayout Spacing="4" WidthRequest="220">
+                                    <Image Source="{Binding Url}"
+                                           Aspect="AspectFit"
+                                           HeightRequest="180"
+                                           BackgroundColor="#0F1A1F"/>
+                                    <Label Text="{Binding Name}"
+                                           TextColor="#E9EDEF"
+                                           FontSize="10"
+                                           LineBreakMode="MiddleTruncation"/>
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Traces de Playwright -->
+            <Border Stroke="#2A3942" StrokeThickness="1" Padding="15"
+                    BackgroundColor="#1F2C34" StrokeShape="RoundRectangle 10">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Traces Playwright (RPA_TRACE_ON_ERROR=1)"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           TextColor="#00A884"/>
+                    <Label Text="Inspecciona con: playwright show-trace &lt;ruta&gt;"
+                           TextColor="#8696A0"
+                           FontSize="11"/>
+                    <CollectionView ItemsSource="{Binding Traces}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding .}"
+                                       TextColor="#B7C2C9"
+                                       FontSize="11"
+                                       FontFamily="Consolas, Courier New, monospace"/>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Vídeos -->
+            <Border Stroke="#2A3942" StrokeThickness="1" Padding="15"
+                    BackgroundColor="#1F2C34" StrokeShape="RoundRectangle 10">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Vídeos del navegador (RPA_RECORD_VIDEO=1)"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           TextColor="#00A884"/>
+                    <Label Text="Disponibles en data/videos/ del servidor."
+                           TextColor="#8696A0"
+                           FontSize="11"/>
+                    <CollectionView ItemsSource="{Binding Videos}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding .}"
+                                       TextColor="#B7C2C9"
+                                       FontSize="11"
+                                       FontFamily="Consolas, Courier New, monospace"/>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

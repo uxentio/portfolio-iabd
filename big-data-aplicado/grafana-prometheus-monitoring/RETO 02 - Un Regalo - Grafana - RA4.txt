@@ -1,0 +1,50 @@
+RETO 02 - Un Regalo - Grafana - RA4
+Requisitos de finalización
+Apertura: martes, 17 de marzo de 2026, 09:05
+Cierre: martes, 17 de marzo de 2026, 23:05
+
+En esta tarea, el alumnado deberá ejecutar el entorno v6, ubicado en Temas/UT4/Archivos.
+
+Ejercicio 1.
+Ejecutar el entorno v6 y comprobar que todo funciona correctamente.
+Importante: el contenedor airflow init solo debe ejecutarse una única vez.
+
+A continuación, se deberá:
+
+    Abrir Grafana.
+
+    Mantenerlo abierto durante 30 segundos.
+
+    Apagar un datanode durante 1 minuto.
+
+    Volver a activarlo y esperar 1 minuto más.
+
+Como resultado, se deberá realizar una captura de pantalla en la que se observe que ese servicio deja de funcionar. Si no se aprecia a la primera, deberá dejarse más tiempo hasta que el fallo sea visible.
+
+Criterios de puntuación. Total 10 puntos.
+
+EJERCICIO 1.Captura de Grafana con la comprobación de desactivación y activación de datanode.
+
+Recursos necesarios para realizar la Tarea.
+
+Para realizar esta tarea se necesita:
+
+Entorno v6
+
+Consejos y recomendaciones.
+
+- Se recomienda realizar la práctica dentro de un entorno virtual(DOCKER) para evitar conflictos de dependencias.
+
+Indicaciones de entrega.
+
+Una vez realizada la tarea elaborarás un único documento en PDF donde figuren las respuestas correspondientes.
+
+El documento deberá incluir, al menos:
+
+- Captura de los contenedores levantados.
+
+- Captura de Grafana con lo pedido
+
+El envío se realizará a través de la plataforma de la forma establecida para ello, y el archivo se nombrará siguiendo el siguiente patrón: apellido1_apellido2_nombre_TareaXX
+
+Asegúrate de que el nombre no contenga la letra ñ, tildes ni caracteres especiales extraños. Así por ejemplo la alumna Begoña Sánchez Mañas para la octava tarea, debería nombrar esta tarea como... sanchez_manas_begona_Tarea08

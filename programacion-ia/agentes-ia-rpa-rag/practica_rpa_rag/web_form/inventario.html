@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario · Sección de la biblioteca</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --primary: #818cf8;
+            --primary-soft: rgba(129, 140, 248, .14);
+            --bg-base: #0b1220;
+            --surface: #111827;
+            --surface-2: #1e293b;
+            --field: #1e293b;
+            --field-hover: #273548;
+            --line: #243044;
+            --ink-100: #e2e8f0;
+            --ink-300: #cbd5e1;
+            --ink-500: #94a3b8;
+            --ink-700: #64748b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background:
+                radial-gradient(1100px 700px at 0% -10%, rgba(79,70,229,.10), transparent 60%),
+                radial-gradient(900px 500px at 100% 0%, rgba(99,102,241,.08), transparent 55%),
+                var(--bg-base);
+            min-height: 100vh;
+            padding: 48px 24px;
+            color: var(--ink-100);
+            -webkit-font-smoothing: antialiased;
+        }
+        .container { max-width: 1280px; margin: 0 auto; }
+        .card {
+            background: var(--surface);
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            box-shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.35);
+            overflow: hidden;
+        }
+        .nav-pills { display: flex; gap: 4px; padding: 18px 28px 0; flex-wrap: wrap; }
+        .nav-pills a {
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: .82rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--ink-500);
+            transition: background .15s, color .15s;
+        }
+        .nav-pills a:hover { color: var(--ink-100); background: var(--surface-2); }
+        .nav-pills a.active { color: var(--primary); background: var(--primary-soft); }
+
+        .header-row {
+            display: flex; gap: 14px; align-items: center;
+            padding: 18px 28px 22px;
+            border-bottom: 1px solid var(--line);
+            background: linear-gradient(180deg, var(--surface) 0%, #131c2e 100%);
+            flex-wrap: wrap;
+        }
+        .icon-box {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 14px rgba(79,70,229,.45);
+            flex-shrink: 0;
+        }
+        h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: -.01em; }
+        .subtitle { font-size: .82rem; color: var(--ink-500); margin-top: 2px; }
+        .stats { margin-left: auto; display: flex; gap: 12px; flex-wrap: wrap; }
+        .stat {
+            background: var(--surface-2);
+            border: 1px solid var(--line);
+            padding: 8px 14px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 90px;
+        }
+        .stat .label { font-size: .65rem; color: var(--ink-500); text-transform: uppercase; letter-spacing: .6px; }
+        .stat .value { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+
+        .toolbar { padding: 16px 28px; border-bottom: 1px solid var(--line); display: flex; gap: 12px; align-items: center; }
+        .toolbar input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: var(--field);
+            color: var(--ink-100);
+            font-size: .9rem;
+            font-family: inherit;
+            transition: border-color .15s, box-shadow .15s, background .15s;
+        }
+        .toolbar input:focus { outline: none; border-color: var(--primary); background: var(--field-hover); box-shadow: 0 0 0 4px var(--primary-soft); }
+        .btn-refresh {
+            padding: 10px 16px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: var(--surface-2);
+            color: var(--ink-100);
+            font-weight: 600;
+            font-size: .85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+        }
+        .btn-refresh:hover { background: var(--field-hover); border-color: #38476a; }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead {
+            background: var(--surface-2);
+            position: sticky;
+            top: 0;
+        }
+        th {
+            text-align: left;
+            padding: 10px 14px;
+            font-size: .68rem;
+            font-weight: 700;
+            color: var(--ink-300);
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            border-bottom: 1px solid var(--line);
+            white-space: nowrap;
+        }
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--line);
+            font-size: .85rem;
+            color: var(--ink-100);
+            vertical-align: middle;
+        }
+        tbody tr:hover { background: var(--surface-2); }
+        tbody tr:last-child td { border-bottom: none; }
+        .id-pill, .sig-pill {
+            display: inline-block;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: .75rem;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 999px;
+        }
+        .id-pill   { color: var(--primary); background: var(--primary-soft); border: 1px solid rgba(129,140,248,.25); }
+        .sig-pill  { color: #fcd34d; background: rgba(251,191,36,.12); border: 1px solid rgba(251,191,36,.25); }
+        .cat-badge {
+            display: inline-block;
+            font-size: .68rem;
+            font-weight: 600;
+            padding: 2px 9px;
+            border-radius: 999px;
+            text-transform: capitalize;
+            white-space: nowrap;
+        }
+        .cat-novela    { background: rgba(167,139,250,.18); color: #c4b5fd; }
+        .cat-poesia    { background: rgba(244,114,182,.18); color: #f9a8d4; }
+        .cat-teatro    { background: rgba(244,114,182,.14); color: #f9a8d4; }
+        .cat-ensayo    { background: rgba(96,165,250,.18); color: #93c5fd; }
+        .cat-biografia { background: rgba(96,165,250,.12); color: #93c5fd; }
+        .cat-historia  { background: rgba(251,191,36,.18); color: #fcd34d; }
+        .cat-ciencia   { background: rgba(52,211,153,.18); color: #6ee7b7; }
+        .cat-filosofia { background: rgba(167,139,250,.12); color: #c4b5fd; }
+        .cat-religion  { background: rgba(167,139,250,.10); color: #c4b5fd; }
+        .cat-arte      { background: rgba(244,114,182,.10); color: #f9a8d4; }
+        .cat-infantil  { background: rgba(251,191,36,.14); color: #fcd34d; }
+        .cat-juvenil   { background: rgba(251,191,36,.10); color: #fcd34d; }
+        .cat-comic     { background: rgba(244,114,182,.18); color: #f9a8d4; }
+        .cat-manual    { background: rgba(251,191,36,.18); color: #fcd34d; }
+        .cat-referencia{ background: rgba(96,165,250,.10); color: #93c5fd; }
+        .cat-viajes    { background: rgba(52,211,153,.10); color: #6ee7b7; }
+        .cat-cocina    { background: rgba(244,114,182,.10); color: #f9a8d4; }
+        .cat-autoayuda { background: rgba(52,211,153,.10); color: #6ee7b7; }
+        .cat-idiomas   { background: rgba(96,165,250,.14); color: #93c5fd; }
+        .cat-otros     { background: rgba(148,163,184,.14); color: #cbd5e1; }
+        .num { font-variant-numeric: tabular-nums; text-align: right; }
+        .copies-bar {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-variant-numeric: tabular-nums;
+        }
+        .copies-bar .available { font-weight: 700; }
+        .copies-bar .available.low { color: #fca5a5; }
+        .copies-bar .available.ok  { color: #6ee7b7; }
+        .copies-bar .total { color: var(--ink-500); }
+        .empty {
+            padding: 60px 28px;
+            text-align: center;
+            color: var(--ink-500);
+            font-size: .9rem;
+        }
+        .small { color: var(--ink-500); font-size: .78rem; }
+
+        /* ============== Modal de ficha del libro ============== */
+        tbody tr { cursor: pointer; }
+        tbody tr:hover { background: var(--surface-2); }
+
+        .modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(7, 11, 22, .75);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            animation: fadeIn .2s ease;
+        }
+        .modal-backdrop.show { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: 0 24px 60px rgba(0,0,0,.6);
+            max-width: 760px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp .25s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .modal-head {
+            display: flex; gap: 12px; align-items: center;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--line);
+            background: linear-gradient(180deg, var(--surface) 0%, #131c2e 100%);
+        }
+        .modal-head h2 { font-size: 1.05rem; font-weight: 700; flex: 1; }
+        .modal-close {
+            width: 32px; height: 32px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface-2);
+            color: var(--ink-300);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background .15s, color .15s;
+        }
+        .modal-close:hover { background: var(--field-hover); color: var(--ink-100); }
+
+        .modal-body { padding: 24px; display: grid; grid-template-columns: 200px 1fr; gap: 28px; }
+        .modal-cover {
+            width: 200px;
+            min-height: 280px;
+            background: var(--surface-2);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            color: var(--ink-700);
+            font-size: .8rem;
+            text-align: center;
+            padding: 20px;
+        }
+        .modal-cover img { width: 100%; height: auto; display: block; }
+        .modal-cover.loading::after {
+            content: 'Cargando portada...';
+        }
+
+        .modal-data h1 { font-size: 1.4rem; font-weight: 700; line-height: 1.25; margin-bottom: 4px; }
+        .modal-data .author { font-size: 1rem; color: var(--ink-300); margin-bottom: 16px; }
+        .modal-data dl {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            gap: 6px 12px;
+            font-size: .85rem;
+            margin-bottom: 16px;
+        }
+        .modal-data dt { color: var(--ink-500); font-weight: 600; }
+        .modal-data dd { color: var(--ink-100); font-variant-numeric: tabular-nums; }
+        .modal-data dd .id-pill, .modal-data dd .sig-pill { font-size: .72rem; }
+        .modal-data dd .copies-bar { font-size: .9rem; }
+
+        .modal-section-title {
+            font-size: .7rem;
+            font-weight: 700;
+            color: var(--ink-300);
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            margin-bottom: 6px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+        }
+        .modal-synopsis {
+            font-size: .9rem;
+            color: var(--ink-100);
+            line-height: 1.55;
+            white-space: pre-wrap;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+        .modal-synopsis.empty {
+            color: var(--ink-500);
+            font-style: italic;
+            padding: 0;
+            text-align: left;
+        }
+        .modal-sources { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; font-size: .7rem; color: var(--ink-500); align-items: center; }
+        .modal-sources a {
+            color: var(--primary);
+            text-decoration: none;
+            padding: 4px 10px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            font-weight: 600;
+            transition: background .15s, border-color .15s;
+        }
+        .modal-sources a:hover { background: var(--surface-2); border-color: var(--primary); }
+
+        @media (max-width: 700px) {
+            .modal-body { grid-template-columns: 1fr; }
+            .modal-cover { margin: 0 auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <nav class="nav-pills" aria-label="Procedimientos">
+                <a href="./index.html">Alta</a>
+                <a href="./prestamo.html">Préstamo</a>
+                <a href="./devolucion.html">Devolución</a>
+                <a href="./ajustar_copias.html">Ajustar copias</a>
+                <a href="./baja.html">Baja</a>
+                <a href="./inventario.html" class="active">Inventario</a>
+            </nav>
+
+            <header class="header-row">
+                <div class="icon-box" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-4"/>
+                        <path d="M9 11V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v7"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>Fondo de la sección</h1>
+                    <p class="subtitle">Catálogo bibliográfico con número de registro, signatura topográfica y disponibilidad.</p>
+                </div>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="label">Títulos</div>
+                        <div class="value" id="stat_titulos">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Ejemplares</div>
+                        <div class="value" id="stat_total">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Disponibles</div>
+                        <div class="value" id="stat_disp">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Prestados</div>
+                        <div class="value" id="stat_prest">—</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="toolbar">
+                <input type="text" id="filter" placeholder="Filtrar por nº de registro, título, autor, ISBN o editorial..." autocomplete="off">
+                <button class="btn-refresh" id="btn_refresh">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"/>
+                        <polyline points="1 20 1 14 7 14"/>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                    </svg>
+                    Refrescar
+                </button>
+            </div>
+
+            <div id="table_wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nº reg.</th>
+                            <th>Signatura</th>
+                            <th>Título</th>
+                            <th>Autor</th>
+                            <th>Editorial</th>
+                            <th>Año</th>
+                            <th>ISBN</th>
+                            <th>Género</th>
+                            <th>Idioma</th>
+                            <th class="num">Páginas</th>
+                            <th class="num">Copias</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+                <div id="empty" class="empty" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============== Modal de ficha del libro ============== -->
+    <div class="modal-backdrop" id="modal" onclick="if(event.target.id==='modal') cerrarFicha()">
+        <div class="modal" role="dialog" aria-labelledby="modal_title">
+            <header class="modal-head">
+                <h2 id="modal_title">Ficha del libro</h2>
+                <button class="modal-close" onclick="cerrarFicha()" aria-label="Cerrar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </header>
+            <div class="modal-body">
+                <div class="modal-cover" id="modal_cover">
+                    <span id="modal_cover_msg">Sin portada disponible</span>
+                </div>
+                <div class="modal-data">
+                    <h1 id="modal_book_title"></h1>
+                    <div class="author" id="modal_book_author"></div>
+                    <dl id="modal_dl"></dl>
+
+                    <div class="modal-section-title">Sinopsis</div>
+                    <div class="modal-synopsis" id="modal_synopsis">Cargando...</div>
+
+                    <div class="modal-sources" id="modal_sources"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let libros = [];
+
+        async function cargar() {
+            try {
+                const resp = await fetch('/api/libros');
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                libros = await resp.json();
+                render();
+            } catch (err) {
+                document.getElementById('tbody').innerHTML = '';
+                const empty = document.getElementById('empty');
+                empty.style.display = 'block';
+                empty.textContent = `Error al cargar el catálogo: ${err.message}`;
+            }
+        }
+
+        function render() {
+            const filtro = document.getElementById('filter').value.trim().toLowerCase();
+            const visibles = filtro
+                ? libros.filter(l =>
+                    (l.id || '').toLowerCase().includes(filtro) ||
+                    (l.titulo || '').toLowerCase().includes(filtro) ||
+                    (l.autor || '').toLowerCase().includes(filtro) ||
+                    (l.isbn || '').toLowerCase().includes(filtro) ||
+                    (l.editorial || '').toLowerCase().includes(filtro))
+                : libros;
+
+            document.getElementById('stat_titulos').textContent = visibles.length;
+            const total = visibles.reduce((acc, l) => acc + (parseInt(l.copias_total, 10) || 0), 0);
+            const disp  = visibles.reduce((acc, l) => acc + (parseInt(l.copias_disponibles, 10) || 0), 0);
+            document.getElementById('stat_total').textContent = total;
+            document.getElementById('stat_disp').textContent = disp;
+            document.getElementById('stat_prest').textContent = total - disp;
+
+            const tbody = document.getElementById('tbody');
+            const empty = document.getElementById('empty');
+            if (visibles.length === 0) {
+                tbody.innerHTML = '';
+                empty.style.display = 'block';
+                empty.innerHTML = filtro
+                    ? `Sin resultados para "${esc(filtro)}".`
+                    : 'No hay libros en el fondo. Da de alta el primero desde la pestaña <a href="./index.html" style="color:var(--primary)">Alta</a>.';
+                return;
+            }
+            empty.style.display = 'none';
+            tbody.innerHTML = visibles.map(filaPara).join('');
+        }
+
+        function filaPara(l) {
+            const cat = (l.categoria || '').toLowerCase();
+            const catCls = `cat-${cat}` || '';
+            const total = parseInt(l.copias_total, 10) || 0;
+            const dispNum = parseInt(l.copias_disponibles, 10) || 0;
+            const dispCls = dispNum === 0 ? 'low' : 'ok';
+            // data-id permite a abrirFicha() encontrar el libro al hacer doble click.
+            return `
+                <tr data-id="${esc(l.id || '')}" title="Doble click para ver la ficha">
+                    <td><span class="id-pill">${esc(l.id || '')}</span></td>
+                    <td><span class="sig-pill">${esc(l.signatura || '—')}</span></td>
+                    <td>${esc(l.titulo || '')}</td>
+                    <td>${esc(l.autor || '')}</td>
+                    <td>${esc(l.editorial || '—')}</td>
+                    <td>${esc(l.anio ?? '')}</td>
+                    <td>${esc(l.isbn || '')}</td>
+                    <td>${cat ? `<span class="cat-badge ${catCls}">${esc(cat)}</span>` : ''}</td>
+                    <td>${esc(l.idioma || '—')}</td>
+                    <td class="num">${esc(l.paginas ?? '')}</td>
+                    <td class="num"><span class="copies-bar">
+                        <span class="available ${dispCls}">${dispNum}</span>
+                        <span class="total">/ ${total}</span>
+                    </span></td>
+                </tr>
+            `;
+        }
+
+        function esc(s) {
+            return String(s ?? '').replace(/[&<>"']/g, c => ({
+                '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+            }[c]));
+        }
+
+        // ============== Ficha del libro (modal) ==============
+        // Se abre con doble click en cualquier fila del inventario.
+        // La portada y la sinopsis se piden EN VIVO desde el navegador a:
+        //   - Open Library Covers     (gratis, sin key, sin proxy)
+        //   - Google Books volumes    (gratis hasta 1000 req/día)
+        // No guardamos esos datos en local: si Open Library actualiza la
+        // portada o la descripción, la siguiente apertura la muestra fresca.
+        function abrirFicha(idLibro) {
+            const l = libros.find(x => x.id === idLibro);
+            if (!l) return;
+
+            // 1. Datos locales (los tenemos en `libros`).
+            document.getElementById('modal_book_title').textContent = l.titulo || '(sin título)';
+            document.getElementById('modal_book_author').textContent = l.autor || '(autor desconocido)';
+
+            const total = parseInt(l.copias_total, 10) || 0;
+            const dispNum = parseInt(l.copias_disponibles, 10) || 0;
+            const dispCls = dispNum === 0 ? 'low' : 'ok';
+            const cat = (l.categoria || '').toLowerCase();
+            const catCls = `cat-${cat}`;
+
+            const dl = document.getElementById('modal_dl');
+            dl.innerHTML = `
+                <dt>Nº registro</dt>      <dd><span class="id-pill">${esc(l.id || '')}</span></dd>
+                <dt>Signatura</dt>        <dd><span class="sig-pill">${esc(l.signatura || '—')}</span></dd>
+                <dt>Editorial</dt>        <dd>${esc(l.editorial || '—')}</dd>
+                <dt>Año</dt>              <dd>${esc(l.anio ?? '—')}</dd>
+                <dt>ISBN</dt>             <dd>${esc(l.isbn || '—')}</dd>
+                <dt>Páginas</dt>          <dd>${esc(l.paginas ?? '—')}</dd>
+                <dt>Idioma</dt>           <dd>${esc(l.idioma || '—')}</dd>
+                <dt>Género</dt>           <dd>${cat ? `<span class="cat-badge ${catCls}">${esc(cat)}</span>` : '—'}</dd>
+                <dt>Copias</dt>           <dd><span class="copies-bar">
+                    <span class="available ${dispCls}">${dispNum}</span><span class="total">/ ${total}</span>
+                </span></dd>
+            `;
+
+            // 2. Portada — Open Library Covers (la API de portadas es muy
+            //    rápida; si el ISBN no está, devuelve un PNG vacío de 1x1
+            //    y el navegador lo gestiona como error, lo capturamos.)
+            const cover = document.getElementById('modal_cover');
+            const coverMsg = document.getElementById('modal_cover_msg');
+            cover.innerHTML = '<span id="modal_cover_msg">Cargando portada...</span>';
+            if (l.isbn) {
+                const isbnClean = l.isbn.replace(/[^0-9Xx]/g, '');
+                const img = new Image();
+                img.alt = 'Portada de ' + (l.titulo || '');
+                // El parámetro default=false hace que devuelva 404 en lugar
+                // de una imagen placeholder, así detectamos "sin portada".
+                img.onload = () => {
+                    if (img.naturalWidth > 1) {
+                        cover.innerHTML = '';
+                        cover.appendChild(img);
+                    } else {
+                        cover.innerHTML = '<span>Sin portada disponible</span>';
+                    }
+                };
+                img.onerror = () => {
+                    cover.innerHTML = '<span>Sin portada disponible</span>';
+                };
+                img.src = `https://covers.openlibrary.org/b/isbn/${isbnClean}-L.jpg?default=false`;
+            } else {
+                cover.innerHTML = '<span>Sin ISBN registrado</span>';
+            }
+
+            // 3. Sinopsis — Google Books primero (descripciones más ricas),
+            //    fallback a Open Library Works si no responde con descripción.
+            const synopsis = document.getElementById('modal_synopsis');
+            const sources = document.getElementById('modal_sources');
+            synopsis.classList.remove('empty');
+            synopsis.textContent = 'Cargando sinopsis...';
+            sources.innerHTML = '';
+
+            cargarSinopsis(l).then(({ texto, fuente, links }) => {
+                if (texto) {
+                    synopsis.textContent = texto;
+                } else {
+                    synopsis.classList.add('empty');
+                    synopsis.textContent = 'Sin sinopsis disponible en las fuentes externas.';
+                }
+                const partes = ['Fuentes:'];
+                if (fuente) partes.push(`<span style="color:var(--ink-300)">${esc(fuente)}</span>`);
+                links.forEach(([txt, href]) => partes.push(`<a href="${href}" target="_blank" rel="noopener">${esc(txt)}</a>`));
+                sources.innerHTML = partes.join(' ');
+            }).catch(() => {
+                synopsis.classList.add('empty');
+                synopsis.textContent = 'No pude consultar las fuentes externas (¿sin internet?).';
+            });
+
+            document.getElementById('modal').classList.add('show');
+        }
+
+        async function cargarSinopsis(l) {
+            const links = [];
+            // 1. Google Books por ISBN (preferido si hay ISBN).
+            if (l.isbn) {
+                try {
+                    const isbnClean = l.isbn.replace(/[^0-9Xx]/g, '');
+                    const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbnClean}&maxResults=1&langRestrict=es`);
+                    if (r.ok) {
+                        const data = await r.json();
+                        const item = data.items?.[0];
+                        if (item) {
+                            const desc = item.volumeInfo?.description;
+                            const url = item.volumeInfo?.infoLink;
+                            if (url) links.push(['Ver en Google Books', url]);
+                            if (desc) {
+                                // La descripción de GBooks puede venir con HTML básico (<p>, <i>...).
+                                // Lo paso por un div temporal para extraer texto plano.
+                                const tmp = document.createElement('div');
+                                tmp.innerHTML = desc;
+                                return { texto: tmp.textContent, fuente: 'Google Books', links };
+                            }
+                        }
+                    }
+                } catch {}
+            }
+            // 2. Open Library por título (fallback).
+            try {
+                const q = encodeURIComponent(l.titulo || '');
+                const r = await fetch(`https://openlibrary.org/search.json?title=${q}&limit=1`);
+                if (r.ok) {
+                    const data = await r.json();
+                    const doc = data.docs?.[0];
+                    if (doc) {
+                        const olUrl = `https://openlibrary.org${doc.key || ''}`;
+                        if (doc.key) links.push(['Ver en Open Library', olUrl]);
+                        // Si tiene work id, intento obtener la descripción.
+                        if (doc.key && doc.key.startsWith('/works/')) {
+                            const r2 = await fetch(`https://openlibrary.org${doc.key}.json`);
+                            if (r2.ok) {
+                                const work = await r2.json();
+                                const desc = work.description?.value || work.description;
+                                if (typeof desc === 'string' && desc.length > 30) {
+                                    return { texto: desc, fuente: 'Open Library', links };
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch {}
+            return { texto: '', fuente: '', links };
+        }
+
+        function cerrarFicha() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        document.getElementById('filter').addEventListener('input', render);
+        document.getElementById('btn_refresh').addEventListener('click', cargar);
+
+        // Doble click en una fila → abre la ficha. Click simple no hace nada
+        // para no molestar al usuario que solo quiere navegar la tabla.
+        document.getElementById('tbody').addEventListener('dblclick', (e) => {
+            const tr = e.target.closest('tr[data-id]');
+            if (tr) abrirFicha(tr.getAttribute('data-id'));
+        });
+
+        // ESC cierra el modal.
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') cerrarFicha();
+        });
+
+        cargar();
+    </script>
+</body>
+</html>

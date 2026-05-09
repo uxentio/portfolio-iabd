@@ -1,0 +1,71 @@
+# =============================================================================
+# rules_iot.yaml -- Reto 02 RA5 (autor)
+#
+# Reglas declarativas de calidad para el sensor de aula.
+# Las consume validate_raw.py.  Tenerlas separadas del codigo permite ajustar
+# umbrales sin tocar logica (UT3.4 "contratos de datos explicitos").
+#
+# Las tres dimensiones de calidad estan etiquetadas para que el informe final
+# pueda agruparlas y mostrar al revisor que dimension fallo cada vez:
+#   completitud   -> faltan campos/valores criticos
+#   consistencia  -> contradicciones internas (duplicados)
+#   precision     -> el valor es del tipo correcto pero fisicamente imposible
+#
+# Mapeo a la teoria del profesor (educacion/teoria/contenido_ut3/01_*.md):
+#   1.1.a precision   -> rangos fisicos (sensor descalibrado, UT3.1.c)
+#   1.1.b completitud -> campos required, timestamp_format
+#   1.1.c consistencia-> unique en event_id (idempotencia, UT3.4 ejemplo 1)
+# =============================================================================
+
+# Columnas obligatorias: si falta cualquiera, el registro va a cuarentena.
+# Justificacion: sin event_id no podemos deduplicar, sin timestamp no podemos
+# hacer agregaciones temporales, sin device_id no sabemos de que sensor viene.
+schema:
+  required:
+    - event_id
+    - device_id
+    - timestamp
+    - temperature
+    - humidity
+    - co2
+    - battery
+    - status
+
+# Rangos fisicamente plausibles segun el enunciado del reto.
+# (El enunciado del RA5 fija explicitamente -20..80 para temperatura
+# y 0..100 para humedad; los demas son razonables para un aula.)
+ranges:
+  temperature:
+    min: -20
+    max: 80
+    dimension: precision
+  humidity:
+    min: 0
+    max: 100
+    dimension: precision
+  co2:
+    min: 0
+    max: 5000
+    dimension: precision
+  battery:
+    min: 0
+    max: 100
+    dimension: precision
+
+# Formato esperado del timestamp. Sin sufijo Z porque el generador
+# emite isoformat sin tz (compatible con el ejemplo del enunciado:
+# "2026-04-27T10:15:00").
+timestamp:
+  field: timestamp
+  format: "%Y-%m-%dT%H:%M:%S"
+  dimension: completitud
+
+# Reglas de unicidad: detectan los duplicados que aparecen cuando una cola
+# IoT reintenta un mensaje tras un timeout (UT3.4 ejemplo 1).
+unique:
+  - field: event_id
+    dimension: consistencia
+
+# Etiqueta del dispositivo que esperamos (defensa contra "schema drift":
+# si llega otro device_id distinto, se va a cuarentena).
+expected_device_id: sensor_aula_01

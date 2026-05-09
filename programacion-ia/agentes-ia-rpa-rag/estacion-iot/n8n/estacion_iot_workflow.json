@@ -1,0 +1,758 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "estacion-iot",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "e406cce5-1a33-44d4-b0d1-76b2e5628af7",
+      "name": "1. Webhook Sensores ESP32",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        112
+      ],
+      "webhookId": "estacion-iot"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "estacion-iot-geo",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "bc53897f-df1a-4f7b-ad92-c16dc4538e8f",
+      "name": "1b. Webhook Geolocalizacion",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        512
+      ],
+      "webhookId": "estacion-iot-geo"
+    },
+    {
+      "parameters": {
+        "jsCode": "// VALIDACION DE DATOS DEL ESP32 + EXTRACCION IP PUBLICA\nconst input = $input.first().json;\nconst datos = input.body || input.data || input;\nconst headers = input.headers || {};\n\nconst camposRequeridos = ['temp', 'hum', 'luz', 'presencia'];\nconst camposFaltantes = camposRequeridos.filter(c => datos[c] === undefined);\nif (camposFaltantes.length > 0) {\n  throw new Error(`Campos faltantes: ${camposFaltantes.join(', ')}`);\n}\n\nlet errores = [];\nif (datos.temp !== -999 && (datos.temp < -20 || datos.temp > 60)) errores.push(`Temperatura fuera de rango: ${datos.temp}`);\nif (datos.hum !== -999 && (datos.hum < 0 || datos.hum > 100)) errores.push(`Humedad fuera de rango: ${datos.hum}`);\n\n// IP publica real del cliente (X-Forwarded-For lo llena el proxy de progian8n)\nconst publicIp = (headers['x-forwarded-for'] || '').split(',')[0].trim() || headers['x-real-ip'] || '';\n\nconst staticData = $getWorkflowStaticData('global');\nconst lat = staticData.lat || null;\nconst lon = staticData.lon || null;\nconst ciudad = staticData.ciudad || 'Sin configurar';\n\nreturn [{\n  json: {\n    temp_interior: datos.temp,\n    humedad_interior: datos.hum,\n    luz: datos.luz,\n    presencia: datos.presencia,\n    distancia: datos.distancia || -1,\n    sensor_valido: datos.valido !== false,\n    ip_esp32: datos.ip || 'desconocida',\n    ip_publica: publicIp,\n    rssi: datos.rssi || 0,\n    uptime: datos.uptime || 0,\n    lat: lat,\n    lon: lon,\n    ciudad: ciudad,\n    tiene_ubicacion: lat !== null && lon !== null,\n    timestamp: new Date().toISOString(),\n    errores_validacion: errores\n  }\n}];"
+      },
+      "id": "f282e625-8762-426a-9bb8-7b724d4856e7",
+      "name": "2. Validar Datos Sensor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=http://ip-api.com/json/{{ $json.ip_publica || 'invalid' }}?fields=status,city,regionName,country,lat,lon,query",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "id": "0821e4ca-8203-4e2f-95da-f0d54e5698a5",
+      "name": "2a. IP Geolocation (fallback)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        112
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// AUTO-LOCALIZACION POR IP: solo se usa si no habia staticData\nconst datos = $('2. Validar Datos Sensor').first().json;\nconst ipData = $input.first().json;\n\n// Si ya tenia ubicacion (staticData configurada), no tocamos nada\nif (datos.tiene_ubicacion) {\n  return [{ json: { ...datos, origen_ubicacion: 'staticData (manual)' } }];\n}\n\n// Si la llamada a ip-api funciono, usar esos datos\nif (ipData && ipData.status === 'success' && ipData.lat && ipData.lon) {\n  // Guardar en staticData para futuras ejecuciones\n  const staticData = $getWorkflowStaticData('global');\n  staticData.lat = ipData.lat;\n  staticData.lon = ipData.lon;\n  staticData.ciudad = ipData.city || 'Desconocida';\n  staticData.origen = 'ip-api (auto)';\n  staticData.actualizado = new Date().toISOString();\n\n  return [{\n    json: {\n      ...datos,\n      lat: ipData.lat,\n      lon: ipData.lon,\n      ciudad: ipData.city,\n      tiene_ubicacion: true,\n      origen_ubicacion: 'ip-api (auto)'\n    }\n  }];\n}\n\n// IP lookup fallo: pasamos sin ubicacion (ira por la rama 5b)\nreturn [{ json: { ...datos, origen_ubicacion: 'ninguna' } }];"
+      },
+      "id": "622b98bc-9bca-4b72-9104-5c430b6e9fe1",
+      "name": "2b. Merge IP + staticData",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "tiene-ubicacion",
+              "leftValue": "={{ $json.tiene_ubicacion }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4801474c-04ad-437e-8242-d333803ecd9a",
+      "name": "3. Tiene Ubicacion?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        272,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.open-meteo.com/v1/forecast?latitude={{ $json.lat }}&longitude={{ $json.lon }}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,uv_index,weather_code",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "322c5fc1-9ecf-4fca-af1e-4a05a49d680b",
+      "name": "4. Open-Meteo API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// COMBINAR INTERIOR + EXTERIOR + DETECTAR ANOMALIAS\nconst sensor = $('3. Tiene Ubicacion?').first().json;\nconst meteo = $input.first().json;\nconst current = meteo.current || {};\n\nconst temp_ext = current.temperature_2m || null;\nconst hum_ext = current.relative_humidity_2m || null;\n\nconst diff_temp = (sensor.temp_interior !== -999 && temp_ext !== null) \n  ? Math.round((sensor.temp_interior - temp_ext) * 10) / 10 : null;\n\nlet anomalias = [];\nif (sensor.temp_interior > 30) anomalias.push('Temp interior alta');\nif (sensor.temp_interior < 15) anomalias.push('Temp interior baja');\nif (sensor.humedad_interior > 70) anomalias.push('Humedad interior alta');\nif (sensor.humedad_interior < 25) anomalias.push('Humedad interior baja');\nif (sensor.luz < 20 && sensor.presencia) anomalias.push('Poca luz con presencia');\nif (diff_temp !== null && Math.abs(diff_temp) > 8) anomalias.push('Gran diferencia interior/exterior');\nif ((current.uv_index || 0) >= 8) anomalias.push('Indice UV alto exterior');\nif (!sensor.sensor_valido) anomalias.push('Error lectura DHT11');\n\nreturn [{\n  json: {\n    ...sensor,\n    temp_exterior: temp_ext,\n    hum_exterior: hum_ext,\n    viento: current.wind_speed_10m || null,\n    uv: current.uv_index || null,\n    diff_temp: diff_temp,\n    anomalias: anomalias,\n    hay_anomalia: anomalias.length > 0\n  }\n}];"
+      },
+      "id": "b366a5d5-9ce3-4e6c-b794-6269832b28f3",
+      "name": "5. Combinar Interior + Exterior",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// SIN UBICACION - Solo sensor\nconst sensor = $input.first().json;\n\nlet anomalias = [];\nif (sensor.temp_interior > 30) anomalias.push('Temp interior alta');\nif (sensor.temp_interior < 15) anomalias.push('Temp interior baja');\nif (sensor.humedad_interior > 70) anomalias.push('Humedad interior alta');\nif (sensor.humedad_interior < 25) anomalias.push('Humedad interior baja');\nif (sensor.luz < 20 && sensor.presencia) anomalias.push('Poca luz con presencia');\n\nreturn [{\n  json: {\n    ...sensor,\n    temp_exterior: null,\n    hum_exterior: null,\n    viento: null,\n    uv: null,\n    diff_temp: null,\n    anomalias: anomalias,\n    hay_anomalia: anomalias.length > 0\n  }\n}];"
+      },
+      "id": "6be23a52-8b65-4055-9c74-a569e6a1f8ad",
+      "name": "5b. Sin Ubicacion (solo sensor)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.1-8b-instant\",\n  \"messages\": [\n    { \"role\": \"system\", \"content\": \"Eres un asistente IoT. Analizas lecturas de sensores (interior) y datos meteo (exterior). Responde en espanol, max 3 frases. Termina con NIVEL: [VERDE/AMARILLO/ROJO].\" },\n    { \"role\": \"user\", \"content\": \"Interior: {{ $json.temp_interior }}C {{ $json.humedad_interior }}% Luz {{ $json.luz }}% Presencia {{ $json.presencia }} | Exterior ({{ $json.ciudad }}): {{ $json.temp_exterior }}C {{ $json.hum_exterior }}% Viento {{ $json.viento }}km/h UV {{ $json.uv }} | Anomalias: {{ $json.anomalias }}\" }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 250\n}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "b918b86f-700d-46e5-87b3-30d5393c508a",
+      "name": "6. Analisis IA (Groq LLM)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1008,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PARSEAR RESPUESTA IA Y PREPARAR MENSAJE\nconst respuestaLLM = $input.first().json;\n\nlet datosAnteriores;\ntry { datosAnteriores = $('5. Combinar Interior + Exterior').first().json; }\ncatch(e) { datosAnteriores = $('5b. Sin Ubicacion (solo sensor)').first().json || {}; }\n\nlet analisis = 'Sin respuesta IA';\nlet nivel = 'AMARILLO';\n\ntry {\n  analisis = respuestaLLM.choices[0].message.content;\n  if (analisis.includes('ROJO')) nivel = 'ROJO';\n  else if (analisis.includes('AMARILLO')) nivel = 'AMARILLO';\n  else if (analisis.includes('VERDE')) nivel = 'VERDE';\n} catch (e) { analisis = 'Error IA: ' + e.message; }\n\nconst d = datosAnteriores;\nconst mensaje = `ESTACION IoT - ${d.ciudad || 'Sin ubicacion'}\\n\\nInterior:\\nTemp: ${d.temp_interior}C  Hum: ${d.humedad_interior}%\\nLuz: ${d.luz}%  Presencia: ${d.presencia ? 'Si' : 'No'}\\n\\nExterior:\\nTemp: ${d.temp_exterior || 'N/A'}C  Hum: ${d.hum_exterior || 'N/A'}%\\nViento: ${d.viento || 'N/A'} km/h  UV: ${d.uv || 'N/A'}\\n\\nAnalisis IA:\\n${analisis}\\n\\nNivel: ${nivel}`;\n\nreturn [{\n  json: {\n    ...d,\n    analisis_ia: analisis,\n    nivel_alerta: nivel,\n    mensaje_telegram: mensaje\n  }\n}];"
+      },
+      "id": "2e5c7c06-c801-41e5-ad4b-ede9f51cc4db",
+      "name": "7. Parsear Respuesta IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/sendMessage",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "<TELEGRAM_CHAT_ID>"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.mensaje_telegram }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "152ea5ea-5ed8-41d6-9590-89dc1a682d11",
+      "name": "8. Enviar Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1472,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://script.google.com/macros/s/AKfycbzpY08UQvxGTMuj3c_JhT6qidcyOBHbjc59yJcIjctBblDS05Lw3Z0PQjUyDx_Oexli/exec",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ timestamp: $json.timestamp, temp_interior: $json.temp_interior, humedad_interior: $json.humedad_interior, luz: $json.luz, presencia: $json.presencia, temp_exterior: $json.temp_exterior, hum_exterior: $json.hum_exterior, viento: $json.viento, uv: $json.uv, ciudad: $json.ciudad, nivel_alerta: $json.nivel_alerta }) }}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "b5ed25b3-f2ea-460b-abce-b266d9f1daf2",
+      "name": "9. Google Sheets Log",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1472,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"nivel\": \"{{ $('7. Parsear Respuesta IA').first().json.nivel_alerta }}\", \"ciudad\": \"{{ $('7. Parsear Respuesta IA').first().json.ciudad }}\" }",
+        "options": {}
+      },
+      "id": "b6104650-bf9b-4ef0-b1f6-0e85c5957607",
+      "name": "10. Responder al ESP32",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1728,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// GUARDAR UBICACION DESDE WEB\nconst input = $input.first().json;\nconst datos = input.body || input;\n\nconst staticData = $getWorkflowStaticData('global');\nstaticData.lat = datos.lat;\nstaticData.lon = datos.lon;\nstaticData.ciudad = datos.ciudad || 'Desconocida';\nstaticData.actualizado = new Date().toISOString();\n\nreturn [{\n  json: {\n    ok: true,\n    ciudad: staticData.ciudad,\n    lat: staticData.lat,\n    lon: staticData.lon\n  }\n}];"
+      },
+      "id": "f418b160-4f9e-44c8-93f8-6e8e90ab0e4b",
+      "name": "2b. Guardar Ubicacion (web)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "6abecc43-e77d-4ce8-9475-ecd6f5100548",
+      "name": "3b. Responder Geo OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -224,
+        512
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "bb40b3cf-5458-4803-b5a2-0d58fe585a00",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/sendMessage",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "<TELEGRAM_CHAT_ID>"
+            },
+            {
+              "name": "text",
+              "value": "=ERROR EN ESTACION IoT\\n\\n{{ $json.execution?.error?.message || 'Error' }}\\nNodo: {{ $json.execution?.lastNodeExecuted || '?' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d69ca936-331b-4bb9-b862-dded79c286a7",
+      "name": "Notificar Error Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -448,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "estacion-iot-chatbot",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "83b6d097-1a4a-4223-8a88-eeac80dbf73f",
+      "name": "CHAT 1. Webhook Chatbot",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        1200
+      ],
+      "webhookId": "estacion-iot-chatbot"
+    },
+    {
+      "parameters": {
+        "jsCode": "// CLASIFICAR MENSAJE Y PROCESAR CASOS SIMPLES (location / comando) INLINE\n// Tipos: 'text' (sigue a rama embeddings), 'direct' (ya tengo respuesta lista)\nconst input = $input.first().json;\nconst datos = input.body || input;\nconst message = datos.message;\n\nif (!message) {\n  return [{ json: { tipo: 'direct', chatId: null, respuesta: 'Sin mensaje' }}];\n}\n\nconst chatId = message.chat?.id;\nconst fromName = message.from?.first_name || 'Usuario';\n\n// 1) Ubicacion compartida por Telegram → guardar y responder\nif (message.location) {\n  const staticData = $getWorkflowStaticData('global');\n  staticData.lat = message.location.latitude;\n  staticData.lon = message.location.longitude;\n  staticData.actualizado = new Date().toISOString();\n  // Nota: la ciudad se actualiza con reverse geocoding en otro proceso o queda pendiente\n  staticData.ciudad = staticData.ciudad || 'Pendiente geocoding';\n\n  return [{ json: {\n    tipo: 'direct',\n    chatId,\n    respuesta: `Ubicacion actualizada: lat=${message.location.latitude.toFixed(4)} lon=${message.location.longitude.toFixed(4)}. Usare estos datos para las predicciones.`\n  }}];\n}\n\nconst texto = (message.text || '').trim();\n\n// 2) Comandos\nif (texto === '/start' || texto === '/help') {\n  return [{ json: {\n    tipo: 'direct',\n    chatId,\n    respuesta: `Hola ${fromName}. Soy el asistente de tu Estacion IoT.\\n\\n- Preguntame sobre el historico (ej: cuando tuve la humedad mas alta?).\\n- Comparte tu ubicacion para actualizar la ciudad.\\n- /help para ver esta ayuda.`\n  }}];\n}\n\n// 3) Texto = pregunta para el chatbot con embeddings\nif (texto.length > 0) {\n  return [{ json: {\n    tipo: 'text',\n    chatId,\n    fromName,\n    pregunta: texto\n  }}];\n}\n\n// 4) Otro tipo: ignorar silenciosamente\nreturn [{ json: { tipo: 'direct', chatId, respuesta: 'Tipo de mensaje no soportado. Envia texto o tu ubicacion.' }}];"
+      },
+      "id": "660c68c8-0725-4f7a-b131-44feb940b31d",
+      "name": "CHAT 2. Clasificar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "es-texto",
+              "leftValue": "={{ $json.tipo }}",
+              "rightValue": "text",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "28c4aa67-a392-4531-940d-212f7e7fbb80",
+      "name": "CHAT 3. Es pregunta?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://script.google.com/macros/s/AKfycbzpY08UQvxGTMuj3c_JhT6qidcyOBHbjc59yJcIjctBblDS05Lw3Z0PQjUyDx_Oexli/exec?action=last&n=50",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "fb18ba64-b784-406a-817f-8e90b9fd762b",
+      "name": "CHAT 4. Leer historico Sheets",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        1104
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-goog-api-key",
+              "value": "AIzaSyC0xGwLnCid78oJRtHZLGu8z622p5_QXz4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'models/gemini-embedding-001', content: { parts: [{ text: $('CHAT 2. Clasificar').first().json.pregunta }] } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "9fb15cef-1c33-4149-ba4d-03014025720a",
+      "name": "CHAT 5. Embedding Gemini",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        1104
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Construir prompt con historico + pregunta\n// El embedding de la pregunta esta ya calculado. Lo mencionamos en meta.\nconst embeddingRes = $input.first().json;\nconst histRes = $('CHAT 4. Leer historico Sheets').first().json;\nconst clasif = $('CHAT 2. Clasificar').first().json;\n\nconst rows = histRes.rows || [];\nconst historico = rows.map((r, i) => \n  `${i+1}. ${r.Timestamp} | ${r.Ciudad || 'N/A'} | Int T=${r.Temp_Interior}C H=${r.Humedad}% Luz=${r.Luz}% Pres=${r.Presencia} | Ext T=${r.Temp_Exterior}C H=${r.Hum_Exterior}% Viento=${r.Viento}km/h UV=${r.UV} | Alerta=${r.Alerta_IA}`\n).join('\\n');\n\nconst prompt = `Historico de la estacion IoT (${rows.length} lecturas):\\n${historico}\\n\\nPregunta: ${clasif.pregunta}\\n\\nResponde en espanol, conciso (max 4 frases), citando datos cuando sea relevante.`;\n\nconst embDim = (embeddingRes.embedding?.values || []).length;\n\nreturn [{\n  json: {\n    chatId: clasif.chatId,\n    prompt,\n    embeddingDim: embDim,\n    modelo_embedding: 'text-embedding-004'\n  }\n}];"
+      },
+      "id": "ccb99f82-04f2-498e-89c7-91a2ec00c661",
+      "name": "CHAT 6. Preparar prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        1104
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'llama-3.1-8b-instant', messages: [{ role: 'user', content: $json.prompt }], temperature: 0.5, max_tokens: 400 }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "49fcd96c-d997-476d-9fb6-2c24c3202dac",
+      "name": "CHAT 7. Groq LLM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        1104
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/sendMessage",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $('CHAT 6. Preparar prompt').first().json.chatId }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.choices[0].message.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "45ec6d57-925b-4228-a41d-1998d236ae32",
+      "name": "CHAT 8. Responder Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        912,
+        1104
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/sendMessage",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $json.chatId }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.respuesta }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "da19beec-80f0-444d-b121-2b52a50ea953",
+      "name": "CHAT 9. Responder directo (loc/cmd)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        1312
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "d820c4e7-dee8-4418-8c91-20c04a5be6d6",
+      "name": "FCST 1. Schedule 08:00 diario",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -688,
+        1600
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// OBTENER UBICACION REAL ACTUAL\n// Prioridad:\n// 1. staticData (lo ultimo que el usuario envio via web o Telegram → ubicacion REAL)\n// 2. Si no hay, pedir al usuario que configure la ubicacion\n\nconst staticData = $getWorkflowStaticData('global');\n\nif (!staticData.lat || !staticData.lon) {\n  throw new Error('Sin ubicacion configurada. Comparte tu ubicacion al bot de Telegram o usa la mini web de geolocalizacion antes de ejecutar la prediccion.');\n}\n\nlet ciudad = (staticData.ciudad || '').trim();\n// Anadir pais si la ciudad no lo incluye, para evitar ambiguedad con la LLM\nif (ciudad && !ciudad.includes(',')) {\n  ciudad = ciudad + ', Espana';\n}\nif (!ciudad) ciudad = `lat=${staticData.lat}, lon=${staticData.lon}`;\n\nreturn [{\n  json: {\n    lat: staticData.lat,\n    lon: staticData.lon,\n    ciudad: ciudad,\n    ciudadCorta: staticData.ciudad || 'Sin nombre',\n    origen: staticData.origen || 'web/telegram',\n    actualizado: staticData.actualizado\n  }\n}];"
+      },
+      "id": "a8e15c6f-7aa4-4559-9a1d-5dcc7ebcc898",
+      "name": "FCST 2. Ubicacion real (staticData)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        1600
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.open-meteo.com/v1/forecast?latitude={{ $json.lat }}&longitude={{ $json.lon }}&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,uv_index&forecast_days=1&timezone=auto",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "20b0b37f-5819-49c7-835d-cfd568495fc0",
+      "name": "FCST 3. Forecast Open-Meteo 24h",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        1600
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Construir prompt de prediccion\nconst forecast = $input.first().json;\nconst ubic = $('FCST 2. Ubicacion real (staticData)').first().json;\nconst hourly = forecast.hourly || {};\nconst times = hourly.time || [];\nconst temps = hourly.temperature_2m || [];\nconst hums = hourly.relative_humidity_2m || [];\nconst precs = hourly.precipitation_probability || [];\nconst uvs = hourly.uv_index || [];\n\nconst resumen = times.slice(0, 24).filter((_, i) => i % 3 === 0).map((t, idx) => {\n  const i = idx * 3;\n  const hora = t.slice(11, 16);\n  return `${hora}: ${temps[i]}C, Hum ${hums[i]}%, Lluvia ${precs[i] || 0}%, UV ${uvs[i] || 0}`;\n}).join('\\n');\n\nconst fechaHoy = new Date().toISOString().slice(0, 10);\nconst prompt = `Eres un asistente IoT. Genera una prediccion breve (max 4 frases) para hoy ${fechaHoy} en ${ubic.ciudad}.\\n\\nCoordenadas reales: lat=${ubic.lat}, lon=${ubic.lon}\\n\\nPronostico 24h (cada 3h):\\n${resumen}\\n\\nDestaca: maxima/minima, lluvia, UV, recomendacion practica. Empieza con el dia y la ciudad. NO inventes datos que no esten en el pronostico. NO confundas la ciudad con otra homonima en otro pais.`;\n\nreturn [{ json: { prompt, ciudad: ubic.ciudad, ciudadCorta: ubic.ciudadCorta }}];"
+      },
+      "id": "04a6a205-6df7-4a1a-aa01-74fdcfc26f38",
+      "name": "FCST 4. Preparar prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        1600
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'llama-3.1-8b-instant', messages: [{ role: 'user', content: $json.prompt }], temperature: 0.5, max_tokens: 300 }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "659c2236-e76c-47ec-95a2-30337c098a98",
+      "name": "FCST 5. Groq LLM prediccion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        1600
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/sendMessage",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "<TELEGRAM_CHAT_ID>"
+            },
+            {
+              "name": "text",
+              "value": "={{ 'PREDICCIÓN DIARIA - ' + $('FCST 4. Preparar prompt').first().json.ciudadCorta + '\\n\\n' + $json.choices[0].message.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1ba5f7d4-6592-4eb2-9d7b-79b7e27b5183",
+      "name": "FCST 6. Enviar Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        1600
+      ]
+    }
+  ],
+  "connections": {
+    "1. Webhook Sensores ESP32": {
+      "main": [[{ "node": "2. Validar Datos Sensor", "type": "main", "index": 0 }]]
+    },
+    "1b. Webhook Geolocalizacion": {
+      "main": [[{ "node": "2b. Guardar Ubicacion (web)", "type": "main", "index": 0 }]]
+    },
+    "2. Validar Datos Sensor": {
+      "main": [[{ "node": "2a. IP Geolocation (fallback)", "type": "main", "index": 0 }]]
+    },
+    "2a. IP Geolocation (fallback)": {
+      "main": [[{ "node": "2b. Merge IP + staticData", "type": "main", "index": 0 }]]
+    },
+    "2b. Merge IP + staticData": {
+      "main": [[{ "node": "3. Tiene Ubicacion?", "type": "main", "index": 0 }]]
+    },
+    "3. Tiene Ubicacion?": {
+      "main": [
+        [{ "node": "4. Open-Meteo API", "type": "main", "index": 0 }],
+        [{ "node": "5b. Sin Ubicacion (solo sensor)", "type": "main", "index": 0 }]
+      ]
+    },
+    "4. Open-Meteo API": {
+      "main": [[{ "node": "5. Combinar Interior + Exterior", "type": "main", "index": 0 }]]
+    },
+    "5. Combinar Interior + Exterior": {
+      "main": [[{ "node": "6. Analisis IA (Groq LLM)", "type": "main", "index": 0 }]]
+    },
+    "5b. Sin Ubicacion (solo sensor)": {
+      "main": [[{ "node": "6. Analisis IA (Groq LLM)", "type": "main", "index": 0 }]]
+    },
+    "6. Analisis IA (Groq LLM)": {
+      "main": [[{ "node": "7. Parsear Respuesta IA", "type": "main", "index": 0 }]]
+    },
+    "7. Parsear Respuesta IA": {
+      "main": [[
+        { "node": "8. Enviar Telegram", "type": "main", "index": 0 },
+        { "node": "9. Google Sheets Log", "type": "main", "index": 0 }
+      ]]
+    },
+    "8. Enviar Telegram": {
+      "main": [[{ "node": "10. Responder al ESP32", "type": "main", "index": 0 }]]
+    },
+    "2b. Guardar Ubicacion (web)": {
+      "main": [[{ "node": "3b. Responder Geo OK", "type": "main", "index": 0 }]]
+    },
+    "Error Trigger": {
+      "main": [[{ "node": "Notificar Error Telegram", "type": "main", "index": 0 }]]
+    },
+    "CHAT 1. Webhook Chatbot": {
+      "main": [[{ "node": "CHAT 2. Clasificar", "type": "main", "index": 0 }]]
+    },
+    "CHAT 2. Clasificar": {
+      "main": [[{ "node": "CHAT 3. Es pregunta?", "type": "main", "index": 0 }]]
+    },
+    "CHAT 3. Es pregunta?": {
+      "main": [
+        [{ "node": "CHAT 4. Leer historico Sheets", "type": "main", "index": 0 }],
+        [{ "node": "CHAT 9. Responder directo (loc/cmd)", "type": "main", "index": 0 }]
+      ]
+    },
+    "CHAT 4. Leer historico Sheets": {
+      "main": [[{ "node": "CHAT 5. Embedding Gemini", "type": "main", "index": 0 }]]
+    },
+    "CHAT 5. Embedding Gemini": {
+      "main": [[{ "node": "CHAT 6. Preparar prompt", "type": "main", "index": 0 }]]
+    },
+    "CHAT 6. Preparar prompt": {
+      "main": [[{ "node": "CHAT 7. Groq LLM", "type": "main", "index": 0 }]]
+    },
+    "CHAT 7. Groq LLM": {
+      "main": [[{ "node": "CHAT 8. Responder Telegram", "type": "main", "index": 0 }]]
+    },
+    "FCST 1. Schedule 08:00 diario": {
+      "main": [[{ "node": "FCST 2. Ubicacion real (staticData)", "type": "main", "index": 0 }]]
+    },
+    "FCST 2. Ubicacion real (staticData)": {
+      "main": [[{ "node": "FCST 3. Forecast Open-Meteo 24h", "type": "main", "index": 0 }]]
+    },
+    "FCST 3. Forecast Open-Meteo 24h": {
+      "main": [[{ "node": "FCST 4. Preparar prompt", "type": "main", "index": 0 }]]
+    },
+    "FCST 4. Preparar prompt": {
+      "main": [[{ "node": "FCST 5. Groq LLM prediccion", "type": "main", "index": 0 }]]
+    },
+    "FCST 5. Groq LLM prediccion": {
+      "main": [[{ "node": "FCST 6. Enviar Telegram", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  }
+}

@@ -1,0 +1,246 @@
+{
+  "id": "alta_libro",
+  "titulo": "Alta de libro al fondo de la sección de la biblioteca",
+  "descripcion": "Registra un nuevo título en el fondo de la sección de la biblioteca regional con datos bibliográficos completos: título, autor, editorial, año, ISBN, páginas, idioma, género y número de copias físicas. NO es una venta: la biblioteca presta libros, no los vende. Workflow PREFERENTE para altas. Expresiones típicas: 'añade al fondo el libro X de Y', 'da de alta este título: ...', 'registra en la sección 3 ejemplares de El nombre del viento', 'alta de libro nuevo'. Tras el alta, el formulario muestra el nº de registro asignado (R-NNNN) y la signatura topográfica en el toast, y el runner los captura con read_text para devolverlos al agente, que los comunica al usuario.",
+  "app": "biblioteca_seccion",
+  "url": "{{FORM_URL}}",
+  "tags": [
+    "alta libro",
+    "registrar titulo",
+    "anadir al fondo",
+    "ingresar ejemplar",
+    "biblioteca",
+    "catalogar",
+    "nuevo libro",
+    "autor",
+    "isbn",
+    "editorial"
+  ],
+  "param_schema": {
+    "titulo": {
+      "type": "string",
+      "description": "Título del libro",
+      "required": true
+    },
+    "autor": {
+      "type": "string",
+      "description": "Autor en formato 'Apellido, Nombre'",
+      "required": true
+    },
+    "editorial": {
+      "type": "string",
+      "description": "Editorial. Opcional.",
+      "required": false
+    },
+    "anio": {
+      "type": "integer",
+      "description": "Año de publicación. Opcional.",
+      "required": false
+    },
+    "isbn": {
+      "type": "string",
+      "description": "ISBN. Opcional.",
+      "required": false
+    },
+    "paginas": {
+      "type": "integer",
+      "description": "Páginas. Opcional.",
+      "required": false
+    },
+    "idioma": {
+      "type": "string",
+      "description": "Idioma ISO 639 (es, en, fr...). Default 'es'.",
+      "required": false
+    },
+    "categoria": {
+      "type": "enum",
+      "values": [
+        "novela",
+        "poesia",
+        "teatro",
+        "ensayo",
+        "biografia",
+        "historia",
+        "ciencia",
+        "filosofia",
+        "religion",
+        "arte",
+        "infantil",
+        "juvenil",
+        "comic",
+        "manual",
+        "referencia",
+        "viajes",
+        "cocina",
+        "autoayuda",
+        "idiomas",
+        "otros"
+      ],
+      "description": "Género del libro",
+      "required": true
+    },
+    "copias_total": {
+      "type": "integer",
+      "description": "Ejemplares físicos del libro",
+      "required": true
+    }
+  },
+  "steps": [
+    {
+      "type": "wait",
+      "ms": 500
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#titulo"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#titulo"
+      },
+      "value": "{{titulo}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#autor"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#autor"
+      },
+      "value": "{{autor}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#editorial"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#editorial"
+      },
+      "value": "{{editorial}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#anio"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#anio"
+      },
+      "value": "{{anio}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#isbn"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#isbn"
+      },
+      "value": "{{isbn}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#paginas"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#paginas"
+      },
+      "value": "{{paginas}}"
+    },
+    {
+      "type": "select",
+      "target": {
+        "by": "css",
+        "value": "#categoria"
+      },
+      "value": "{{categoria}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#idioma"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#idioma"
+      },
+      "value": "{{idioma}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#copias_total"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#copias_total"
+      },
+      "value": "{{copias_total}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#btn_guardar"
+      }
+    },
+    {
+      "type": "wait_for_text",
+      "target": {
+        "by": "css",
+        "value": "#toast"
+      },
+      "contains": "Guardado"
+    },
+    {
+      "type": "read_text",
+      "target": {
+        "by": "css",
+        "value": "#toast"
+      },
+      "save_as": "id_libro",
+      "pattern": "R-\\d+"
+    }
+  ]
+}

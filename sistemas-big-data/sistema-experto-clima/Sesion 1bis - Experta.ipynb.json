@@ -1,0 +1,293 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "2541e3bd-e7c6-4044-93ea-a0cdd60f2b2e",
+   "metadata": {},
+   "source": [
+    "# Introducción a sistemas expertos y Experta"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a9c9a810-e636-4a33-ba9b-26997fc3b746",
+   "metadata": {},
+   "source": [
+    "Un **sistema experto** es un programa capaz de relacionar un conjunto de hechos con un conjunto de reglas aplicables y ejecutar acciones basadas en las reglas que coincidan con los hechos. En otras palabras, el conocimiento (reglas) y los datos (hechos) están separados, y un motor de inferencia (como KnowledgeEngine en Experta) aplica las reglas a los hechos para deducir conclusiones. \n",
+    "\n",
+    "**Experta** es una biblioteca de Python diseñada para construir sistemas expertos inspirada en CLIPS. Utilizaremos Experta para definir hechos (datos) y reglas (conocimiento) en un ejemplo didáctico."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c55f5ae5-1f7f-40e1-a884-91caf2d19494",
+   "metadata": {},
+   "source": [
+    "### Instalación\n",
+    "\n",
+    "Para instalar Experta basta usar pip. En el siguiente código de instalación se muestra el comando necesario (requiere tener Python 3.6+):"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "ba98aac7-09cc-4940-b615-060646d803ab",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Requirement already satisfied: experta in /home/jero/Repos/Jupyter/venv/lib/python3.12/site-packages (1.9.4)\n",
+      "Requirement already satisfied: frozendict==1.2 in /home/jero/Repos/Jupyter/venv/lib/python3.12/site-packages (from experta) (1.2)\n",
+      "Requirement already satisfied: schema==0.6.7 in /home/jero/Repos/Jupyter/venv/lib/python3.12/site-packages (from experta) (0.6.7)\n"
+     ]
+    }
+   ],
+   "source": [
+    "!pip install experta"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a5f00a55-fd02-4dbb-b2d5-df968deb0892",
+   "metadata": {},
+   "source": [
+    "### Definición de hechos"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "15fd9bbd-2256-49ac-9792-48088dd690c9",
+   "metadata": {},
+   "source": [
+    "En Experta, los hechos (facts) son la unidad básica de información del sistema experto. Internamente, un objeto Fact se comporta como un diccionario de Python (subclase de dict). Podemos definir distintos tipos de hechos ampliando la clase Fact. Además, Experta permite declarar atributos de hecho con validación usando la clase Field. Por ejemplo, definimos una clase Persona con campos validados de nombre (cadena) y edad (entero):"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "c94aa1d3-7d18-4bab-b982-1d84aa1c0b62",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import collections\n",
+    "\n",
+    "if not hasattr(collections, 'Mapping'):\n",
+    "    import collections.abc\n",
+    "    collections.Mapping = collections.abc.Mapping\n",
+    "\n",
+    "import experta\n",
+    "\n",
+    "# Definición de hechos con atributos (Field) para validación\n",
+    "class Persona(Fact):\n",
+    "    \"\"\"Hecho Persona con nombre y edad (validados).\"\"\"\n",
+    "    nombre = Field(str, mandatory=True)\n",
+    "    edad = Field(int, mandatory=True)\n",
+    "\n",
+    "# También podemos definir otros hechos sin campos o con campos simples\n",
+    "class Pago(Fact):\n",
+    "    \"\"\"Hecho Pago con cantidad (float) y tipo (string opcional).\"\"\"\n",
+    "    cantidad = Field(float, mandatory=True)\n",
+    "    tipo = Field(str, default=\"sin especificar\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "24015433-bd26-4742-bb9f-3b10fde8f113",
+   "metadata": {},
+   "source": [
+    "En el código anterior, Persona tiene dos campos validados: nombre (obligatorio de tipo str) y edad (obligatorio de tipo int). Si se crea una instancia de Persona con un valor incorrecto, la validación interna de Field generaría un error. También definimos un hecho Pago con un campo cantidad obligatorio de tipo float y un campo tipo con un valor por defecto. Esto permite asegurar que los hechos tengan la estructura y tipos de datos adecuados antes de ser utilizados por el motor."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3d3aed1b-837c-4f4a-9af7-4e6b24e0bf7f",
+   "metadata": {},
+   "source": [
+    "### Definición del motor de reglas (KnowledgeEngine)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "b0c9a716-0280-4b11-afdf-475fc0247d3c",
+   "metadata": {},
+   "source": [
+    "Para crear el motor de inferencia definimos una clase que hereda de KnowledgeEngine. Cada método de esta clase decorado con @Rule(...) representa una regla. En el decorador @Rule se especifica la condición (LHS) mediante patrones de hechos, y el cuerpo del método es la acción (RHS) que se ejecuta cuando la regla dispara. \n",
+    "\n",
+    "En el ejemplo, implementamos un sistema simple de aprobación de préstamos. Primero declaramos algunos hechos iniciales usando @DefFacts (hechos declarados automáticamente al iniciar el motor). Luego definimos reglas que usan operadores lógicos (AND, OR, NOT) para combinar condiciones, y empleamos salience para dar prioridad a unas reglas sobre otras. También mostramos el uso de AS y MATCH para enlazar hechos a variables dentro de la regla, así como ejemplos de retract y modify para eliminar o modificar hechos. Cada regla imprime un mensaje explicando por qué se dispara."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "dfbf775b-bf71-47d2-bff3-93a05c799b2e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Definimos el motor de conocimiento con reglas\n",
+    "class MotorPrestamos(KnowledgeEngine):\n",
+    "    @DefFacts()\n",
+    "    def hechos_iniciales(self):\n",
+    "        \"\"\"Declara hechos iniciales necesarios al iniciar el motor.\"\"\"\n",
+    "        yield Persona(nombre=\"Lucas\", edad=30)\n",
+    "        yield Fact(credito=650)    # Hecho simple sin clase personalizada\n",
+    "        yield Fact(solicitud_prestamo=True)\n",
+    "    \n",
+    "    @Rule(Persona(edad=P(lambda x: x < 18)), salience=5)\n",
+    "    def demasiado_joven(self):\n",
+    "        \"\"\"Regla de mayor prioridad: edad menor de 18 niega el préstamo.\"\"\"\n",
+    "        print(\"Regla `demasiado_joven` disparada: edad < 18 → préstamo denegado\")\n",
+    "        # Declaramos un hecho adicional de denegación\n",
+    "        self.declare(Fact(prestamo=\"denegado\"))\n",
+    "    \n",
+    "    @Rule(Persona(edad=P(lambda x: x >= 18)), Fact(credito=P(lambda c: c < 500)), salience=4)\n",
+    "    def credito_bajo(self):\n",
+    "        \"\"\"Regla: crédito insuficiente deniega el préstamo.\"\"\"\n",
+    "        print(\"Regla `credito_bajo` disparada: crédito < 500 → préstamo denegado\")\n",
+    "        self.declare(Fact(prestamo=\"denegado\"))\n",
+    "    \n",
+    "    @Rule(Persona(edad=P(lambda x: x >= 18)), Fact(credito=P(lambda c: c >= 500)), salience=3)\n",
+    "    def aprobar_prestamo(self):\n",
+    "        \"\"\"Regla: edad >= 18 y crédito suficiente aprueba el préstamo.\"\"\"\n",
+    "        print(\"Regla `aprobar_prestamo` disparada: condiciones cumplidas → préstamo aprobado\")\n",
+    "        self.declare(Fact(prestamo=\"aprobado\"))\n",
+    "    \n",
+    "    @Rule(AS.f << Fact(prestamo=\"aprobado\"))\n",
+    "    def retract_solicitud(self, f):\n",
+    "        \"\"\"Regla: si el préstamo fue aprobado, se retira la solicitud original.\"\"\"\n",
+    "        print(\"Regla `retract_solicitud` disparada: retiro solicitud de préstamo\")\n",
+    "        # Retractamos el hecho de solicitud original (con la sentencia Fact(solicitud_prestamo=True))\n",
+    "        self.retract(self.facts[3])  # <f-3> es el hecho Fact(solicitud_prestamo=True) en este ejemplo\n",
+    "    \n",
+    "    @Rule(AS.cs << Fact(credito=P(lambda c: c < 1000)))\n",
+    "    def mejorar_credito(self, cs):\n",
+    "        \"\"\"Regla de ejemplo: aumenta artificialmente el crédito si es menor de 1000.\"\"\"\n",
+    "        nuevo_credito = cs['credito'] + 100\n",
+    "        print(f\"Regla `mejorar_credito` disparada: crédito incrementado de {cs['credito']} a {nuevo_credito}\")\n",
+    "        self.modify(cs, credito=nuevo_credito)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "98318a79-18fa-4063-acaf-d0e7f3a0ea8d",
+   "metadata": {},
+   "source": [
+    "En este fragmento:\n",
+    "\n",
+    "Usamos @DefFacts para declarar los hechos iniciales: en este caso se crean una persona (Persona(nombre=\"Lucas\", edad=30)), un hecho simple Fact(credito=650) y un hecho Fact(solicitud_prestamo=True).\n",
+    "\n",
+    "Las reglas usan expresiones compuestas: por ejemplo, AND(Persona(edad<18)) implícito por defecto en un solo patrón y usamos salience para dar prioridad a la regla de demasiado_joven.\n",
+    "\n",
+    "Se utiliza P(lambda x: ...) para hacer comprobaciones de tipo función (por ejemplo, edad < 18). También se emplea AS para capturar un hecho en una variable (AS.f << Fact(prestamo=\"aprobado\")) y luego eliminarlo con retract. De forma similar, AS.cs << Fact(credito=P(...)) captura el hecho de crédito para modificarlo con modify.\n",
+    "\n",
+    "Cada regla imprime un mensaje claro indicando qué regla se activó y por qué, facilitando el seguimiento de la ejecución."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5a89c4b3-41e4-4737-9acd-07a7c76ae7cb",
+   "metadata": {},
+   "source": [
+    "### Ejecución paso a paso del motor"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5a84b917-5df7-43b3-8bba-a6b96256d725",
+   "metadata": {},
+   "source": [
+    "Para ejecutar el sistema experto creamos una instancia del motor, llamamos a reset() (que inicializa los hechos y desencadena los DefFacts) y luego a run(). En este ejemplo, las reglas se dispararán automáticamente en orden de prioridad (salience). A continuación se muestra cómo hacerlo:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "2b65157c-c6a7-4d57-a7d4-29f75a932e58",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "-- Estado inicial de hechos --\n",
+      "0 <f-0>\n",
+      "1 <f-1>\n",
+      "2 <f-2>\n",
+      "3 <f-3>\n",
+      "\n",
+      "-- Ejecutando el motor --\n",
+      "Regla `aprobar_prestamo` disparada: condiciones cumplidas → préstamo aprobado\n",
+      "Regla `retract_solicitud` disparada: retiro solicitud de préstamo\n",
+      "Regla `mejorar_credito` disparada: crédito incrementado de 650 a 750\n",
+      "Regla `aprobar_prestamo` disparada: condiciones cumplidas → préstamo aprobado\n",
+      "Regla `mejorar_credito` disparada: crédito incrementado de 750 a 850\n",
+      "Regla `aprobar_prestamo` disparada: condiciones cumplidas → préstamo aprobado\n",
+      "Regla `mejorar_credito` disparada: crédito incrementado de 850 a 950\n",
+      "Regla `aprobar_prestamo` disparada: condiciones cumplidas → préstamo aprobado\n",
+      "Regla `mejorar_credito` disparada: crédito incrementado de 950 a 1050\n",
+      "Regla `aprobar_prestamo` disparada: condiciones cumplidas → préstamo aprobado\n",
+      "\n",
+      "-- Estado final de hechos --\n",
+      "0 <f-0>\n",
+      "1 <f-1>\n",
+      "4 <f-4>\n",
+      "8 <f-8>\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Instanciamos y ejecutamos el motor\n",
+    "motor = MotorPrestamos()\n",
+    "motor.reset()  # Prepara el motor y añade los hechos de @DefFacts\n",
+    "\n",
+    "print(\"\\n-- Estado inicial de hechos --\")\n",
+    "for hecho_id, hecho in motor.facts.items():\n",
+    "    print(hecho_id, hecho)\n",
+    "\n",
+    "print(\"\\n-- Ejecutando el motor --\")\n",
+    "motor.run()    # Ejecuta las reglas hasta que no queden reglas activas\n",
+    "\n",
+    "print(\"\\n-- Estado final de hechos --\")\n",
+    "for hecho_id, hecho in motor.facts.items():\n",
+    "    print(hecho_id, hecho)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "b9172052-f219-476d-807f-88e40cdb904b",
+   "metadata": {},
+   "source": [
+    "En la ejecución de ejemplo anterior:\n",
+    "\n",
+    "Primero se muestran los hechos iniciales en la memoria de trabajo (incluyendo el InitialFact automático).\n",
+    "\n",
+    "Al llamar a motor.run(), las reglas se disparan en el orden de prioridad definido. Por ejemplo, si la persona tiene 30 años y crédito 650, se activarán las reglas aprobar_prestamo (edad ≥18 y crédito ≥500) y luego retract_solicitud. Cada regla imprime una línea indicando su nombre y motivo.\n",
+    "\n",
+    "Finalmente, se listan los hechos finales. Hemos visto cómo se declaran nuevos hechos (por ejemplo prestamo=\"aprobado\" o \"denegado\") y cómo se retractan o modifican hechos existentes"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.12.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

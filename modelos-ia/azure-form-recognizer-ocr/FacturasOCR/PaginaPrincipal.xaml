@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FacturasOCR.PaginaPrincipal"
+             Title="OCR de Facturas">
+
+    <!-- Grid raiz: contenido + overlay de zoom apilados -->
+    <Grid>
+
+        <!-- Contenido principal -->
+        <Grid x:Name="gridPrincipal"
+              RowDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto"
+              Padding="15" RowSpacing="10">
+
+            <!-- Fila 0: Instrucciones para el usuario -->
+            <Label x:Name="lblInstruction"
+                   Text="Selecciona una factura (imagen, PDF o XML) para analizar con OCR de Azure."
+                   FontSize="13"
+                   TextColor="#6B7280" />
+
+            <!-- Fila 1: Botones de accion -->
+            <HorizontalStackLayout Grid.Row="1" Spacing="10">
+                <Button x:Name="btnTakePhoto"
+                        Text="📷 Tomar Foto"
+                        Clicked="OnTakePhotoClicked"
+                        BackgroundColor="#512BD4"
+                        TextColor="White"
+                        ToolTipProperties.Text="Abre la camara para fotografiar una factura" />
+                <Button x:Name="btnPickPhoto"
+                        Text="📁 Elegir Archivo"
+                        Clicked="OnPickPhotoClicked"
+                        BackgroundColor="#2B0B98"
+                        TextColor="White"
+                        ToolTipProperties.Text="Selecciona una factura del dispositivo (imagen, PDF o XML)" />
+                <Button x:Name="btnBatch"
+                        Text="📋 Procesar Lote"
+                        Clicked="OnBatchClicked"
+                        BackgroundColor="#7C3AED"
+                        TextColor="White"
+                        ToolTipProperties.Text="Selecciona varias facturas a la vez para procesarlas todas" />
+            </HorizontalStackLayout>
+
+            <!-- Fila 2: Preview imagen + Ficha resumen lado a lado -->
+            <Grid Grid.Row="2" ColumnDefinitions="3*,2*" ColumnSpacing="10" HeightRequest="400">
+                <!-- Izquierda: preview de la imagen -->
+                <Border Stroke="LightGray"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8">
+                    <Grid>
+                        <Image x:Name="imgPreview"
+                               Aspect="AspectFit"
+                               HorizontalOptions="Fill"
+                               VerticalOptions="Fill">
+                            <Image.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnImageTapped" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                        <!-- Icono lupa abajo-derecha -->
+                        <Label Text="🔍"
+                               FontSize="20"
+                               HorizontalOptions="End"
+                               VerticalOptions="End"
+                               Margin="0,0,8,8"
+                               Opacity="0.6">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnImageTapped" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+                </Border>
+
+                <!-- Derecha: ficha resumen de la factura -->
+                <Border Grid.Column="1"
+                        Stroke="#374151"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8"
+                        BackgroundColor="#1F2937"
+                        Padding="12">
+                    <VerticalStackLayout x:Name="panelFicha" Spacing="8">
+                        <Label x:Name="lblSummaryTitle"
+                               Text="Resumen de la Factura"
+                               FontSize="15"
+                               FontAttributes="Bold"
+                               TextColor="#E5E7EB" />
+                        <BoxView HeightRequest="1" Color="#374151" />
+
+                        <VerticalStackLayout Spacing="2">
+                            <Label x:Name="lblProviderLabel" Text="Proveedor:" FontSize="11" TextColor="#9CA3AF" />
+                            <Label x:Name="lblFichaProveedor" FontSize="14" FontAttributes="Bold" TextColor="White" Text="-" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="2">
+                            <Label x:Name="lblInvoiceNumLabel" Text="N. Factura:" FontSize="11" TextColor="#9CA3AF" />
+                            <Label x:Name="lblFichaNumero" FontSize="14" TextColor="White" Text="-" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="2">
+                            <Label x:Name="lblDateLabel" Text="Fecha:" FontSize="11" TextColor="#9CA3AF" />
+                            <Label x:Name="lblFichaFecha" FontSize="14" TextColor="White" Text="-" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="2">
+                            <Label x:Name="lblTotalLabel" Text="Total:" FontSize="11" TextColor="#9CA3AF" />
+                            <Label x:Name="lblFichaTotal" FontSize="18" FontAttributes="Bold" TextColor="#10B981" Text="-" />
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <!-- Fila 3: Titulo datos crudos OCR -->
+            <Label x:Name="lblOcrDataLabel"
+                   Grid.Row="3"
+                   Text="Datos completos del OCR:"
+                   FontSize="12"
+                   TextColor="#6B7280" />
+
+            <!-- Fila 4: Resultados del analisis (scrollable) -->
+            <ScrollView Grid.Row="4">
+                <Editor x:Name="editorResults"
+                        IsReadOnly="True"
+                        FontFamily="Consolas"
+                        FontSize="12"
+                        Placeholder="Aqui apareceran los datos completos del OCR.&#10;&#10;Formatos aceptados:&#10;  - Imagenes (JPG, PNG, BMP, TIFF)&#10;  - Documentos PDF&#10;  - Facturas electronicas XML (FacturaE)"
+                        AutoSize="TextChanges" />
+            </ScrollView>
+
+            <!-- Fila 5: Barra de estado -->
+            <Grid Grid.Row="5" ColumnDefinitions="Auto,*">
+                <ActivityIndicator x:Name="loadingIndicator"
+                                   IsRunning="False"
+                                   IsVisible="False"
+                                   HeightRequest="20"
+                                   WidthRequest="20" />
+                <Label x:Name="lblStatus"
+                       Grid.Column="1"
+                       VerticalOptions="Center"
+                       Margin="10,0"
+                       Text="Listo. Las facturas se guardan automaticamente al procesarlas." />
+            </Grid>
+
+            <!-- Fila 6: Info de almacenamiento -->
+            <Label x:Name="lblStoragePath"
+                   Grid.Row="6"
+                   FontSize="10"
+                   TextColor="#9CA3AF"
+                   LineBreakMode="TailTruncation" />
+
+        </Grid>
+
+        <!-- Overlay de zoom a pantalla completa (oculto por defecto, encima de todo) -->
+        <Grid x:Name="overlayZoom"
+              IsVisible="False"
+              BackgroundColor="#E0000000"
+              Padding="20">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnCloseZoom" />
+            </Grid.GestureRecognizers>
+            <Image x:Name="imgZoom"
+                   Aspect="AspectFit"
+                   HorizontalOptions="Fill"
+                   VerticalOptions="Fill" />
+            <Label Text="✕ Cerrar"
+                   FontSize="16"
+                   TextColor="White"
+                   HorizontalOptions="End"
+                   VerticalOptions="Start"
+                   Padding="10,5"
+                   BackgroundColor="#80000000">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnCloseZoom" />
+                </Label.GestureRecognizers>
+            </Label>
+            <Label x:Name="lblZoomHint"
+                   Text="Toca para cerrar"
+                   FontSize="12"
+                   TextColor="#999999"
+                   HorizontalOptions="Center"
+                   VerticalOptions="End"
+                   Margin="0,0,0,5" />
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

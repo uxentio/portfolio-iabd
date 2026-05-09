@@ -1,0 +1,87 @@
+GUION PARA EL VÍDEO - UT6 CLASIFICACIÓN
+========================================
+(Máximo 10 minutos)
+
+
+[INTRO - 30 segundos]
+
+Voy a explicar mi trabajo de la UT6 sobre clasificación. He usado el dataset de Ensayo de Motores, el mismo que trabajamos en clase con los notebooks 1 y 2. Son 400 registros con dos variables predictoras: Par de Carga en Newton metro y RPM. Lo que queremos predecir es si el motor falla o no. De los 400, hay 257 que no fallan y 143 que sí.
+
+
+[1. PREPROCESADO - 1 minuto]
+
+Cargo los datos desde el Excel con read_excel y lo primero que hago es explorar un poco: con info() veo que todo es numérico y con isnull().sum() compruebo que no hay nulos, así que no tengo que imputar nada.
+
+Como no hay columnas categóricas, no necesito hacer label encoding ni one-hot ni nada de eso, pero en el notebook explico qué es cada técnica y cuándo se usa, porque es lo que vimos en clase. También explico lo de la trampa de las variables dummy, que es cuando dejas todas las columnas del one-hot y metes multicolinealidad. Se soluciona con drop_first=True, aunque aquí no aplica.
+
+Después quito la columna Nº Serie Motor porque es un identificador que no aporta nada para predecir. Hago el split 75-25 con train_test_split y escalo con StandardScaler. Hago fit_transform en train y solo transform en test para no contaminar.
+
+
+[2. EDA - 1 minuto]
+
+Pinto el mapa de calor de correlaciones. Se ve que Nº Serie no correlaciona con nada, lógico porque es un ID. Par Carga y RPM sí que tienen relación con Fallo Motor.
+
+En el pairplot se ve que las clases se solapan un poco pero son separables. Y en el scatter plot de Par Carga contra RPM queda bastante claro: los motores que fallan tienden a tener valores altos en ambas variables, lo cual tiene sentido porque a más carga y más revoluciones más estrés sufre el motor.
+
+La única columna que he eliminado es Nº Serie. Las dos features que quedan no están muy correlacionadas entre sí (0.15) así que las mantengo.
+
+
+[3. REGRESIÓN LOGÍSTICA - 40 segundos]
+
+El nombre engaña porque dice regresión pero es para clasificación. Usa la sigmoide para sacar una probabilidad entre 0 y 1. Muestro accuracy en train y test, la matriz de confusión y pinto la frontera de decisión con meshgrid igual que lo hacíamos en clase. Se ve que es una línea recta, normal porque es un modelo lineal. Da un 89% en test.
+
+
+[4. KNN - 40 segundos]
+
+KNN es bastante intuitivo: para cada punto nuevo mira los K más cercanos y le pone la clase mayoritaria. No hay entrenamiento como tal. Uso distancia euclídea con Minkowski p=2.
+
+He hecho algo que no estaba en el notebook de clase: un gráfico probando K de 1 a 20 para ver cuál da mejor resultado. Con K=1 hay overfitting claro porque cada punto se clasifica según sí mismo. Me quedo con K=5 que da 93% en test. La frontera es más irregular que la de regresión logística.
+
+
+[5. SVM - 1 minuto]
+
+SVM intenta encontrar el hiperplano con mayor margen entre las clases. Pruebo dos kernels: lineal y RBF.
+
+El lineal da una frontera recta parecida a la regresión logística, con 90% en test. El RBF genera una frontera curva que se adapta mejor y sube al 93%. Tiene sentido porque en el scatter plot ya se veía que la separación no era una línea recta.
+
+El parámetro C controla cuánto penalizas los errores, y gamma en el RBF controla cuánto influye cada punto. Eso lo vimos en los apuntes de regularización.
+
+
+[6. NAIVE BAYES - 30 segundos]
+
+Aplica el teorema de Bayes asumiendo que las features son independientes, que es una suposición bastante fuerte. Uso GaussianNB porque los datos son continuos. Me llama la atención que la frontera tiene forma elíptica, distinta a todas las demás. Da un 90% en test.
+
+
+[7. ÁRBOLES DE DECISIÓN - 40 segundos]
+
+Va haciendo preguntas sí/no usando entropía y ganancia de información para elegir la mejor en cada nodo. Uso criterion='entropy' como en clase.
+
+El problema es que sin limitar la profundidad se aprende todo de memoria: 100% en train pero baja en test. En el meshgrid se ve cómo crea regiones rectangulares muy concretas, ese es el overfitting visual.
+
+
+[8. RANDOM FOREST - 30 segundos]
+
+Para arreglar el overfitting del árbol solo, Random Forest entrena 100 árboles con subconjuntos aleatorios y la predicción se decide por votación. La frontera queda más suave. Sigue teniendo train alto, pero es más robusto.
+
+
+[9. EVALUACIÓN - 2 minutos]
+
+Esta es la parte donde comparo todo junto. Primero hago una tabla y un gráfico de barras con el accuracy de train y test de los 7 modelos. El Árbol de Decisión y Random Forest son los que más diferencia tienen, los lineales son los más estables.
+
+Luego para cada modelo saco de la matriz de confusión: TN, FP, FN, TP, y calculo accuracy, precisión, sensitivity, specificity y F1. También pinto las 7 matrices de confusión juntas en un solo gráfico.
+
+Aquí hay algo que quiero destacar: en este problema la sensitivity es lo más importante. Si el modelo dice que un motor está bien y en realidad iba a fallar, eso puede acabar en un accidente. Un falso positivo solo supone revisar un motor de más, que no es tan grave.
+
+Las curvas ROC están todas bastante arriba, todos los modelos tienen AUC por encima de 0.9. Y la validación cruzada con 10 folds confirma que KNN y SVM RBF son los más consistentes.
+
+
+[10. GRIDSEARCH - 1 minuto]
+
+GridSearchCV lo que hace es probar todas las combinaciones de hiperparámetros que le pases con validación cruzada, y te dice cuál es la mejor. Lo hago con 4 modelos: Regresión Logística, SVM, Random Forest y KNN.
+
+Los mejores resultados son SVM con RBF y KNN con K=5, ambos con 0.9033. Me parece curioso que el KNN con los parámetros que yo ya había puesto antes era justo el óptimo. GridSearch te da esa seguridad de que no te estás dejando ninguna combinación buena sin probar.
+
+
+[CIERRE - 20 segundos]
+
+He probado 7 algoritmos con el dataset de motores. Lo bueno de tener solo 2 features es que puedes ver las fronteras de decisión de cada modelo y entender cómo funciona cada uno. Los mejores han sido KNN y SVM RBF. Y lo más relevante en un caso real como este sería priorizar la sensitivity para no dejar pasar ningún motor defectuoso.

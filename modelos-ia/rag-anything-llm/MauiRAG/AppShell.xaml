@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="MauiRAG.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:MauiRAG"
+    xmlns:pages="clr-namespace:MauiRAG.Pages"
+    Title="MauiRAG">
+
+    <!-- pestañas principales de la app con iconos unicode -->
+    <TabBar>
+        <ShellContent Title="Chat" ContentTemplate="{DataTemplate local:MainPage}">
+            <ShellContent.Icon>
+                <FontImageSource Glyph="&#x1F4AC;" Size="24"/>
+            </ShellContent.Icon>
+        </ShellContent>
+        <ShellContent Title="Workspaces" ContentTemplate="{DataTemplate pages:WorkspacesPage}">
+            <ShellContent.Icon>
+                <FontImageSource Glyph="&#x1F4C1;" Size="24"/>
+            </ShellContent.Icon>
+        </ShellContent>
+        <ShellContent Title="Documentos" ContentTemplate="{DataTemplate pages:DocumentosPage}">
+            <ShellContent.Icon>
+                <FontImageSource Glyph="&#x1F4C4;" Size="24"/>
+            </ShellContent.Icon>
+        </ShellContent>
+        <ShellContent Title="Config" ContentTemplate="{DataTemplate pages:ConfigPage}">
+            <ShellContent.Icon>
+                <FontImageSource Glyph="&#x2699;" Size="24"/>
+            </ShellContent.Icon>
+        </ShellContent>
+    </TabBar>
+
+</Shell>

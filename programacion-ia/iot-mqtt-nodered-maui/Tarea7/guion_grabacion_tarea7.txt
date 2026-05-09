@@ -1,0 +1,425 @@
+# Guion Video - Tarea 7: Control IoT con LLM
+# Orden: CODIGO primero (bloques 1-8), DEMO despues (bloques 9-11), cierre.
+# Sin estres con el tiempo: explicacion buena > caber en 10 min exactos.
+
+SCROLL LOCK = empezar/parar grabacion
+PAUSE = pausar/reanudar entre secciones (usalo sin miedo)
+
+-------------------------------------------------------------------
+ PREPARACION ANTES DE EMPEZAR (no se graba)
+-------------------------------------------------------------------
+
+En Visual Studio abre LucesIoT.slnx y deja preparadas estas 6
+pestanas en este orden de izquierda a derecha, CADA UNA colocada
+ya en la linea que se usa al principio de su seccion. Asi durante
+la grabacion solo tienes que pulsar Ctrl+Tab:
+
+  PESTANA             ARCHIVO                               LINEA
+  -------             ----------------------------------    ------
+  1                   Services/LmStudioService.cs              37
+  2                   ViewModels/MainViewModel.cs             123
+  3                   Services/NodeRedService.cs               21
+  4                   Views/MainPage.xaml                       1
+  5                   ESP32/main.cpp                           30
+  6                   LucesIoT.MCP/IoTTools.cs                 27
+
+Para posicionar cada pestana en su linea: abrela, pulsa Ctrl+G,
+escribe el numero y Enter. Asi cuando empieces la grabacion la
+pestana ya esta donde tiene que estar.
+
+Atajos clave durante la grabacion:
+  - Ctrl+Tab      -> saltar a la siguiente pestana abierta
+  - Ctrl+G <num>  -> ir a cualquier linea (para los saltos internos)
+  - Ctrl+rueda   -> agrandar letra (hazlo ANTES de grabar)
+
+Escenas OBS:
+  - "Codigo" -> pantalla completa del monitor principal
+  - "Demo"   -> pantalla + camara del movil enfocando la protoboard
+
+Saltos Ctrl+G dentro de cada archivo (te los avisa el guion):
+  LmStudioService.cs ..... 37, 69, 136, 191
+  MainViewModel.cs ....... 123, 171, 309
+  NodeRedService.cs ...... 21
+  MainPage.xaml .......... (scroll libre)
+  main.cpp ............... 30, 47, 65, 172, 280, 399, 426
+  IoTTools.cs ............ 27
+
+
+===================================================================
+ PARTE 1: CODIGO  (explicas todo el sistema sin ejecutar nada)
+===================================================================
+
+-------------------------------------------------------------------
+ INTRO  (~30s)  --  Escena: Codigo  --  Pestana: cualquiera
+-------------------------------------------------------------------
+
+(Visual Studio 2022 abierto con LucesIoT.slnx)
+
+"Hola, soy autor. Esta es la tarea 7 de Programacion para
+IA. Es una aplicacion .NET MAUI que usa un modelo de lenguaje
+ejecutado en local para controlar tres LEDs fisicos y una pantalla
+OLED en una ESP32, pasando por Node-RED y MQTT.
+
+La parte mas interesante para mi ha sido el diseno de la
+herramienta: una unica funcion que el modelo llama con los
+parametros que haga falta, y que permite encender, apagar, regular
+brillo, parpadear a tres velocidades, hacer respirar las luces o
+lanzar modos especiales como semaforo, ola y codigo morse.
+
+Primero enseno el codigo y luego hago la demo en vivo con la placa."
+
+
+-------------------------------------------------------------------
+ 1. ESTRUCTURA DE LA SOLUCION  (~25s)  --  Escena: Codigo
+-------------------------------------------------------------------
+
+Accion: haz foco en el Explorador de Soluciones (panel derecho).
+
+"En la solucion tengo dos proyectos .NET. LucesIoT.MAUI es la app
+que ve el usuario, con su UI, el chat con el modelo y los servicios
+que hablan con LM Studio y con Node-RED. LucesIoT.MCP es un servidor
+MCP aparte para poder controlar las luces desde Claude Desktop sin
+abrir la app.
+
+Ademas tengo dos carpetas extra: ESP32 con el firmware en C++ y
+PlatformIO, y NodeRED con el flow que hace de pasarela entre la
+app y la placa."
+
+
+-------------------------------------------------------------------
+ 2. LmStudioService.cs  (~90s)  --  Escena: Codigo
+ Pestana a abrir: (1) Services/LmStudioService.cs
+-------------------------------------------------------------------
+
+Accion: clic en la pestana LmStudioService.cs. Ctrl+G -> 37.
+
+"Este servicio es el que habla con LM Studio. Lo que ensenan ahi
+es el mensaje de sistema que le mando al modelo. Fijate que
+describe la herramienta con los 7 estados por luz y el mapeo de
+intenciones: por ejemplo 'tenue' lo traduce a dim, 'rapido' a
+fast, 'respira' a fade. Con modelos pequenos hay que ser muy
+explicito o no llama bien a la herramienta."
+
+Accion: Ctrl+G -> 69.
+
+"Linea 69: definicion de la herramienta. Es UNA SOLA herramienta,
+controlar_luces. Tiene tres parametros obligatorios verde, roja,
+azul, cada uno con siete valores posibles tipo enum. Y luego
+parametros opcionales: modo_especial para activar semaforo, ola o
+morse, y dos campos mas texto_morse y color_morse que solo se
+rellenan cuando el modo es morse.
+
+Al principio yo tenia cuatro funciones sueltas una por color, pero
+cuando quise combinar cosas a la vez tuve que refactorizar a esta
+unica funcion con parametros. Es el patron recomendado para
+function calling."
+
+Accion: Ctrl+G -> 136.
+
+"Linea 136: antes de mandar la peticion detecto si el usuario
+quiere tocar luces o solo esta preguntando. Miro palabras clave
+como enciende, apaga, tenue, respira, semaforo, morse. Si es
+orden fuerzo tool_choice = required para que el modelo llame
+a la herramienta si o si. Si es pregunta lo dejo en auto y
+responde con texto normal. Sin esto me pasaba que al preguntar
+'que puedes hacer' el modelo encendia una luz al azar."
+
+Accion: Ctrl+G -> 191.
+
+"Linea 191: cuando vuelve la respuesta del modelo, extraigo los
+argumentos del tool_call, que vienen como JSON anidado. En la
+195 miro si eligio un modo_especial: si es semaforo, ola o morse
+devuelvo un preset; si no, saco los tres estados normales.
+Tambien valido los valores contra una lista blanca, asi que si
+el modelo se inventa 'encendido' o 'ON' en vez de 'on', lo
+paso a off para no romper el ESP32."
+
+
+-------------------------------------------------------------------
+ 3. MainViewModel.cs  (~50s)  --  Escena: Codigo
+ Pestana: (2) ViewModels/MainViewModel.cs
+-------------------------------------------------------------------
+
+Accion: clic en MainViewModel.cs. Ctrl+G -> 123.
+
+"MainViewModel es el cerebro de la app con patron MVVM. Linea 123
+es el dispatch: segun lo que devuelva el modelo llamo a
+ProcesarMorse, ProcesarPreset o ProcesarToolCall."
+
+Accion: Ctrl+G -> 171.
+
+"ProcesarToolCall recibe el diccionario con los tres estados,
+pinta los circulos de colores en la interfaz y manda el JSON a
+Node-RED."
+
+Accion: Ctrl+G -> 309.
+
+"Linea 309, SetLedsFromStates. Aqui gestiono la animacion en la
+UI: arranco un timer distinto segun el modo mas rapido que haya
+activo: blink a 400 ms, fast a 150 ms, slow a 1 segundo, y para
+fade uso un timer a 60 ms que calcula una sinusoide de opacidad.
+Todo para que los circulos de la app se vean igual que los LEDs
+fisicos."
+
+
+-------------------------------------------------------------------
+ 4. NodeRedService.cs  (~25s)  --  Escena: Codigo
+ Pestana: (3) Services/NodeRedService.cs
+-------------------------------------------------------------------
+
+Accion: clic en NodeRedService.cs. Ctrl+G -> 21.
+
+"NodeRedService es cortito: un POST con el JSON al endpoint de
+Node-RED. Tiene tres metodos, uno para mandar los tres estados,
+otro para mandar un preset y otro para mandar un morse. Node-RED
+recibe este JSON y lo reempaqueta para publicarlo por MQTT."
+
+
+-------------------------------------------------------------------
+ 5. MainPage.xaml  (~25s)  --  Escena: Codigo
+ Pestana: (4) Views/MainPage.xaml
+-------------------------------------------------------------------
+
+Accion: clic en MainPage.xaml. Scroll natural por la vista.
+
+"La interfaz esta en XAML puro con bindings al ViewModel. A la
+izquierda esta el chat con los mensajes del usuario y del asistente,
+y a la derecha los tres circulos de colores con halo. La opacidad y
+el color estan atados a propiedades del ViewModel, asi cuando cambia
+un estado se refleja al instante. Debajo hay botones manuales para
+probar sin LLM y un boton de microfono para voz."
+
+
+-------------------------------------------------------------------
+ 6. ESP32 / main.cpp  (~90s)  --  Escena: Codigo
+ Pestana: (5) ESP32/main.cpp
+-------------------------------------------------------------------
+
+Accion: clic en main.cpp. Ctrl+G -> 30.
+
+"Aqui empieza el firmware. Linea 30, configuracion de WiFi, por
+debajo la del broker MQTT. Usa dos topics: iabd2425/esp32/led para
+los comandos de entrada y /ack para la confirmacion de vuelta hacia
+la app."
+
+Accion: Ctrl+G -> 47.
+
+"Linea 47: tres canales PWM del ESP32 a 5 kilohercios. PWM es
+modulacion por ancho de pulso, que es lo que me permite tener brillo
+tenue, fade y todos los modos intermedios sin parpadeo visible."
+
+Accion: Ctrl+G -> 65.
+
+"Linea 65, enum con los siete estados posibles por LED: OFF, DIM,
+ON, BLINK, FAST, SLOW y FADE. Mucho mas limpio que usar numeros
+magicos."
+
+Accion: Ctrl+G -> 172.
+
+"Linea 172, oledEstado: dibuja la pantalla OLED. La cabecera va en
+la franja amarilla de la pantalla y los tres LEDs con su estado en
+castellano van en la franja azul: ROJA encendida, VERDE respira, y
+asi. Nada de codigos raros tipo R:ON."
+
+Accion: Ctrl+G -> 280.
+
+"Linea 280, callback de MQTT. Cada vez que llega un mensaje lo
+parseo con ArduinoJson. Si trae morse preparo la emision. Si trae
+un preset activo la secuencia. Si no, aplico los tres estados
+directos. Al final publico el ACK en el otro topic y muestro un
+pantallazo OK en la OLED."
+
+Accion: Ctrl+G -> 399.
+
+"Linea 399, preset semaforo. Es una maquina de estados con millis:
+verde 3 segundos, ambar 1 segundo (enciende verde y roja a la vez),
+rojo 3 segundos y vuelve a empezar."
+
+Accion: Ctrl+G -> 426.
+
+"Linea 426, actualizarMorse. Tengo una tabla con el codigo morse
+de cada letra y cada digito. Un punto dura 350 ms y la raya el
+triple, 1050 ms, asi se distingue claramente en el LED. Hay tres
+tipos de gap: entre simbolos de una misma letra, entre letras y
+entre palabras. Cuando termina la cadena, la emite en bucle hasta
+que el usuario mande apagar."
+
+
+-------------------------------------------------------------------
+ 7. NODE-RED (el flow)  (~25s)  --  Escena: Codigo
+ Cambio a NAVEGADOR: http://127.0.0.1:1880
+-------------------------------------------------------------------
+
+Accion: alt-tab al navegador con Node-RED abierto. Ensena el flow.
+
+"Este es el flow de Node-RED. Recibo peticiones HTTP en /encender,
+paso el JSON entero como string en una funcion, y lo publico en el
+topic MQTT iabd2425/esp32/led. La pestana debug de la derecha me
+permite ver en directo los JSON que pasan. Muy util para
+diagnosticar."
+
+Accion: vuelve a Visual Studio (alt-tab o clic).
+
+
+-------------------------------------------------------------------
+ 8. LucesIoT.MCP / IoTTools.cs  (~25s)  --  Escena: Codigo
+ Pestana: (6) LucesIoT.MCP/IoTTools.cs
+-------------------------------------------------------------------
+
+Accion: clic en IoTTools.cs. Ctrl+G -> 27.
+
+"Y para cerrar el codigo, el servidor MCP. Expone la misma
+herramienta unica, ControlarLuces, con los mismos parametros que la
+app. Por dentro usa el mismo servicio de Node-RED, asi que Claude
+Desktop puede encender las luces sin tener que abrir la app MAUI."
+
+
+===================================================================
+ PARTE 2: DEMO  (app corriendo + ESP32 en la protoboard)
+===================================================================
+
+-------------------------------------------------------------------
+ CAMBIO A ESCENA "Demo" en OBS
+-------------------------------------------------------------------
+
+Accion: en OBS clic en la escena "Demo" (pantalla + camara del
+movil enfocando la protoboard con los 3 LEDs y la OLED).
+
+La app MAUI deberia estar abierta (si usaste ARRANCAR_TODO.bat ya
+lo esta), el ESP32 encendido y Node-RED arrancado.
+
+
+-------------------------------------------------------------------
+ 9. DEMO  MODOS SIMPLES Y COMBINADOS  (~80s)
+-------------------------------------------------------------------
+
+Accion: escribe en el chat "enciende la luz verde" y ENVIAR.
+
+"Verde fija. El circulo verde se ilumina en la app, el LED verde
+se enciende en la ESP32, y la OLED dice VERDE encendida."
+
+Accion: escribe "pon la azul tenue y la roja parpadeando rapido".
+
+"Dos modos distintos combinados en una misma llamada. La azul en
+brillo bajo por PWM, la roja parpadeando cada 150 ms, y la verde
+se apaga."
+
+Accion: escribe "verde fade".
+
+"Modo fade: la verde sube y baja el brillo suave, como respirando.
+Uso el valor directo en ingles porque con modelos pequenos es lo
+mas fiable. En la OLED pone VERDE respira."
+
+Accion: escribe "verde lento, roja rapido, azul fija".
+
+"Las tres con ritmos distintos al mismo tiempo. Cada LED tiene su
+propio timer."
+
+
+-------------------------------------------------------------------
+ 10. DEMO  MODOS ESPECIALES Y VOZ  (~100s)
+-------------------------------------------------------------------
+
+Accion: escribe "activa el modo semaforo".
+
+"Modo especial semaforo. La OLED cambia a MODO: Semaforo. Verde
+3 segundos, ambar 1 segundo, rojo 3 segundos, y vuelve a empezar."
+
+Accion: espera un ciclo completo en camara (7s aprox).
+
+Accion: escribe "haz la ola".
+
+"Preset ola: los 3 LEDs se encienden por turnos, como en la grada
+de un estadio."
+
+Accion: escribe "apaga todo".
+
+Accion: escribe "emite SOS en morse por la roja".
+
+"Modo morse: el ESP32 traduce SOS a codigo morse y lo emite por
+el LED rojo. Tres puntos cortos, tres rayas largas, tres puntos
+cortos. En la OLED se ve la cadena de puntos y rayas que esta
+saliendo. El morse queda en bucle hasta que apague."
+
+Accion: espera un ciclo completo (unos 8 segundos).
+
+Accion: escribe "apaga todo".
+
+"Y fuera, todo apagado."
+
+Accion: escribe "¿Que modos puedes controlar?".
+
+"Pregunta: el modelo no dispara la herramienta, me responde con
+texto. Es la deteccion de preguntas del servicio que he ensenado
+antes."
+
+Accion: pulsa el boton del microfono y di "enciende la roja".
+
+"Y para terminar, la entrada por voz. Reconocimiento en espanol,
+mismo flujo por detras."
+
+Accion: escribe "apaga todo" para dejar limpio.
+
+
+-------------------------------------------------------------------
+ 11. CIERRE  (~20s)  --  Escena: Demo o Codigo, da igual
+-------------------------------------------------------------------
+
+"Y esto es todo. Una aplicacion MAUI con un LLM local, UNA SOLA
+herramienta con parametros que hace de todo, brillo tenue,
+parpadeos a tres velocidades, respiracion, modos semaforo y ola,
+emision en morse, entrada por voz, una OLED con mensajes en
+castellano, ACK de confirmacion y ademas un servidor MCP aparte.
+Gracias por ver el video."
+
+
+===================================================================
+ FIN DE LA GRABACION  (SCROLL LOCK)
+===================================================================
+
+
+-------------------------------------------------------------------
+ LISTA DE SALTOS Ctrl+G  (por si necesitas un recordatorio rapido)
+-------------------------------------------------------------------
+
+LmStudioService.cs ..... 37, 69, 136, 191
+MainViewModel.cs ....... 123, 171, 309
+NodeRedService.cs ...... 21
+MainPage.xaml .......... (scroll libre)
+main.cpp ............... 30, 47, 65, 172, 280, 399, 426
+IoTTools.cs ............ 27
+
+
+-------------------------------------------------------------------
+ CHECKLIST ANTES DE GRABAR
+-------------------------------------------------------------------
+
+[ ] Notificaciones de Windows en silencio
+[ ] LM Studio con Qwen3.5 0.8B arrancado (puerto 1234)
+[ ] Node-RED con el flow importado (puerto 1880)
+[ ] App MAUI compilada y abierta
+[ ] ESP32 conectada, con WiFi, y con el firmware nuevo flasheado
+[ ] Protoboard con los 3 LEDs y la OLED bien iluminada
+[ ] Movil fijo enfocando la protoboard via DroidCam
+[ ] OBS con las dos escenas listas (Codigo, Demo)
+[ ] Visual Studio con las 6 pestanas abiertas en orden
+[ ] Ctrl+rueda en Visual Studio para agrandar letra
+
+
+-------------------------------------------------------------------
+ CHECKLIST DE PRUEBAS DE LA DEMO
+-------------------------------------------------------------------
+
+[ ] "enciende la verde"                  -> solo verde ON
+[ ] "pon la azul tenue"                  -> azul con brillo bajo
+[ ] "roja parpadeando rapido"            -> roja a 150 ms
+[ ] "verde fade"                         -> fade PWM suave (ojo: usa "fade", no "respira")
+[ ] "verde lento + roja rapido + azul fija" -> 3 ritmos distintos
+[ ] "activa el modo semaforo"            -> secuencia verde/ambar/rojo
+[ ] "haz la ola"                         -> LEDs por turnos
+[ ] "emite SOS en morse por la roja"     -> 3 cortos, 3 largos, 3 cortos, en bucle
+[ ] "apaga todo"                         -> las 3 OFF
+[ ] "¿que modos puedes controlar?"       -> responde texto, NO ejecuta
+[ ] Entrada por voz "enciende la roja"   -> se ejecuta por voz
+[ ] OLED legible en castellano durante toda la demo
+[ ] Pantallazo OK aparece en cada comando

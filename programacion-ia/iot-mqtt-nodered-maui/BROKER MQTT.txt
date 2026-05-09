@@ -1,0 +1,5 @@
+Podeis usar varios, pongo ejemplos:
+Host: 	broker.hivemq.com
+TCP Port: 	1883
+Host: 	test.mosquitto.org
+TCP Port: 	1883

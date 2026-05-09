@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(where jupyter:*)",
+      "Bash(jupyter --version)",
+      "Bash(where python:*)",
+      "Bash(pip show:*)",
+      "Bash(where xelatex:*)",
+      "Bash(where pdflatex:*)",
+      "Bash(jupyter nbconvert:*)",
+      "Bash(python -m jupyter nbconvert --to pdf \"UT9_autor_XXXXXXXXX.ipynb\")",
+      "Bash(pip install:*)",
+      "Bash(python -m playwright install chromium)",
+      "Bash(python -m nbconvert --to webpdf \"UT9_autor_XXXXXXXXX.ipynb\")",
+      "Bash(python -m nbconvert --to pdf \"UT9_autor_XXXXXXXXX.ipynb\")",
+      "Bash(xelatex notebook.tex)",
+      "Bash(python -m nbconvert --to html \"UT9_autor_XXXXXXXXX.ipynb\")",
+      "Bash(dir \"D:\\\\2526-1BDAT-Sistemas de Aprendizaje\\\\Trabajo final UT9 - AutoML\\\\notebook.tex\")",
+      "Bash(cmd /c \"dir /s /b \"\"D:\\\\2526-1BDAT-Sistemas de Aprendizaje\\\\Trabajo final UT9 - AutoML\\\\notebook.tex\"\"\")",
+      "Bash(cmd /c \"miktex --admin packages check-update\")",
+      "Bash(cmd /c \"initexmf --update-fndb && initexmf --mkmaps\")",
+      "Bash(cmd /c \"mpm --update\")",
+      "Bash(cmd /c \"cd /d \"\"D:\\\\2526-1BDAT-Sistemas de Aprendizaje\\\\Trabajo final UT9 - AutoML\"\" && python -m nbconvert --to latex \"\"UT9_autor_XXXXXXXXX.ipynb\"\" 2>&1\")",
+      "Bash(cmd /c \"dir \"\"D:\\\\2526-1BDAT-Sistemas de Aprendizaje\\\\Trabajo final UT9 - AutoML\\\\UT9_autor_XXXXXXXXX.tex\"\"\")",
+      "Bash(python -m nbconvert --to latex \"UT9_autor_XXXXXXXXX.ipynb\")",
+      "Bash(cmd /c \"xelatex -interaction=nonstopmode UT9_autor_XXXXXXXXX.tex\")",
+      "Bash(powershell -Command \"cd ''D:\\\\2526-1BDAT-Sistemas de Aprendizaje\\\\Trabajo final UT9 - AutoML''; xelatex -interaction=nonstopmode ''UT9_autor_XXXXXXXXX.tex'' 2>&1 | Select-Object -Last 50\")",
+      "Bash(powershell -Command \"mpm --install xkeyval; mpm --install adjustbox; mpm --install collectbox; mpm --install tcolorbox; mpm --install environ; mpm --install trimspaces; mpm --install caption; mpm --install float; mpm --install jknapltx; mpm --install parskip; mpm --install soul; mpm --install ulem; mpm --install titling\")",
+      "Bash(powershell -Command \"initexmf --set-config-value=[MPM]AutoInstall=1; initexmf --update-fndb\")",
+      "Bash(powershell -Command \"cd ''D:\\\\2526-1BDAT-Sistemas de Aprendizaje\\\\Trabajo final UT9 - AutoML''; xelatex -interaction=nonstopmode ''UT9_autor_XXXXXXXXX.tex'' 2>&1 | Select-Object -Last 20\")",
+      "Bash(powershell -Command \"cd ''D:\\\\2526-1BDAT-Sistemas de Aprendizaje\\\\Trabajo final UT9 - AutoML''; xelatex -interaction=nonstopmode ''UT9_autor_XXXXXXXXX.tex'' 2>&1 | Select-Object -Last 5\")",
+      "Bash(python -c \"import nbconvert; import os; print\\(os.path.join\\(os.path.dirname\\(nbconvert.__file__\\), ''exporters'', ''pdf.py''\\)\\)\")",
+      "Bash(python -c \":*)"
+    ]
+  }
+}

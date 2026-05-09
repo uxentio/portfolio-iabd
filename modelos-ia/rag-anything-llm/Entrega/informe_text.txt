@@ -1,0 +1,539 @@
+6: MauiRAG
+7: Aplicación MAUI para RAG local
+con AnythingLLM y LM Studio
+8: __________________________________________________
+9: Tarea 5 - Sistemas RAG
+10: Programación de Inteligencia Artificial
+11: CE en Inteligencia Artificial y Big Data
+12: autor
+14: Febrero 2026
+16: INDICE
+17: PARTE I: DOCUMENTO DE PREPROCESADO DE DATOS
+18:     1. Introducción
+19:     2. Pipeline de preprocesado general
+20:     3. Ejemplo 1: PDF de historial de empleados
+21:     4. Ejemplo 2: CSV de empleados
+22:     5. Ejemplo 3: Imágenes (Visión + OCR + EXIF)
+23:     6. Ejemplo 4: Transcripción de video de YouTube
+24:     7. Ejemplo 5: Apuntes en PDF segmentados por página
+25:     8. Conclusiones
+26: PARTE II: INFORME DE USO
+27:     1. Descripción general
+28:     2. Arquitectura MVVM
+29:     3. Stack tecnológico
+30:     4. instalación y puesta en marcha
+31:     5. Scripts de preprocesado
+32:     6. Guía de usuario
+33:     7. Notas de compilación
+34: PARTE III: EJEMPLOS DE CASOS DE USO
+35:     Caso 1: Consultas sobre el historial de empleados (PDF)
+36:     Caso 2: Consultas sobre el CSV de salarios
+37:     Caso 3: Consultas sobre imágenes (Visión + OCR + EXIF)
+38:     Caso 4: Video educativo (transcripción de YouTube)
+39:     Caso 5: Apuntes de programación en PDF (segmentados por página)
+41: PARTE I: DOCUMENTO DE PREPROCESADO DE DATOS
+42: 1. INTRODUCCIÓN
+43: En este documento explico cómo he preparado los datos que se usan en el sistema RAG. El objetivo es transformar los documentos originales (PDFs, CSVs, imágenes, etc.) para que AnythingLLM pueda generar los embeddings correctamente y el modelo pueda responder preguntas basándose en esos documentos.
+44: El proceso siempre sigue un patrón similar: primero se obtiene el documento en bruto, se limpia y segmenta en fragmentos (chunks), y finalmente se generan los embeddings que se almacenan en la base de datos vectorial. AnythingLLM se encarga de gran parte de esto de forma automática, pero viene bien saber qué pasa por dentro para preparar los datos correctamente.
+45: 2. PIPELINE DE PREPROCESADO GENERAL
+46: El flujo que sigue cualquier documento es el siguiente:
+47: Documento original --> Extracción de texto --> Segmentación en chunks --> Modelo de embeddings --> Base de datos vectorial
+48: Cada paso tiene su importancia:
+49: Extracción de texto: dependiendo del formato del archivo, la extracción se hace de una forma u otra. No es lo mismo un PDF que un CSV o un texto plano. Si es una imagen, hay que recurrir a OCR y extracción de metadatos.
+50: Segmentación (chunking): el texto se divide en fragmentos. Si los chunks son demasiado grandes pierden precisión en la búsqueda, y si son demasiado pequeños pierden contexto. AnythingLLM usa por defecto chunks de unos 1000 tokens, que va bastante bien.
+51: Generación de embeddings: cada chunk pasa por el modelo de embeddings (en mi caso uso el que incluye AnythingLLM, all-MiniLM-L6-v2) y genera un vector numérico. Básicamente, textos parecidos en contenido tendrán vectores parecidos.
+52: Almacenamiento: los vectores se guardan en la base de datos vectorial (LanceDB, incluida con AnythingLLM). Cuando el usuario hace una pregunta, se buscan los vectores mas similares y se pasan esos chunks como contexto al LLM para que elabore la respuesta.
+53: 3. EJEMPLO 1: PREPROCESADO DEL PDF DE HISTORIAL DE EMPLEADOS
+54: El primer documento utilizado es el PDF "Historial_empleados.pdf". Contiene información de 5 empleados: nombre, puesto e historial profesional de cada uno.
+55: 3.1 Extracción
+56: Al ser un PDF con texto embebido (no escaneado), AnythingLLM lo procesa directamente. Internamente utiliza un parser de PDF que extrae el texto manteniendo el orden de lectura.
+57: 3.2 Segmentación
+58: El documento es breve (1 página), por lo que se genera un solo chunk o a lo sumo 2-3. Cada chunk contiene la información de uno o varios empleados. Al tener una estructura clara con campos Nombre, Puesto e Historial bien diferenciados, los chunks mantienen la coherencia del contenido.
+59: 3.3 Resultado
+60: Tras subirlo al workspace y actualizar los embeddings, se pueden hacer preguntas como "¿Cuál es el historial de Juan Pérez?" o "Quien tiene mas experiencia?" y el sistema encuentra los chunks relevantes y responde con la información del documento.
+61: La ventaja de que el PDF tenga una estructura clara es que los chunks quedan bien delimitados. Si fuera un PDF con tablas complejas o columnas, el resultado sería peor y habría que hacer un preprocesado manual previo.
+62: 4. EJEMPLO 2: PREPROCESADO DEL CSV DE EMPLEADOS
+63: El segundo documento es "empleados (1).csv", con datos tabulares: Nombre, Puesto y Salario de los mismos empleados.
+64: 4.1 Extracción
+65: Los archivos CSV se procesan línea a línea. AnythingLLM los lee y convierte cada fila en texto plano:
+66: "Nombre: Juan Paez, Puesto: Desarrollador, Salario: 3000"
+67: 4.2 Consideraciónes
+68: Con los CSV hay que tener precaución porque la segmentación puede separar filas relacionadas entre si. En este caso, al ser un archivo pequeño (5 filas), no supone problema. Sin embargo, con un CSV de miles de registros habría que pensar en agruparlo por algún criterio antes de subirlo.
+69: También me aseguré de que el CSV tenía una cabecera con los nombres de las columnas (Nombre, Puesto, Salario), ya que sin ella los chunks no tendrian contexto sobre qué representa cada valor.
+70: 4.3 Resultado
+71: Al preguntar "¿Cuál es el salario de María Gómez?" el sistema busca en los chunks del CSV y devuelve la información correspondiente. La trazabilidad muestra el documento de origen y el score de similitud.
+72: 5. EJEMPLO 3: PREPROCESADO DE IMÁGENES (VISIÓN + OCR + EXIF)
+73: Una de las funciónalidades que he implementado en la app es el procesamiento de imágenes (JPG, PNG, etc.) para extraer información e incorporarla al RAG. Como AnythingLLM no acepta imágenes directamente, realizo un preprocesado previo en la propia app que combina tres técnicas: descripción con modelo de visión, OCR y extracción de metadatos EXIF.
+74: 5.1 Pipeline de procesamiento
+75: Cuando el usuario seleccióna una imagen, la app ejecuta el siguiente flujo:
+76: Imagen --> Descripción IA (modelo visión) + Extracción EXIF + OCR + Info archivo --> Texto plano (.txt) --> Subida a AnythingLLM --> Embeddings
+77: 5.2 Descripción con modelo de visión
+78: La app envía la imagen codificada en base64 a un modelo multimodal de visión cargado en LM Studio. Utiliza la API compatible con OpenAI de LM Studio (endpoint /v1/chat/completions) con la imagen incluida como image_url en formato data URI.
+79: El modelo analiza la imagen y devuelve una descripción en lenguaje natural de lo que se observa: objetos, personas, colores, escena, etc. Esto es lo que mas aporta, porque permite preguntar sobre lo que se ve en la imagen, no solo sobre los metadatos.
+80: Para que funcióne es necesario tener cargado un modelo con capacidad de visión en LM Studio, como LLaVA 1.5 7B. La app lo detecta automáticamente consultando el endpoint /v1/models y buscando uno que contenga "llava" o "visión" en el nombre. Si no hay modelo de visión disponible, esa sección se omite y el resto del análisis (EXIF, OCR) sigue funciónando con normalidad.
+81: 5.3 Extracción de metadatos EXIF
+82: Utilizo la librería MetadataExtractor (paquete NuGet) para extraer los metadatos EXIF de la imagen:
+83: Marca y modelo de la cámara
+84: Fecha de captura
+85: Parámetros técnicos: exposición, apertura, ISO, focal, flash
+86: Coordenadas GPS (si las contiene)
+87: Dimensiones de la imagen
+88: Software de edición
+89: 5.4 OCR (Reconocimiento de texto)
+90: Para el OCR uso la API de Windows.Media.Ocr incluida en Windows. Procesa la imagen con el motor OCR del idioma del sistema y extrae cualquier texto presente: carteles, documentos, capturas de pantalla, etc. Si la imagen no contiene texto, simplemente indica "No se detecto texto".
+91: 5.5 Información del archivo
+92: También extraigo información basica del archivo: nombre, tipo, tamaño, fecha de creación y ultima modificación.
+93: 5.6 Generación del texto
+94: Toda la información anterior se reune en un archivo .txt con secciónes diferenciadas:
+95: ANALISIS DE IMAGEN: i5092222598.jpg
+96: --- INFORMACIÓN DEL ARCHIVO ---
+97: Nombre: i5092222598.jpg
+98: Tipo: JPG
+99: Tamano: 18.8 KB
+100: Fecha de creación: 10/07/2025 10:38:01
+101: Última modificación: 10/07/2025 10:38:02
+102: --- METADATOS EXIF ---
+103: Marca: Samsung / Modelo: SM-G986B (Galaxy S20+)
+104: (y demás datos EXIF disponibles en la foto)
+105: --- DESCRIPCIÓN DE LA IMAGEN ---
+106: En la imagen se ve un tractor rojo con las palabras "Barreiros"
+107: escritas en el. La escena se desarrolla en frente de una
+108: construcción blanca. Al lado del tractor hay un vehículo antiguo.
+109: En el centro hay un asiento cercano a la parte trasera del tractor.
+110: --- TEXTO DETECTADO (OCR) ---
+111: Barreiros R545S
+112: 5.7 Resultado
+113: Ese archivo .txt se sube a AnythingLLM como cualquier otro documento y se generan los embeddings. De esta forma se pueden hacer preguntas sobre las imágenes:
+114: "Describe la imagen que se subió" (usa la descripción del modelo de visión)
+115: "Cuándo se hizo la foto?" (usa los metadatos EXIF)
+116: "Qué texto aparece en la imagen?" (usa el OCR)
+117: "Qué marca es el tractor?" (combina la descripción de visión con el OCR)
+118: La combinación de las tres técnicas (visión + EXIF + OCR) permite que el RAG responda tanto sobre el contenido visual como sobre los datos tecnicos de la imagen.
+119: 6. EJEMPLO 4: PIPELINE PARA TRANSCRIPCIÓN DE VIDEO DE YOUTUBE
+120: Para este ejemplo he utilizado el video "Programación Orientada a Objetos (POO) Explicada" del canal Fazt en YouTube (https://www.youtube.com/watch?v=SI7O81GMG2A). Es un video de 9 minutos y medio que explica los 4 pilares de la POO.
+121: 6.1 El problema
+122: AnythingLLM no acepta videos ni URLs de YouTube, solo archivos de texto, asi que hay que sacar el contenido del video a texto para meterlo en el RAG.
+123: 6.2 De donde se obtiene la transcripción
+124: La mayoría de videos de YouTube disponen de subtítulos. Estos pueden ser de dos tipos:
+125: Subtitulos manuales: los añade el creador del video. Suelen tener buena calidad porque estan revisados.
+126: Subtitulos autogenerados: los genera YouTube automáticamente mediante reconocimiento de voz. Funciónan razonablemente bien, aunque pueden contener errores de transcripción.
+127: Estos subtítulos son accesibles a traves de la API de YouTube. Existe una librería de Python llamada youtube-transcript-api que facilita su descarga. Lo único que se necesita es el ID del video (la parte que aparece despues de "v=" en la URL; en este caso, "SI7O81GMG2A").
+128: El video elegido dispone de subtítulos manuales en español, asi que la transcripción sale con buena calidad.
+129: 6.3 Herramientas utilizadas
+130: He usado Python con la librería youtube-transcript-api. Se instala con:
+131: pip install youtube-transcript-api
+132: 6.4 Proceso paso a paso
+133: He creado un script en Python (transcribir_video_youtube.py) que realiza todo el proceso. El script es una herramienta general: acepta la URL o el ID de cualquier video de YouTube como argumento de línea de comandos o los pide por consola si se ejecuta sin argumentos. Ademas, este script esta integrado dentro de la propia app MAUI: en la pestaña Documentos hay un campo para pegar la URL de YouTube y un botón que ejecuta el script automáticamente (la app lo llama con Process.Start desde la clase PythonProcessorService). Internamente realiza lo siguiente:
+134: Extraer el ID del video: A partir de la URL o del ID directo que le pases, el script extrae el identificador de 11 caracteres que YouTube usa internamente. Acepta varios formatos de URL (youtube.com/watch?v=, youtu.be/, etc.).
+135: Descargar los subtítulos del video:
+136: from youtube_transcript_api import YouTubeTranscriptApi
+137: api = YouTubeTranscriptApi()
+138: transcript = api.fetch(video_id, languages=['es'])
+139: La API devuelve una lista de segmentos. Cada segmento contiene tres campos: el texto del subtitulo (.text), el segundo en que comienza (.start) y su duración (.duration). Por ejemplo, un segmento podría ser: start=66.44, duration=5.2, text="Pasemos a la Herencia". Si no hay subtítulos en el idioma pedido, intenta descargar los que haya disponibles.
+140: Agrupar en bloques de 30 segundos: Los subtítulos individuales son muy breves (2-5 segundos cada uno), lo que resulta insuficiente para que un chunk tenga contexto significativo. El script recorre los segmentos y los va acumulando hasta que la diferencia de tiempo supera los 30 segundos, momento en que comienza un bloque nuevo.
+141: Formatear con marcas de tiempo: Cada bloque se escribe con el formato [Minuto XX:XX - YY:YY] seguido del texto. El minuto se calcula a partir del campo .start de cada segmento. De esta forma, cuando el RAG devuelve un chunk, el usuario puede ver en que minuto del video se trata ese tema.
+142: Generar el archivo de salida: Se escribe todo en un archivo .txt cuyo nombre se genera automáticamente a partir del ID del video (por ejemplo transcripción_SI7O81GMG2A.txt). Incluye una cabecera con la URL del video, la duración y el idioma.
+143: Para ejecutar el script con el video de este caso de uso:
+144: python transcribir_video_youtube.py https://www.youtube.com/watch?v=SI7O81GMG2A
+145: O de forma interactiva (sin argumentos):
+146: python transcribir_video_youtube.py
+147: El archivo generado tiene este formato:
+148: [Minuto 00:00 - 00:28]
+149: La programación orientada a objetos, POO para los amigos, es un paradigma
+150: de programación que modula nuestro codigo haciendolo mas entendible y reutilizable...
+151: [Minuto 06:44 - 07:10]
+152: Pasemos a la, Herencia. Ahora queremos crear la clase Guerrero y Mago, que tienen
+153: todos los atributos y metodos que tiene nuestra clase Personaje, mas algúnos atributos
+154: y metodos nuevos. En vez de crear todo de nuevo, podemos reutilizar la clase Personaje
+155: con la herencia.
+156: En total se generan 33 bloques temporales.
+157: 6.5 Resultado
+158: Al subir el archivo al workspace "Video POO" y preguntar "Qué es la herencia en POO?", el RAG devuelve el chunk con las marcas [Minuto 06:44 - 07:10] y un score de 0.5429. El usuario puede ir directamente a ese minuto del video en YouTube para ver la explicación completa, sin necesidad de ver el video entero.
+159: 7. EJEMPLO 5: PIPELINE PARA APUNTES EN PDF (SEGMENTADOS POR PÁGINA)
+160: He utilizado el PDF "Aprenda Java como si estuviera en Primero" de TECNUN (Universidad de Navarra), un manual de referencia de 175 páginas sobre Java escrito por J. Garcia de Jalon et al.
+161: 7.1 El problema
+162: Cuando se sube un PDF directamente a AnythingLLM, el sistema extrae el texto y lo divide en chunks, pero se pierde la referencia a la página de origen. Es decir, si el RAG devuelve un chunk con información sobre constructores, no sabes de que página viene. Si quieres ir a la página original del PDF a consultar algo, no puedes.
+163: 7.2 Herramientas utilizadas
+164: He usado Python con la librería PyPDF2. Se instala con:
+165: pip install PyPDF2
+166: 7.3 Proceso paso a paso
+167: He creado un script en Python (segmentar_pdf_por_página.py) que realiza todo el proceso. El script es una herramienta general: acepta la ruta de cualquier PDF como argumento de línea de comandos o la pide por consola si se ejecuta sin argumentos. Opciónalmente se le puede indicar un rango de páginas para procesar solo una parte del PDF. Ademas, este script esta integrado dentro de la app MAUI: al selecciónar un PDF en la pestaña Documentos aparece un checkbox "Procesar PDF con marcas [Página XX]" que, al marcarlo, ejecuta el script automáticamente antes de subir el documento (via Process.Start desde PythonProcessorService). Si no se marca el checkbox, el PDF se sube directamente a AnythingLLM sin preprocesar. Internamente realiza lo siguiente:
+168: Abrir el PDF con PyPDF2:
+169: from PyPDF2 import PdfReader
+170: reader = PdfReader(pdf_path)
+171: # reader.pages es una lista con todas las páginas del PDF
+172: Determinar el rango de páginas: Si se indica un rango (por ejemplo 37-64), solo se procesan esas páginas. Si no se indica, se procesan todas. Para este caso de uso seleccióne las páginas 37-64, que corresponden al capitulo 3 "Clases en Java". Estas 28 páginas cubren los conceptos de POO: clases, objetos, constructores, herencia, polimorfismo, interfaces y clases abstractas.
+173: Extraer el texto página a página:
+174: text = reader.pages[idx].extract_text()
+175: Limpiar cabeceras repetidas: Muchos PDFs academicos incluyen en cada página una cabecera con el copyright y el nombre del capitulo. El script las elimina mediante expresiones regulares (re.sub) para que no interfieran en los chunks.
+176: Anadir [Página XX] al inicio de cada línea: Este es el paso mas importante. Se recorren los parrafos de cada página y se les añade la marca de página al principio:
+177: parrafos = [p.strip() for p in text.split('\n') if p.strip()]
+178: for parrafo in parrafos:
+179:     lineas.append(f"[Página {num_página}] {parrafo}")
+180: Generar el archivo de salida: Se escribe todo en un archivo .txt cuyo nombre se genera automáticamente a partir del nombre del PDF (por ejemplo aprenda_java_primero_segmentado.txt). Incluye una cabecera con el nombre del PDF y el rango de páginas procesadas.
+181: Para ejecutar el script con el PDF de este caso de uso:
+182: python segmentar_pdf_por_página.py aprenda_java_primero.pdf 37-64
+183: O de forma interactiva (sin argumentos):
+184: python segmentar_pdf_por_página.py
+185: El archivo generado tiene este formato:
+186: [Página 37] 3. CLASES EN JAVA
+187: [Página 37] Las clases son el centro de la Programación Orientada a Objetos (OOP).
+188: [Página 37] Algúnos de los conceptos mas importantes de la POO son los siguientes:
+189: [Página 44] Un constructor es un metodo que se llama automáticamente cada vez que se crea
+190: [Página 44] un objeto de una clase. La principal misión del constructor es reservar memoria
+191: [Página 44] e inicializar las variables miembro de la clase.
+192: 7.4 Por que [Página XX] en cada línea y no solo al inicio de cada página
+193: Inicialmente coloque [Página XX] solo al principio de cada página, en una línea separada. Al probarlo, descubrí que no funciónaba correctamente: AnythingLLM al trocear el texto separaba la marca del contenido, y el chunk que devolvía el RAG no incluia la referencia a la página. La solución fue cambiar el formato para que cada línea individual lleve la marca. De esta forma, independientemente de donde AnythingLLM realice el corte, la página siempre aparece en el chunk.
+194: 7.5 Resultado
+195: Al subir el archivo al workspace "Apuntes Java" y preguntar "Qué es un constructor en Java?", el RAG devuelve chunks con las marcas [Página 50] y [Página 44] claramente visibles en el texto, con scores de 0.5997 y 0.6241. El alumno puede ir directamente a la página 44 del PDF original para consultar la sección completa sobre constructores.
+196: 8. CONCLUSIONES
+197: El preprocesado importa bastante en un sistema RAG. Si los documentos estan mal preparados, las respuestas van a ser malas. Lo que he sacado en claro de esta practica:
+198: El tamaño de los chunks es clave: ni demasiado grandes ni demasiado pequeños. Los 1000 tokens por defecto de AnythingLLM van bastante bien.
+199: Meter metadatos (página, minuto, sección) dentro de los chunks ayuda mucho a saber de donde viene cada cosa.
+200: Los documentos bien estructurados (con cabeceras y secciónes claras) dan mejores resultados que los bloques de texto sin formato.
+201: Las imágenes necesitan un preprocesado especial (visión + OCR + EXIF) para convertirlas a texto que se pueda indexar.
+202: Los videos de YouTube hay que descargarles los subtítulos y formatearlos con marcas de tiempo.
+203: Los PDFs extensos se benefician de una segmentación por página con marcas [Página XX] en cada línea, no solo al inicio.
+204: AnythingLLM automatiza casi todo, pero cuando el formato del documento es complicado hay que entender como funcióna por dentro para preparar bien los datos.
+205: Haber integrado los scripts de Python dentro de la app (con Process.Start) hace que todo sea mas cómodo: el usuario no tiene que abrir una terminal para preprocesar nada, lo hace todo desde la interfaz.
+207: PARTE II: INFORME DE USO
+208: 1. DESCRIPCIÓN GENERAL
+209: MauiRAG es una aplicación multiplataforma hecha con .NET MAUI que se conecta con AnythingLLM para poder hacer consultas RAG desde una interfaz grafica. La app permite gestionar workspaces, subir documentos (incluyendo imágenes), configurar el system prompt y hacer preguntas en modo chat o query, viendo de donde vienen las respuestas (trazabilidad).
+210: La aplicación sigue el patrón MVVM (Model-View-ViewModel) y se organiza en 4 pestanas principales con iconos:
+211: Chat (icono de mensaje): pantalla principal para interactuar con el RAG
+212: Workspaces (icono de carpeta): crear, renombrar y eliminar workspaces
+213: Documentos (icono de documento): subir archivos y asignarlos a un workspace
+214: Config (icono de engranaje): configurar la URL, API key y system prompt
+215: 2. ARQUITECTURA MVVM
+216: La app usa el patrón MVVM para separar la logica de la interfaz:
+217: Estructura de carpetas:
+218: Modelos/ -> clases de datos (WorkspaceItem, DocumentoItem, MensajeChat, ChunkInfo)
+219: ViewModels/ -> logica de cada pantalla (ChatViewModel, WorkspacesViewModel, DocumentosViewModel, ConfigViewModel, BaseViewModel)
+220: Pages/ -> las vistas XAML de cada pantalla
+221: Servicios/ -> ApiService (llamadas a la API), ImageProcessorService (procesamiento de imágenes) y PythonProcessorService (preprocesado de PDFs y videos de YouTube)
+222: Cada pantalla tiene su ViewModel con INotifyPropertyChanged y ObservableCollection, asi la interfaz se actualiza sola cuando cambian los datos. Los comandos (ICommand) enlazan los botones con los metodos del ViewModel.
+223: BaseViewModel implementa INotifyPropertyChanged y tiene un metodo SetProperty para no repetir el codigo de notificación en cada ViewModel.
+224: 3. STACK TECNOLOGICO
+225: Tecnologias y herramientas utilizadas en el proyecto:
+226: Aplicación:
+227: .NET MAUI (net10.0-windows10.0.19041.0): framework para la interfaz grafica multiplataforma
+228: C#: lenguaje de programación de la app
+229: Patrón MVVM: arquitectura de la aplicación
+230: Newtonsoft.Json 13.0.3: seríalización/deseríalización de JSON para la comunicación con la API
+231: MetadataExtractor 2.8.1: extracción de metadatos EXIF de imágenes
+232: Windows.Media.Ocr: reconocimiento de texto en imágenes (OCR nativo de Windows)
+233: Infraestructura RAG:
+234: LM Studio (https://lmstudio.ai): servidor local de modelos de lenguaje. Expone una API compatible con OpenAI en localhost:1234
+235: Llama 3.2 1B Instruct: modelo de texto para generar respuestas (ligero, funcióna con GPU)
+236: LLaVA 1.5 7B: modelo de visión para describir imágenes (opciónal, funcióna en CPU)
+237: AnythingLLM Desktop (https://anythingllm.com): plataforma RAG que gestiona documentos, embeddings y workspaces. Expone una API REST en localhost:3001
+238: all-MiniLM-L6-v2: modelo de embeddings incluido en AnythingLLM (embeddings nativos)
+239: LanceDB: base de datos vectorial incluida en AnythingLLM
+240: Scripts de preprocesado (integrados en la app):
+241: Python 3: lenguaje para los scripts de preprocesado de documentos (se ejecutan automáticamente desde la app via Process.Start)
+242: youtube-transcript-api: librería para descargar subtítulos de YouTube
+243: PyPDF2: librería para extraer texto de archivos PDF
+244: Nota sobre la elección de modelos:
+245: Para el modelo de texto probé varios modelos disponibles en LM Studio antes de elegir Llama 3.2 1B Instruct. También probé Qwen 2.5 1.5B Instruct y Phi-3.1 Mini 4K, pero Llama 3.2 1B dio el mejor equilibrio entre velocidad de respuesta y calidad para las consultas RAG en mi hardware (GPU con 4GB VRAM). Los modelos mas grandes (7B+) daban mejor calidad pero eran demasiado lentos para una experiencia de uso fluida.
+246: Para los embeddings use all-MiniLM-L6-v2, que es el que viene incluido con AnythingLLM como "embedder nativo" y no necesita configuración adiciónal. AnythingLLM también permite usar modelos de embeddings externos (como nomic-embed-text a traves de Ollama o modelos de OpenAI), pero el nativo va bien para documentos en español y ademas no necesita ningun servicio extra.
+247: Para el modelo de visión (procesamiento de imágenes) use LLaVA 1.5 7B, que es de los pocos modelos multimodales que se pueden ejecutar en local con LM Studio. Al ser un modelo de 7B parametros lo cargo en CPU, lo cual lo hace mas lento pero funcióna sin necesitar VRAM adiciónal.
+248: 4. INSTALACIÓN Y PUESTA EN MARCHA
+249: 4.1 Instalar LM Studio
+250: Descargar LM Studio desde https://lmstudio.ai (disponible para Windows, Mac y Linux)
+251: Instalar y abrir la aplicación
+252: Desde la pestaña de búsqueda, descargar los modelos:
+253: Llama 3.2 1B Instruct (para texto): buscar "llama-3.2-1b-instruct" y descargar la version GGUF
+254: LLaVA 1.5 7B (para visión, opciónal): buscar "llava-v1.5-7b" y descargar
+255: Ir a la pestaña "Local Server" (icono de servidor en el lateral)
+256: Cargar el modelo de texto (Llama 3.2 1B Instruct)
+257: Pulsar "Start Server". El servidor arranca en http://localhost:1234
+258: Si se quiere usar procesamiento de imágenes, cargar también el modelo de visión en una segunda instancia o slot
+259: 4.2 Instalar AnythingLLM Desktop
+260: Descargar AnythingLLM Desktop desde https://anythingllm.com (sección Download)
+261: Instalar y abrir la aplicación
+262: En la configuración inicial:
+263: LLM Provider: selecciónar "LM Studio" e introducir la URL http://localhost:1234/v1
+264: Embedding Provider: selecciónar "AnythingLLM Embedder" (usa all-MiniLM-L6-v2, no necesita configuración adiciónal)
+265: Vector Database: dejar LanceDB (viene por defecto)
+266: Generar una API Key desde la configuración de AnythingLLM (apartado API Keys). Esta clave se necesita para que MauiRAG pueda conectarse.
+267: AnythingLLM queda corriendo en http://localhost:3001
+268: 4.3 Compilar y ejecutar MauiRAG
+269: Abrir la solución MauiRAG.csproj en Visual Studio
+270: Selecciónar el target framework: net10.0-windows10.0.19041.0
+271: Compilar con F5 o Ctrl+Shift+B
+272: Al abrir la app, ir a la pestaña Config e introducir la URL (http://localhost:3001/api) y la API Key generada en el paso anterior
+273: Pulsar "Probar Conexion" para verificar que conecta correctamente
+274: 4.4 Orden de arranque
+275: El orden para arrancar todo el sistema es:
+276: Primero: LM Studio (cargar modelos y arrancar el servidor local)
+277: Segundo: AnythingLLM Desktop (se conecta a LM Studio para el LLM y embeddings)
+278: Tercero: MauiRAG (se conecta a AnythingLLM para gestionar workspaces y hacer consultas)
+279: Los scripts de preprocesados (casos 4 y 5) estan integrados en la app y se ejecutan automáticamente cuando se sube un PDF o se introduce una URL de YouTube. Para que funciónen es necesario:
+280: Python 3 instalado y en el PATH del sistema
+281: Librerías: pip install youtube-transcript-api PyPDF2
+282: Configurar la ruta de los scripts y del ejecutable de Python en la pestaña Config de la app
+283: 5. SCRIPTS DE PREPROCESADO (Casos 4 y 5)
+284: Para los casos de uso 4 y 5 he creado dos scripts de Python independientes que preparan los documentos antes de subirlos a AnythingLLM. Los scripts son herramientas generales reutilizables: aceptan cualquier video de YouTube o cualquier PDF, no estan atados a un archivo concreto. Se encuentran en la carpeta raiz del proyecto, junto a la solución de MAUI.
+285: Ademas, los scripts estan integrados dentro de la propia app MAUI: cuando el usuario sube un PDF o pega una URL de YouTube en la pestaña Documentos, la app llama automáticamente al script correspondiente mediante Process.Start (clase PythonProcessorService). Asi el usuario no necesita abrir una terminal para ejecutarlos, todo se hace desde la interfaz grafica. Para los PDFs hay un checkbox que permite elegir si se quiere procesar el PDF con marcas de página o subirlo directamente tal cual.
+286: 5.1 transcribir_video_youtube.py
+287: Este script descarga los subtítulos de cualquier video de YouTube y genera un archivo de texto con marcas de tiempo [Minuto XX:XX - YY:YY]. Acepta la URL del video o su ID como argumento de línea de comandos, o si se ejecuta sin argumentos los pide por consola.
+288: YouTube permite que los creadores de contenido añadan subtítulos a sus videos, y también genera subtítulos automáticos mediante reconocimiento de voz. Estos subtítulos se pueden descargar a traves de la API de YouTube. También se podría copiar la transcripción a mano desde la propia interfaz de YouTube (en el desplegable del video aparece la opción "Mostrar transcripción"), pero hacerlo manualmente no sería la forma adecuada: se perderían las marcas de tiempo exactas, habría que formatear todo el texto a mano y para videos largos sería inviable.
+289: El script automatiza todo el proceso: descarga los subtítulos con sus timestamps, los agrupa en bloques de 30 segundos y genera el archivo listo para subir. El nombre del archivo de salida se genera automáticamente a partir del ID del video (por ejemplo transcripción_SI7O81GMG2A.txt).
+290: Requisitos e instalación:
+291: pip install youtube-transcript-api
+292: Ejecución (con argumentos):
+293: python transcribir_video_youtube.py https://www.youtube.com/watch?v=SI7O81GMG2A
+294: python transcribir_video_youtube.py SI7O81GMG2A es
+295: Ejecución (interactiva, sin argumentos):
+296: python transcribir_video_youtube.py
+297: El segundo argumento es opciónal e indica el idioma de los subtítulos (por defecto 'es'). Si no hay subtítulos en ese idioma, el script intenta descargar los que haya disponibles.
+298: Para el caso de uso 4 se uso con el video "Programación Orientada a Objetos (POO) Explicada" de Fazt (ID: SI7O81GMG2A). El archivo generado (transcripción_SI7O81GMG2A.txt) se renombro a transcripción_poo_video.txt y se subió al workspace "Video POO" desde la pestaña Documentos de la app.
+299: Para mas detalles sobre el proceso tecnico, ver la sección 6 del Documento de Preprocesado.
+300: 5.2 segmentar_pdf_por_página.py
+301: Este script extrae el texto de cualquier PDF página a página y genera un archivo de texto con marcas [Página XX] al inicio de cada línea. Acepta la ruta del PDF como argumento de línea de comandos, o si se ejecuta sin argumentos la pide por consola. Opciónalmente se puede indicar un rango de páginas para procesar solo una parte del PDF.
+302: Esto es necesario porque AnythingLLM, al procesar un PDF directamente, pierde la referencia a la página de origen en los chunks. Con este formato, cualquier chunk que genere AnythingLLM siempre contiene la página de donde viene el texto.
+303: El nombre del archivo de salida se genera automáticamente a partir del nombre del PDF (por ejemplo manual_segmentado.txt).
+304: Requisitos e instalación:
+305: pip install PyPDF2
+306: Ejecución (con argumentos):
+307: python segmentar_pdf_por_página.py manual.pdf
+308: python segmentar_pdf_por_página.py aprenda_java_primero.pdf 37-64
+309: Ejecución (interactiva, sin argumentos):
+310: python segmentar_pdf_por_página.py
+311: El segundo argumento es opciónal e indica el rango de páginas a procesar (por ejemplo 10-50). Si no se indica, se procesan todas las páginas del PDF.
+312: Para el caso de uso 5 se uso con el PDF "Aprenda Java como si estuviera en Primero" de TECNUN (Universidad de Navarra), que se puede descargar desde:
+313: https://www.tecnun.es/jgjalon/Asignaturas/JAVA/ApsJava.pdf
+314: Se proceso el rango de páginas 37-64 (capitulo 3: Clases en Java). El archivo generado (aprenda_java_primero_segmentado.txt) se renombro a apuntes_java_clases.txt y se subió al workspace "Apuntes Java" desde la pestaña Documentos de la app.
+315: Para mas detalles sobre el proceso tecnico y por que se pone [Página XX] en cada línea, ver la sección 7 del Documento de Preprocesado.
+316: 6. GUIA DE USUARIO
+317: 6.1 PANTALLA DE CONFIGURACIÓN (pestaña "Config")
+318: Es lo primero que hay que hacer al abrir la app por primera vez. Aqui se configuran varias cosas:
+319: URL Base: la dirección donde esta corriendo AnythingLLM. Por defecto es http://localhost:3001/api. Si lo tienes en otro puerto o en otra maquina hay que cambiarlo aqui.
+320: API Key: la clave de la API de AnythingLLM. Se genera desde la configuración de AnythingLLM, en el apartado de API keys. Sin esto la app no puede conectarse.
+321: System Prompt: es opciónal. Aqui puedes escribir un prompt de sistema que se envía con cada consulta. Por ejemplo "Responde siempre en español y de forma concisa". Se guarda automáticamente para que no lo pierdas al cerrar la app.
+322: Ruta de los scripts (.py): la carpeta donde estan los scripts de preprocesado (segmentar_pdf_por_página.py y transcribir_video_youtube.py). Es necesario para que la app pueda ejecutarlos automáticamente al subir PDFs o videos de YouTube.
+323: Ejecutable de Python: la ruta al ejecutable de Python (por defecto "python"). Si Python esta en el PATH del sistema se puede dejar el valor por defecto.
+324: Al pulsar "Guardar Configuración" los valores se guardan en las preferencias del dispositivo y se aplican inmediatamente.
+325: También hay un botón "Probar Conexion" que comprueba si la app puede conectarse a AnythingLLM con la configuración actual. Muestra un mensaje verde si la conexion es correcta o rojo si falla. Es util para verificar que la URL y la API key son correctas antes de empezar a trabajar.
+327: pantalla Config con los campos rellenados y el botón de probar conexion
+328: 6.2 PANTALLA DE WORKSPACES (pestaña "Workspaces")
+329: Aqui se gestionan los workspaces de AnythingLLM. La pantalla muestra:
+330: Un campo de texto y botón "Crear" arriba para crear workspaces nuevos
+331: Un botón "Refrescar" para recargar la lista
+332: La lista de workspaces existentes, cada uno con su nombre, slug, y botones de "Renombrar" y "Eliminar"
+333: Para crear un workspace: escribes el nombre y pulsas "Crear". Te saldra un aviso de que se ha creado correctamente.
+334: Para renombrar: pulsas "Renombrar" en el workspace que quieras y te sale un popup para escribir el nuevo nombre.
+335: Para eliminar: pulsas "Eliminar" (botón rojo) y te pide confirmación antes de borrarlo. Esto elimina el workspace y todos sus documentos asociados, asi que hay que tener cuidado.
+337: pantalla Workspaces con la lista de workspaces y el formulario de crear
+338: 6.3 PANTALLA DE DOCUMENTOS (pestaña "Documentos")
+339: Esta pantalla tiene tres secciónes:
+340: Sección superior - Subir Documento:
+341: Picker para elegir el workspace destino
+342: Boton "Selecciónar Archivo" para abrir el explorador de archivos
+343: Acepta los siguientes formatos: PDF, TXT, CSV, DOCX, MD y también imágenes (JPG, JPEG, PNG, BMP, GIF, TIFF, WEBP)
+344: Una vez selecciónado el archivo aparece su nombre y tipo debajo (por ejemplo "Documento de texto", "PDF detectado" o "Imagen detectada")
+345: Si el archivo selecciónado es un PDF, aparece un checkbox "Procesar PDF con marcas [Página XX]" que permite elegir si se quiere preprocesar el PDF con el script de Python (anadiendo la página de origen a cada línea) o subirlo directamente tal cual a AnythingLLM
+346: Boton "Subir y Procesar" que hace la subida y actualización de embeddings
+347: Si el archivo es una imagen, la app hace un preprocesado especial antes de subirla: pide a un modelo de visión (cargado en LM Studio) que describa lo que se ve en la imagen, extrae los metadatos EXIF (camara, fecha, GPS, etc.) y hace OCR para detectar texto. Todo se junta en un archivo .txt que se sube a AnythingLLM para generar los embeddings. La app detecta automáticamente el modelo de visión disponible en LM Studio (busca uno con "llava" o "visión" en el nombre), asi que no hace falta configurar el nombre del modelo. Si no hay modelo de visión cargado, el resto del análisis (EXIF + OCR) sigue funciónando normal.
+348: Si el archivo es un PDF y el checkbox esta marcado, la app llama al script segmentar_pdf_por_página.py que extrae el texto del PDF y añade [Página XX] al inicio de cada línea. Si el checkbox no esta marcado, el PDF se sube directamente a AnythingLLM sin preprocesar.
+350: pantalla Documentos con un PDF selecciónado y el checkbox de marcas de página visible
+351: El proceso de subida muestra mensajes de estado:
+352: "Procesando imagen (Visión IA + OCR + EXIF)..." (si es una imagen)
+353: "Procesando PDF con marcas [Página XX]..." (si es un PDF con el checkbox marcado)
+354: "Subiendo documento..." (en naranja)
+355: "Documento 'X' subido. Actualizando embeddings..."
+356: "Documento 'X' subido y embeddings actualizados!" (en verde si todo fue bien)
+357: Mensajes de error en rojo si algo falla
+358: Sección media - URL de YouTube:
+359: Un campo de texto discreto donde se puede pegar la URL de un video de YouTube
+360: Cuando la app detecta que la URL es de YouTube (valida el formato), aparece automáticamente un panel informativo en rojo que dice "URL de YouTube detectada" y explica que se van a descargar los subtítulos, agruparlos en bloques de 30 segundos con marcas [Minuto XX:XX] y subirlos al workspace
+361: El botón "Procesar y Subir al Workspace" solo aparece cuando hay una URL valida detectada
+362: Todo el proceso es automatico: la app extrae el ID del video, ejecuta el script de Python y sube el resultado
+364: pantalla Documentos con URL de YouTube detectada y panel rojo visible
+365: Sección inferior - Documentos en el Sistema:
+366: Lista de todos los documentos que hay en AnythingLLM
+367: Cada documento tiene un checkbox para selecciónarlo
+368: Boton "Refrescar" para actualizar la lista
+369: Boton "Eliminar Selecciónados" (en rojo) para borrar los documentos marcados, con confirmación previa
+371: pantalla Documentos con un archivo selecciónado y el picker de workspace
+373: pantalla Documentos despues de subir un archivo, con el mensaje en verde
+374: 6.4 PANTALLA DE CHAT (pestaña "Chat")
+375: Esta es la pantalla principal donde se interactua con el RAG. Tiene estas partes:
+376: Parte superior:
+377: Picker para selecciónar el workspace sobre el que quieres preguntar
+378: Boton "Limpiar Chat" para borrar la conversación y empezar de cero
+379: Selector de modo:
+380: Chat: mantiene el historial de conversación. Las preguntas anteriores influyen en las respuestas siguientes. Es mas conversaciónal.
+381: Query: cada pregunta es independiente, no mantiene contexto. Es mas preciso para consultas puntuales.
+382: Area de chat:
+383: Los mensajes del usuario aparecen en verde a la derecha con la hora
+384: Las respuestas del asistente aparecen en gris a la izquierda con la hora
+385: Se hace scroll automatico al ultimo mensaje
+386: Se usa un CollectionView con DataTemplate para mostrar los mensajes (patrón MVVM)
+387: Sección de trazabilidad:
+388: Debajo del chat hay un recuadro con tema oscuro que muestra los chunks que el RAG ha recuperado
+389: El panel es redimensionable: se puede arrastrar el handle de la parte superior para hacerlo mas grande o mas pequeno (entre 80 y 500 pixeles)
+390: Tiene scroll por si los chunks no caben
+391: Para cada chunk se muestra:
+392: * El nombre del documento de origen (Doc: nombre_archivo)
+393: * Un extracto del texto del chunk (recortado a 150 caracteres)
+394: * El score de similitud (un número entre 0 y 1, cuanto mas alto mas relevante)
+395: Se puede tocar un chunk para expandirlo y ver el texto completo, y tocarlo otra vez para contraerlo
+396: Al expandir un chunk cambia el color del borde (a azul) para indicar que esta expandido
+397: Campo de entrada:
+398: Abajo hay un campo de texto para escribir la pregunta y un botón "Enviar"
+399: Mientras se procesa se muestra un indicador de carga y el botón se desactiva
+400: También se puede enviar pulsando Enter en el campo de texto
+402: pantalla Chat en modo Chat con una conversación y los chunks de trazabilidad
+404: pantalla Chat en modo Query mostrando una consulta puntual con trazabilidad
+405: 7. NOTAS DE COMPILACIÓN
+406: El proyecto esta hecho con .NET MAUI targeteando net10.0. Para compilarlo:
+407: Abrir la solución MauiRAG.csproj en Visual Studio
+408: Selecciónar el target framework de Windows (net10.0-windows10.0.19041.0)
+409: Compilar con F5 o Ctrl+Shift+B
+410: Dependencias:
+411: Microsoft.Maui.Controls
+412: Microsoft.Maui.Essentials
+413: Newtonsoft.Json 13.0.3
+414: MetadataExtractor 2.8.1 (para leer metadatos EXIF de imágenes)
+415: Para el OCR se usa Windows.Media.Ocr que viene con Windows, no necesita paquete adiciónal. Esta funciónalidad solo esta disponible en Windows (compilación condiciónal con #if WINDOWS).
+416: El proyecto compila sin errores. Los warnings que salen son por nullable references y DisplayAlert en .NET 10, pero funcióna sin problemas.
+417: Para el preprocesado de PDFs y videos de YouTube desde la app, es necesario tener Python 3 instalado con las librerías youtube-transcript-api y PyPDF2, y configurar la ruta de los scripts en la pestaña Config.
+419: PARTE III: EJEMPLOS DE CASOS DE USO
+420: CASO 1: CONSULTAS SOBRE EL HISTORIAL DE EMPLEADOS (PDF)
+421: Contexto:
+422: Se ha subido el documento "Historial_empleados.pdf" al workspace. Este PDF contiene información de 5 empleados con sus nombres, puestos y trayectoria profesional.
+423: Ejemplo de uso en modo Chat:
+424: Usuario: Quien es el empleado con mas experiencia?
+425: Asistente: Segun la información del documento, el empleado con mas experiencia es Luis Ramirez,
+426: que cuenta con 10 anos de experiencia como Gerente de Proyecto. Ha gestionado equipos
+427: multidisciplinarios y ha asegurado la entrega de proyectos dentro de los plazos propuestos.
+428: Trazabilidad:
+429: Doc: Historial_empleados.pdf
+430: Texto: "Luis tiene una solida experiencia de 10 anos en la gestion de proyectos tecnologicos..."
+431: Score: 0.8234
+432: Usuario: Y en que se ha especializado?
+433: Asistente: Luis se ha especializado en la gestion de proyectos tecnologicos. En concreto, ha
+434: gestionado equipos multidisciplinarios y se ha encargado de asegurar que los proyectos se
+435: entreguen dentro de los plazos y presupuestos estipulados.
+436: (En modo chat mantiene el contexto de que estamos hablando de Luis)
+437: Ejemplo en modo Query:
+438: Usuario: Que puesto tiene Maria Gomez?
+439: Asistente: Maria Gomez ocupa el puesto de Disenadora.
+440: Trazabilidad:
+441: Doc: Historial_empleados.pdf
+442: Texto: "Nombre: Maria Gomez. Puesto: Disenadora. Historial: Maria cuenta con 7 anos..."
+443: Score: 0.9102
+444: Lo interesante aqui es que en la trazabilidad se ve claramente de que documento viene la información y que trozo de texto ha usado el modelo para responder. Ademas se puede tocar el chunk para expandirlo y ver el texto completo.
+446: chat PDF con trazabilidad
+447: CASO 2: CONSULTAS SOBRE EL CSV DE SALARIOS
+448: Contexto:
+449: Se ha subido el archivo "empleados (1).csv" a otro workspace. Contiene datos tabulares con nombre, puesto y salario.
+450: Ejemplo:
+451: Usuario: Cual es el salario mas alto?
+452: Asistente: El salario mas alto corresponde a Luis Ramirez, que como Gerente de Proyecto cobra
+453: 4500 euros.
+454: Trazabilidad:
+455: Doc: empleados (1).csv
+456: Texto: "Luis Ramirez,Gerente de Proyecto,4500"
+457: Score: 0.7856
+458: Usuario: Cuanto cobra el desarrollador?
+459: Asistente: El desarrollador Juan Paez tiene un salario de 3000 euros.
+460: Trazabilidad:
+461: Doc: empleados (1).csv
+462: Texto: "Juan Paez,Desarrollador,3000"
+463: Score: 0.8521
+464: En este caso vemos como el RAG busca en los datos del CSV y encuentra las filas relevantes. El chunk que devuelve es literalmente la línea del CSV que contiene la respuesta.
+466: chat CSV con trazabilidad
+467: CASO 3: CONSULTAS SOBRE IMÁGENES (VISIÓN + OCR + EXIF)
+468: Contexto:
+469: Se ha subido una imagen (por ejemplo una foto hecha con el movil) al workspace. La app automáticamente procesa la imagen de tres formas: pide a un modelo de visión (LLaVA en LM Studio) que describa lo que se ve, extrae los metadatos EXIF y hace OCR para detectar texto. Todo se junta en un .txt que se indexa en el RAG.
+470: Ejemplo preguntando por el contenido visual:
+471: Usuario: Describe la imagen que se subió
+472: Asistente: Segun el contexto, la imagen parece ser una vista de un tractor rojo con las
+473: palabras "Barreiros" escritas en el. La escena se desarrolla en frente de una construcción
+474: blanca, y al lado del tractor hay un vehículo antiguo. En el centro de la imagen hay un
+475: asiento cercano a la parte trasera del tractor.
+476: Trazabilidad:
+477: Doc: i5092222598_analisis.txt
+478: Texto: "--- DESCRIPCIÓN DE LA IMAGEN --- ...un tractor rojo con las palabras Barreiros..."
+479: Score: 0.4194
+480: Ejemplo preguntando por datos tecnicos:
+481: Usuario: Cuándo se hizo la foto?
+482: Asistente: La foto fue tomada el 10 de julio de 2025 a las 10:38.
+483: Trazabilidad:
+484: Doc: i5092222598_analisis.txt
+485: Texto: "Fecha de creación: 10/07/2025 10:38:01..."
+486: Score: 0.3856
+487: Ejemplo preguntando por texto en la imagen (OCR):
+488: Usuario: Qué texto aparece en la imagen?
+489: Asistente: En la imagen se detecta el texto "Barreiros" y "R545S", que corresponden
+490: a la marca y modelo del tractor.
+491: Trazabilidad:
+492: Doc: i5092222598_analisis.txt
+493: Texto: "--- TEXTO DETECTADO (OCR) --- Barreiros R545S..."
+494: Score: 0.9503
+495: Este caso es interesante porque AnythingLLM no acepta imágenes directamente. La app las preprocesa con tres técnicas: descripción con modelo de visión (para entender el contenido visual), metadatos EXIF (fecha, etc.) y OCR (texto detectado). Con las tres cosas juntas, el RAG puede contestar preguntas sobre lo que se ve en la foto y también sobre los datos tecnicos.
+497: chat imagen con trazabilidad
+498: CASO 4: VIDEO EDUCATIVO (TRANSCRIPCIÓN DE YOUTUBE)
+499: Contexto:
+500: He usado el video "Programación Orientada a Objetos (POO) Explicada" del canal Fazt en YouTube (https://www.youtube.com/watch?v=SI7O81GMG2A). Es un video de 9 minutos y medio que explica los 4 pilares de la POO: abstracción, encapsulamiento, herencia y polimorfismo.
+501: Para obtener la transcripción he pegado la URL del video en la sección "Transcripción de YouTube" de la pestaña Documentos de la app. Al pulsar "Procesar y Subir", la app llama automáticamente al script transcribir_video_youtube.py (con Process.Start desde PythonProcessorService), que descarga los subtítulos con marcas de tiempo, los agrupa en bloques de ~30 segundos y los formatea con marcas [Minuto XX:XX - YY:YY]. El resultado se sube directamente al workspace "Video POO" sin tener que hacer nada mas.
+502: Ejemplo en modo Query:
+503: Usuario: Qué es la herencia en POO?
+504: Asistente: En el lenguaje de programación Object-Oriented (POO), la herencia se refiere a un
+505: patrón de diseno donde una clase (la clase padre) puede inherir las caracteristicas y los
+506: metodos de otra clase (la clase hija). La clase padre utiliza al menos algúnos de los
+507: atributos y metodos de la clase hija. (...)
+508: Trazabilidad (primer chunk expandido):
+509: Doc: transcripción_poo_video.txt
+510: Texto: "...[Minuto 06:37 - 06:44] Definir atributos y metodos como publicos o privados
+511: depende del lenguaje, [Minuto 06:44 - 07:10] eso lo veremos en otro video... Pasemos a la,
+512: Herencia. Ahora queremos crear la clase Guerrero y Mago, que tienen todos los atributos y
+513: metodos que tiene nuestra clase Personaje... podemos reutilizar la clase Personaje con la
+514: herencia. [Minuto 07:11 - 07:19]"
+515: Score: 0.5429
+516: Segundo chunk:
+517: Texto: "[Minuto 05:02 - 05:27] Como turno es quien controla la ejecución de los metodos..."
+518: Score: 0.5281
+519: El usuario ve que la información viene de los minutos 06:44-07:10 del video, exactamente donde se explica la herencia. Puede ir directamente a ese punto en YouTube para ver la explicación en formato video. Asi un estudiante puede repasar un tema puntual sin tragarse todo el video.
+521: chat video POO con trazabilidad
+522: CASO 5: APUNTES DE PROGRAMACIÓN EN PDF (SEGMENTADOS POR PÁGINA)
+523: Contexto:
+524: He usado el PDF "Aprenda Java como si estuviera en Primero" de TECNUN (Universidad de Navarra), un clasico de 175 páginas escrito por J. Garcia de Jalon et al. He extraido el capitulo 3 "Clases en Java" (páginas 37-64) que cubre los conceptos de POO: clases, objetos, constructores, herencia, polimorfismo, interfaces y clases abstractas.
+525: Como AnythingLLM no conserva la referencia a la página de origen al trocear un PDF, he selecciónado el PDF en la pestaña Documentos de la app y he marcado el checkbox "Procesar PDF con marcas [Página XX]". Al pulsar "Subir y Procesar", la app llama automáticamente al script segmentar_pdf_por_página.py (con Process.Start desde PythonProcessorService), que extrae el texto página a página usando PyPDF2 y añade [Página XX] al inicio de cada línea. También limpia las cabeceras repetidas (copyright, nombre del capitulo). El resultado se sube directamente al workspace "Apuntes Java".
+526: Ejemplo en modo Query:
+527: Usuario: Qué es un constructor en Java?
+528: Asistente: En Java, el Constructor es un metodo que se llama automáticamente cada vez que se
+529: crea una nueva instancia de una clase. Su proposito principal es inicializar las variables
+530: miembro de la clase cuando se crea un nuevo objeto. Un Constructor tiene las siguientes
+531: caracteristicas:
+532: 1. No tiene valor de retorno (ni siquiera void)
+533: 2. Nombre coincide con el de la clase
+534: 3. El argumento implicito es el objeto que se esta creando (...)
+535: Trazabilidad (chunks expandidos):
+536: Doc: apuntes_java_clases.txt
+537: Texto: "[Página 50] constructor previamente definido en la misma clase. En este contexto,
+538: la palabra this solo puede [Página 50] aparecer en la primera sentencia de un constructor.
+539: [Página 50] De forma analoga el constructor de una clase derivada puede llamar al constructor
+540: de su [Página 50] super-clase por medio de la palabra super()..."
+541: Score: 0.5997
+542: Doc: apuntes_java_clases.txt
+543: Texto: "[Página 44] uso de constructores. [Página 44] Un constructor es un metodo que se
+544: llama automáticamente cada vez que se crea un objeto de [Página 44] una clase. La principal
+545: misión del constructor es reservar memoria e inicializar las variables [Página 44] miembro
+546: de la clase. [Página 44] Los constructores no tienen valor de retorno (ni siquiera void) y
+547: su nombre es el mismo que [Página 44] el de la clase..."
+548: Score: 0.6241
+549: Se ve que el RAG devuelve chunks con las marcas [Página 50] y [Página 44] directamente en el texto. Como el preprocesado mete [Página XX] en cada línea, el alumno sabe que tiene que ir a la página 44 del PDF. Sin ese preprocesado, no sabria de que página viene el chunk.
+551: chat apuntes Java con trazabilidad
+552: RESUMEN
+553: Los 5 casos muestran las capacidades de la aplicación con datos reales:
+554: Modo Chat con historial: permite hacer preguntas de seguimiento sin repetir contexto (caso 1)
+555: Modo Query sin contexto: para consultas puntuales y directas (casos 2-5)
+556: Trazabilidad: siempre se muestra de donde viene la información (documento, texto, score), con chunks expandibles para ver el texto completo
+557: Flexibilidad de documentos: funcióna con PDFs, CSVs, TXT y cualquier formato que acepte AnythingLLM
+558: Procesamiento de imágenes: la app preprocesa imágenes (descripción con IA + OCR + EXIF) para poder indexarlas y hacer consultas tanto sobre el contenido visual como sobre los datos tecnicos (caso 3)
+559: Transcripción de video: las marcas de tiempo [Minuto XX:XX] permiten redirigir al usuario al punto exacto del video donde se habla del tema (caso 4)
+560: Apuntes segmentados por página: las marcas [Página XX] permiten que el alumno vaya directamente a la página del PDF donde esta la información (caso 5)
+561: Lo de la trazabilidad es clave: el usuario puede comprobar de donde sale cada respuesta y no tiene que fiarse a ciegas del modelo. Los chunks se pueden expandir pulsando sobre ellos para ver el texto completo si el extracto recortado no es suficiente.

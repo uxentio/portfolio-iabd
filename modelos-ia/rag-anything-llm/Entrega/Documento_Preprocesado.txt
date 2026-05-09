@@ -1,0 +1,275 @@
+DOCUMENTO DE PREPROCESADO DE DATOS
+Aplicacion MauiRAG - Tarea 5 RAG
+=============================================
+
+
+1. INTRODUCCIÓN
+
+En este documento explico como he preparado los datos que se usan en el sistema RAG. El objetivo es transformar los documentos originales (PDFs, CSVs, imágenes, etc.) para que AnythingLLM pueda generar los embeddings correctamente y el modelo pueda responder preguntas basandose en esos documentos.
+
+El proceso siempre sigue un patrón similar: primero se obtiene el documento en bruto, se limpia y segmenta en fragmentos (chunks), y finalmente se generan los embeddings que se almacenan en la base de datos vectorial. AnythingLLM se encarga de gran parte de esto de forma automatica, pero viene bien saber que pasa por dentro para preparar los datos correctamente.
+
+
+2. PIPELINE DE PREPROCESADO GENERAL
+
+El flujo que sigue cualquier documento es el siguiente:
+
+    Documento original --> Extraccion de texto --> Segmentacion en chunks --> Modelo de embeddings --> Base de datos vectorial
+
+Cada paso tiene su importancia:
+
+- Extraccion de texto: dependiendo del formato del archivo, la extracción se hace de una forma u otra. No es lo mismo un PDF que un CSV o un texto plano. Si es una imagen, hay que recurrir a OCR y extracción de metadatos.
+
+- Segmentacion (chunking): el texto se divide en fragmentos. Si los chunks son demásiado grandes pierden precisión en la busqueda, y si son demásiado pequeños pierden contexto. AnythingLLM usa por defecto chunks de unos 1000 tokens, que va bastante bien.
+
+- Generacion de embeddings: cada chunk pasa por el modelo de embeddings (en mi caso uso el que incluye AnythingLLM, all-MiniLM-L6-v2) y genera un vector numérico. Basicamente, textos parecidos en contenido tendran vectores parecidos.
+
+- Almacenamiento: los vectores se guardan en la base de datos vectorial (LanceDB, incluida con AnythingLLM). Cuando el usuario hace una pregunta, se buscan los vectores más similares y se pasan esos chunks como contexto al LLM para que elabore la respuesta.
+
+
+3. EJEMPLO 1: PREPROCESADO DEL PDF DE HISTORIAL DE EMPLEADOS
+
+El primer documento utilizado es el PDF "Historial_empleados.pdf". Contiene información de 5 empleados: nombre, puesto e historial profesional de cada uno.
+
+3.1 Extraccion
+Al ser un PDF con texto embebido (no escaneado), AnythingLLM lo procesa directamente. Internamente utiliza un parser de PDF que extrae el texto manteniendo el orden de lectura.
+
+3.2 Segmentacion
+El documento es breve (1 página), por lo que se genera un solo chunk o a lo sumo 2-3. Cada chunk contiene la información de uno o varios empleados. Al tener una estructura clara con campos Nombre, Puesto e Historial bien diferenciados, los chunks mantienen la coherencia del contenido.
+
+3.3 Resultado
+Tras subirlo al workspace y actualizar los embeddings, se pueden hacer preguntas como "¿Cuál es el historial de Juan Pérez?" o "¿Quién tiene más experiencia?" y el sistema encuentra los chunks relevantes y responde con la información del documento.
+
+La ventaja de que el PDF tenga una estructura clara es que los chunks quedan bien delimitados. Si fuera un PDF con tablas complejas o columnas, el resultado sería peor y habría que hacer un preprocesado manual previo.
+
+
+4. EJEMPLO 2: PREPROCESADO DEL CSV DE EMPLEADOS
+
+El segundo documento es "empleados (1).csv", con datos tabulares: Nombre, Puesto y Salario de los mismos empleados.
+
+4.1 Extraccion
+Los archivos CSV se procesan línea a línea. AnythingLLM los lee y convierte cada fila en texto plano:
+
+    "Nombre: Juan Paez, Puesto: Desarrollador, Salario: 3000"
+
+4.2 Consideraciones
+Con los CSV hay que tener precaucion porque la segmentación puede separar filas relaciónadas entre si. En este caso, al ser un archivo pequeño (5 filas), no supone problema. Sin embargo, con un CSV de miles de registros habría que pensar en agruparlo por algun criterio antes de subirlo.
+
+Tambien me asegure de que el CSV tenia una cabecera con los nombres de las columnas (Nombre, Puesto, Salario), ya que sin ella los chunks no tendrían contexto sobre que representa cada valor.
+
+4.3 Resultado
+Al preguntar "¿Cuál es el salario de Maria Gómez?" el sistema busca en los chunks del CSV y devuelve la información correspondiente. La trazabilidad muestra el documento de origen y el score de similitud.
+
+
+5. EJEMPLO 3: PREPROCESADO DE IMAGENES (VISION + OCR + EXIF)
+
+Una de las funciónalidades que he implementado en la app es el procesamiento de imágenes (JPG, PNG, etc.) para extraer información e incorporarla al RAG. Como AnythingLLM no acepta imágenes directamente, realizo un preprocesado previo en la propia app que combina tres técnicas: descripción con modelo de visión, OCR y extracción de metadatos EXIF.
+
+5.1 Pipeline de procesamiento
+Cuando el usuario selecciona una imagen, la app ejecuta el siguiente flujo:
+
+    Imagen --> Descripcion IA (modelo vision) + Extraccion EXIF + OCR + Info archivo --> Texto plano (.txt) --> Subida a AnythingLLM --> Embeddings
+
+5.2 Descripcion con modelo de visión
+La app envia la imagen codificada en base64 a un modelo múltimodal de visión cargado en LM Studio. Utiliza la API compatible con OpenAI de LM Studio (endpoint /v1/chat/completions) con la imagen incluida como image_url en formato data URI.
+
+El modelo analiza la imagen y devuelve una descripción en lenguaje natural de lo que se observa: objetos, personas, colores, escena, etc. Esto es lo que más aporta, porque permite preguntar sobre lo que se ve en la imagen, no solo sobre los metadatos.
+
+Para que funcióne es necesario tener cargado un modelo con capacidad de visión en LM Studio, como LLaVA 1.5 7B. La app lo detecta automáticamente consultando el endpoint /v1/models y buscando uno que contenga "llava" o "visión" en el nombre. Si no hay modelo de visión disponible, esa sección se omite y el resto del analisis (EXIF, OCR) sigue funciónando con normalidad.
+
+5.3 Extraccion de metadatos EXIF
+Utilizo la libreria MetadataExtractor (paquete NuGet) para extraer los metadatos EXIF de la imagen:
+- Marca y modelo de la cámara
+- Fecha de captura
+- Parametros técnicos: exposicion, apertura, ISO, focal, flash
+- Coordenadas GPS (si las contiene)
+- Dimensiones de la imagen
+- Software de edicion
+
+5.4 OCR (Reconocimiento de texto)
+Para el OCR uso la API de Windows.Media.Ocr incluida en Windows. Procesa la imagen con el motor OCR del idioma del sistema y extrae cualquier texto presente: carteles, documentos, capturas de pantalla, etc. Si la imagen no contiene texto, simplemente indica "No se detecto texto".
+
+5.5 Informacion del archivo
+Tambien extraigo información básica del archivo: nombre, tipo, tamaño, fecha de creacion y última modificación.
+
+5.6 Generacion del texto
+Toda la información anterior se reune en un archivo .txt con secciónes diferenciadas:
+
+    =========================================
+    ANALISIS DE IMAGEN: i5092222598.jpg
+    =========================================
+
+    --- INFORMACION DEL ARCHIVO ---
+    Nombre: i5092222598.jpg
+    Tipo: JPG
+    Tamano: 18.8 KB
+    Fecha de creacion: 10/07/2025 10:38:01
+    Ultima modificacion: 10/07/2025 10:38:02
+
+    --- METADATOS EXIF ---
+    Marca: Samsung / Modelo: SM-G986B (Galaxy S20+)
+    (y demas datos EXIF disponibles en la foto)
+
+    --- DESCRIPCION DE LA IMAGEN ---
+    En la imagen se ve un tractor rojo con las palabras "Barreiros"
+    escritas en el. La escena se desarrolla en frente de una
+    construccion blanca. Al lado del tractor hay un vehiculo antiguo.
+    En el centro hay un asiento cercano a la parte trasera del tractor.
+
+    --- TEXTO DETECTADO (OCR) ---
+    Barreiros R545S
+
+    =========================================
+
+5.7 Resultado
+Ese archivo .txt se sube a AnythingLLM como cualquier otro documento y se generan los embeddings. De esta forma se pueden hacer preguntas sobre las imágenes:
+- "Describe la imagen que se subio" (usa la descripción del modelo de visión)
+- "¿Cuándo se hizo la foto?" (usa los metadatos EXIF)
+- "¿Qué texto aparece en la imagen?" (usa el OCR)
+- "¿Qué marca es el tractor?" (combina la descripción de visión con el OCR)
+
+La combinación de las tres técnicas (visión + EXIF + OCR) permite que el RAG responda tanto sobre el contenido visual como sobre los datos técnicos de la imagen.
+
+
+6. EJEMPLO 4: PIPELINE PARA TRANSCRIPCIÓN DE VIDEO DE YOUTUBE
+
+Para este ejemplo he utilizado el video "Programacion Orientada a Objetos (POO) Explicada" del canal Fazt en YouTube (https://www.youtube.com/watch?v=SI7O81GMG2A). Es un video de 9 minutos y medio que explica los 4 pilares de la POO.
+
+6.1 El problema
+AnythingLLM no acepta videos ni URLs de YouTube, solo archivos de texto, asi que hay que sacar el contenido del video a texto para meterlo en el RAG.
+
+6.2 De donde se obtiene la transcripción
+La mayoria de videos de YouTube disponen de subtítulos. Estos pueden ser de dos tipos:
+- Subtítulos manuales: los añade el creador del video. Suelen tener buena calidad porqué estan revisados.
+- Subtítulos autogenerados: los genera YouTube automáticamente mediante reconocimiento de voz. Funcionan razonablemente bien, aunque pueden contener errores de transcripción.
+
+Estos subtítulos son accesibles a traves de la API de YouTube. Existe una libreria de Python llamada youtube-transcript-api que facilita su descarga. Lo único que se necesita es el ID del video (la parte que aparece después de "v=" en la URL; en este caso, "SI7O81GMG2A").
+
+El video elegido dispone de subtítulos manuales en español, asi que la transcripción sale con buena calidad.
+
+6.3 Herramientas utilizadas
+He usado Python con la libreria youtube-transcript-api. Se instala con:
+
+    pip install youtube-transcript-api
+
+6.4 Proceso paso a paso
+He creado un script en Python (transcribir_video_youtube.py) que realiza todo el proceso. El script es una herramienta general: acepta la URL o el ID de cualquier video de YouTube como argumento de línea de comandos o los pide por consola si se ejecuta sin argumentos. Además, este script esta integrado dentro de la propia app MAUI: en la pestana Documentos hay un campo para pegar la URL de YouTube y un boton que ejecuta el script automáticamente (la app lo llama con Process.Start desde la clase PythonProcessorService). Internamente realiza lo siguiente:
+
+1. Extraer el ID del video: A partir de la URL o del ID directo que le pases, el script extrae el identificador de 11 caracteres que YouTube usa internamente. Acepta varios formatos de URL (youtube.com/watch?v=, youtu.be/, etc.).
+
+2. Descargar los subtítulos del video:
+
+    from youtube_transcript_api import YouTubeTranscriptApi
+
+    api = YouTubeTranscriptApi()
+    transcript = api.fetch(video_id, languages=['es'])
+
+La API devuelve una lista de segmentos. Cada segmento contiene tres campos: el texto del subtítulo (.text), el segundo en que comienza (.start) y su duracion (.duration). Por ejemplo, un segmento podría ser: start=66.44, duration=5.2, text="Pasemos a la Herencia". Si no hay subtítulos en el idioma pedido, intenta descargar los que haya disponibles.
+
+3. Agrupar en bloques de 30 segundos: Los subtítulos individuales son muy breves (2-5 segundos cada uno), lo que resulta insuficiente para que un chunk tenga contexto significativo. El script recorre los segmentos y los va acumulando hasta que la diferencia de tiempo supera los 30 segundos, momento en que comienza un bloque nuevo.
+
+4. Formatear con marcas de tiempo: Cada bloque se escribe con el formato [Minuto XX:XX - YY:YY] seguido del texto. El minuto se calcula a partir del campo .start de cada segmento. De esta forma, cuando el RAG devuelve un chunk, el usuario puede ver en que minuto del video se trata ese tema.
+
+5. Generar el archivo de salida: Se escribe todo en un archivo .txt cuyo nombre se genera automáticamente a partir del ID del video (por ejemplo transcripcion_SI7O81GMG2A.txt). Incluye una cabecera con la URL del video, la duracion y el idioma.
+
+Para ejecutar el script con el video de este caso de uso:
+
+    python transcribir_video_youtube.py https://www.youtube.com/watch?v=SI7O81GMG2A
+
+O de forma interactiva (sin argumentos):
+
+    python transcribir_video_youtube.py
+
+El archivo generado tiene este formato:
+
+    [Minuto 00:00 - 00:28]
+    La programacion orientada a objetos, POO para los amigos, es un paradigma
+    de programacion que modula nuestro codigo haciendolo mas entendible y reutilizable...
+
+    [Minuto 06:44 - 07:10]
+    Pasemos a la, Herencia. Ahora queremos crear la clase Guerrero y Mago, que tienen
+    todos los atributos y metodos que tiene nuestra clase Personaje, mas algunos atributos
+    y metodos nuevos. En vez de crear todo de nuevo, podemos reutilizar la clase Personaje
+    con la herencia.
+
+En total se generan 33 bloques temporales.
+
+6.5 Resultado
+Al subir el archivo al workspace "Video POO" y preguntar "¿Qué es la herencia en POO?", el RAG devuelve el chunk con las marcas [Minuto 06:44 - 07:10] y un score de 0.5429. El usuario puede ir directamente a ese minuto del video en YouTube para ver la explicación completa, sin necesidad de ver el video entero.
+
+
+7. EJEMPLO 5: PIPELINE PARA APUNTES EN PDF (SEGMENTADOS POR PAGINA)
+
+He utilizado el PDF "Aprenda Java como si estuviera en Primero" de TECNUN (Universidad de Navarra), un manual de referencia de 175 páginas sobre Java escrito por J. García de Jalón et al.
+
+7.1 El problema
+Cuando se sube un PDF directamente a AnythingLLM, el sistema extrae el texto y lo divide en chunks, pero se pierde la referencia a la página de origen. Es decir, si el RAG devuelve un chunk con información sobre constructores, no sabes de que página viene. Si quieres ir a la página original del PDF a consultar algo, no puedes.
+
+7.2 Herramientas utilizadas
+He usado Python con la libreria PyPDF2. Se instala con:
+
+    pip install PyPDF2
+
+7.3 Proceso paso a paso
+He creado un script en Python (segmentar_pdf_por_pagina.py) que realiza todo el proceso. El script es una herramienta general: acepta la ruta de cualquier PDF como argumento de línea de comandos o la pide por consola si se ejecuta sin argumentos. Opcionalmente se le puede indicar un rango de páginas para procesar solo una parte del PDF. Además, este script esta integrado dentro de la app MAUI: al seleccionar un PDF en la pestana Documentos aparece un checkbox "Procesar PDF con marcas [Pagina XX]" que, al marcarlo, ejecuta el script automáticamente antes de subir el documento (via Process.Start desde PythonProcessorService). Si no se marca el checkbox, el PDF se sube directamente a AnythingLLM sin preprocesar. Internamente realiza lo siguiente:
+
+1. Abrir el PDF con PyPDF2:
+
+    from PyPDF2 import PdfReader
+
+    reader = PdfReader(pdf_path)
+    # reader.pages es una lista con todas las paginas del PDF
+
+2. Determinar el rango de páginas: Si se indica un rango (por ejemplo 37-64), solo se procesan esas páginas. Si no se indica, se procesan todas. Para este caso de uso seleccione las páginas 37-64, que corresponden al capítulo 3 "Clases en Java". Estas 28 páginas cubren los conceptos de POO: clases, objetos, constructores, herencia, polimorfismo, interfaces y clases abstractas.
+
+3. Extraer el texto página a página:
+
+    text = reader.pages[idx].extract_text()
+
+4. Limpiar cabeceras repetidas: Muchos PDFs académicos incluyen en cada página una cabecera con el copyright y el nombre del capítulo. El script las elimina mediante expresiónes regulares (re.sub) para que no interfieran en los chunks.
+
+5. Anadir [Pagina XX] al inicio de cada línea: Este es el paso más importante. Se recorren los parrafos de cada página y se les añade la marca de página al principio:
+
+    parrafos = [p.strip() for p in text.split('\n') if p.strip()]
+    for parrafo in parrafos:
+        lineas.append(f"[Pagina {num_pagina}] {parrafo}")
+
+6. Generar el archivo de salida: Se escribe todo en un archivo .txt cuyo nombre se genera automáticamente a partir del nombre del PDF (por ejemplo aprenda_java_primero_segmentado.txt). Incluye una cabecera con el nombre del PDF y el rango de páginas procesadas.
+
+Para ejecutar el script con el PDF de este caso de uso:
+
+    python segmentar_pdf_por_pagina.py aprenda_java_primero.pdf 37-64
+
+O de forma interactiva (sin argumentos):
+
+    python segmentar_pdf_por_pagina.py
+
+El archivo generado tiene este formato:
+
+    [Pagina 37] 3. CLASES EN JAVA
+    [Pagina 37] Las clases son el centro de la Programacion Orientada a Objetos (OOP).
+    [Pagina 37] Algunos de los conceptos mas importantes de la POO son los siguientes:
+
+    [Pagina 44] Un constructor es un metodo que se llama automaticamente cada vez que se crea
+    [Pagina 44] un objeto de una clase. La principal mision del constructor es reservar memoria
+    [Pagina 44] e inicializar las variables miembro de la clase.
+
+7.4 Por que [Pagina XX] en cada línea y no solo al inicio de cada página
+Inicialmente coloque [Pagina XX] solo al principio de cada página, en una línea separada. Al probarlo, descubri que no funciónaba correctamente: AnythingLLM al trocear el texto separaba la marca del contenido, y el chunk que devolvia el RAG no incluia la referencia a la página. La solución fue cambiar el formato para que cada línea individual lleve la marca. De esta forma, independientemente de donde AnythingLLM realice el corte, la página siempre aparece en el chunk.
+
+7.5 Resultado
+Al subir el archivo al workspace "Apuntes Java" y preguntar "¿Qué es un constructor en Java?", el RAG devuelve chunks con las marcas [Pagina 50] y [Pagina 44] claramente visibles en el texto, con scores de 0.5997 y 0.6241. El alumno puede ir directamente a la página 44 del PDF original para consultar la sección completa sobre constructores.
+
+
+8. CONCLUSIONES
+
+El preprocesado importa bastante en un sistema RAG. Si los documentos estan mal preparados, las respuestas van a ser malas. Lo que he sacado en claro de esta práctica:
+
+- El tamaño de los chunks es clave: ni demásiado grandes ni demásiado pequeños. Los 1000 tokens por defecto de AnythingLLM van bastante bien.
+- Meter metadatos (página, minuto, sección) dentro de los chunks ayuda mucho a saber de donde viene cada cosa.
+- Los documentos bien estructurados (con cabeceras y secciónes claras) dan mejores resultados que los bloques de texto sin formato.
+- Las imágenes necesitan un preprocesado especial (visión + OCR + EXIF) para convertirlas a texto que se pueda indexar.
+- Los videos de YouTube hay que descargarles los subtítulos y formatearlos con marcas de tiempo.
+- Los PDFs extensos se benefician de una segmentación por página con marcas [Pagina XX] en cada línea, no solo al inicio.
+- AnythingLLM automatiza casi todo, pero cuando el formato del documento es complicado hay que entender como funcióna por dentro para preparar bien los datos.
+- Haber integrado los scripts de Python dentro de la app (con Process.Start) hace que todo sea más comodo: el usuario no tiene que abrir una terminal para preprocesar nada, lo hace todo desde la interfaz.

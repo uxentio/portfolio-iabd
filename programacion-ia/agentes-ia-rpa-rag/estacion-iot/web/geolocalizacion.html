@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estación IoT · Geolocalización</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    .container {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 30px;
+      font-size: 0.9em;
+    }
+    .icon {
+      font-size: 4em;
+      margin-bottom: 20px;
+    }
+    button {
+      background: linear-gradient(135deg, #00b09b, #96c93d);
+      border: none;
+      color: white;
+      padding: 15px 40px;
+      font-size: 1.1em;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin: 10px;
+    }
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(0,176,155,0.4);
+    }
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .resultado {
+      margin-top: 25px;
+      padding: 20px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 15px;
+      display: none;
+    }
+    .resultado.visible { display: block; }
+    .dato {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .dato:last-child { border-bottom: none; }
+    .dato .label { color: rgba(255,255,255,0.6); }
+    .dato .value { font-weight: bold; color: #96c93d; }
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+    .status.ok { background: rgba(0,200,0,0.2); color: #4caf50; }
+    .status.error { background: rgba(200,0,0,0.2); color: #f44336; }
+    .status.loading { background: rgba(255,200,0,0.2); color: #ffeb3b; }
+    .manual-input {
+      margin-top: 20px;
+      display: none;
+    }
+    .manual-input.visible { display: block; }
+    input[type="text"] {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 10px;
+      width: 100%;
+      font-size: 1em;
+      margin-bottom: 10px;
+    }
+    input::placeholder { color: rgba(255,255,255,0.4); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon" aria-hidden="true">📡</div>
+    <h1>Estación IoT</h1>
+    <p class="subtitle">Configura la ubicación para obtener datos meteorológicos de tu zona</p>
+
+    <button id="btnGeo" onclick="obtenerUbicacion()" aria-label="Usar mi ubicación actual">
+      📍 Usar mi ubicación
+    </button>
+
+    <button onclick="mostrarManual()" style="background: linear-gradient(135deg, #667eea, #764ba2);" aria-label="Escribir ciudad manualmente">
+      ✏️ Escribir ciudad
+    </button>
+
+    <div class="manual-input" id="manualInput">
+      <label for="ciudadManual" style="display:block; margin-bottom:6px; color:#bbb; font-size:0.9em;">Ciudad</label>
+      <input type="text" id="ciudadManual" placeholder="Ej: Cartagena, Murcia, Madrid...">
+      <button onclick="enviarCiudadManual()">Enviar ciudad</button>
+    </div>
+
+    <div id="status" role="status" aria-live="polite"></div>
+
+    <div class="resultado" id="resultado">
+      <div class="dato">
+        <span class="label">Latitud</span>
+        <span class="value" id="lat">-</span>
+      </div>
+      <div class="dato">
+        <span class="label">Longitud</span>
+        <span class="value" id="lon">-</span>
+      </div>
+      <div class="dato">
+        <span class="label">Precisión</span>
+        <span class="value" id="precision">-</span>
+      </div>
+      <div class="dato">
+        <span class="label">Ciudad</span>
+        <span class="value" id="ciudad">-</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Endpoint del workflow n8n que guarda la ubicacion en el staticData.
+    // Cambiar segun donde corra n8n:
+    //   - Servidor del profesor: "https://progian8n.duckdns.org/webhook/estacion-iot-geo"
+    //   - n8n local + ngrok (actual):
+    const N8N_WEBHOOK_GEO = "https://tapping-widget-entering.ngrok-free.dev/webhook/estacion-iot-geo";
+
+    function setStatus(msg, tipo) {
+      const el = document.getElementById('status');
+      el.innerHTML = `<div class="status ${tipo}">${msg}</div>`;
+    }
+
+    function obtenerUbicacion() {
+      const btn = document.getElementById('btnGeo');
+      btn.disabled = true;
+      btn.textContent = "Obteniendo...";
+      setStatus("Solicitando ubicación al navegador...", "loading");
+
+      if (!navigator.geolocation) {
+        setStatus("Tu navegador no soporta geolocalización", "error");
+        btn.disabled = false;
+        btn.textContent = "📍 Usar mi ubicación";
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const precision = pos.coords.accuracy;
+
+          document.getElementById('lat').textContent = lat.toFixed(6);
+          document.getElementById('lon').textContent = lon.toFixed(6);
+          document.getElementById('precision').textContent = Math.round(precision) + " m";
+          document.getElementById('resultado').classList.add('visible');
+
+          // Nominatim devuelve el nombre de la ciudad a partir de las coordenadas
+          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+            .then(r => r.json())
+            .then(data => {
+              const ciudad = data.address.city || data.address.town || data.address.village || "Desconocida";
+              document.getElementById('ciudad').textContent = ciudad;
+
+              enviarAN8N(lat, lon, ciudad);
+            })
+            .catch(() => {
+              document.getElementById('ciudad').textContent = "No disponible";
+              enviarAN8N(lat, lon, "Desconocida");
+            });
+
+          btn.disabled = false;
+          btn.textContent = "📍 Usar mi ubicación";
+        },
+        function(err) {
+          setStatus("Error: " + err.message + ". Prueba a escribir tu ciudad manualmente.", "error");
+          btn.disabled = false;
+          btn.textContent = "📍 Usar mi ubicación";
+          document.getElementById('manualInput').classList.add('visible');
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+
+    function mostrarManual() {
+      document.getElementById('manualInput').classList.toggle('visible');
+    }
+
+    function enviarCiudadManual() {
+      const ciudad = document.getElementById('ciudadManual').value.trim();
+      if (!ciudad) {
+        setStatus("Escribe una ciudad", "error");
+        return;
+      }
+
+      setStatus("Buscando coordenadas de " + ciudad + "...", "loading");
+
+      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(ciudad)}&format=json&limit=1`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.length === 0) {
+            setStatus("No se encontró la ciudad. Intenta con otro nombre.", "error");
+            return;
+          }
+
+          const lat = parseFloat(data[0].lat);
+          const lon = parseFloat(data[0].lon);
+          const nombre = data[0].display_name.split(",")[0];
+
+          document.getElementById('lat').textContent = lat.toFixed(6);
+          document.getElementById('lon').textContent = lon.toFixed(6);
+          document.getElementById('precision').textContent = "Manual";
+          document.getElementById('ciudad').textContent = nombre;
+          document.getElementById('resultado').classList.add('visible');
+
+          enviarAN8N(lat, lon, nombre);
+        })
+        .catch(() => {
+          setStatus("Error buscando la ciudad", "error");
+        });
+    }
+
+    function enviarAN8N(lat, lon, ciudad) {
+      setStatus("Enviando a n8n...", "loading");
+
+      fetch(N8N_WEBHOOK_GEO, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lat: lat,
+          lon: lon,
+          ciudad: ciudad,
+          origen: "web",
+          timestamp: new Date().toISOString()
+        })
+      })
+      .then(r => {
+        if (r.ok) {
+          setStatus("✅ Ubicación enviada correctamente a la estación IoT", "ok");
+        } else {
+          setStatus("⚠️ Ubicación obtenida pero n8n no respondió (¿workflow activo?)", "error");
+        }
+      })
+      .catch(() => {
+        setStatus("⚠️ Ubicación obtenida pero no se pudo conectar con n8n. Comprueba que el workflow está activo.", "error");
+      });
+    }
+  </script>
+</body>
+</html>

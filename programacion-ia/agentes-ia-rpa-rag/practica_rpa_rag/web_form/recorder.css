@@ -1,0 +1,209 @@
+/* recorder.css — estilos del panel del recorder, compartidos por las
+   3 páginas del formulario (alta, baja, ajustar_copias). Usa
+   variables CSS que cada página define en :root (--surface, --line,
+   --ink-100, --ink-300, --ink-500, --ink-700) más algunos literales
+   propios del recorder (slate fijo, rojos y verdes para los estados). */
+
+.recorder-card {
+    width: 320px;
+    background: var(--surface, #111827);
+    border-radius: 14px;
+    border: 1px solid var(--line, #243044);
+    box-shadow: 0 1px 3px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.35);
+    padding: 0;
+    overflow: hidden;
+    position: sticky;
+    top: 20px;
+}
+.rec-header {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: #fff;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.rec-header-title { display: flex; align-items: center; gap: 10px; }
+.rec-icon {
+    width: 32px; height: 32px;
+    background: rgba(255,255,255,.12);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+.rec-title { font-size: .95rem; font-weight: 700; letter-spacing: .2px; }
+.rec-subtitle { font-size: .68rem; color: #cbd5e1; margin-top: 1px; }
+.rec-badge {
+    background: rgba(129,140,248,.18);
+    color: #c7d2fe;
+    font-size: .65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(165,180,252,.25);
+}
+
+.rec-body { padding: 18px 20px; }
+.rec-meta {
+    font-size: .72rem;
+    color: var(--ink-500, #94a3b8);
+    line-height: 1.45;
+    padding: 10px 12px;
+    background: #1a2436;
+    border-radius: 8px;
+    border: 1px solid var(--line, #243044);
+    margin-bottom: 14px;
+}
+.rec-meta code {
+    background: #243044;
+    color: #c7d2fe;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: .92em;
+}
+
+/* Indicador pill grabando */
+.rec-status {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    background: #1a2436;
+    border: 1px solid var(--line, #243044);
+    border-radius: 999px;
+    font-size: .78rem;
+    color: var(--ink-300, #cbd5e1);
+    font-weight: 600;
+    margin-bottom: 14px;
+    transition: background .25s, color .25s, border-color .25s;
+}
+.rec-status.active { background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.4); color: #fca5a5; }
+.rec-status.success { background: rgba(16,185,129,.15); border-color: rgba(16,185,129,.4); color: #6ee7b7; }
+.rec-dot {
+    width: 8px; height: 8px;
+    background: var(--ink-500, #94a3b8);
+    border-radius: 50%;
+    transition: background .2s;
+}
+.rec-status.active .rec-dot {
+    background: #f87171;
+    box-shadow: 0 0 0 0 rgba(248,113,113,.6);
+    animation: rec-pulse 1.4s infinite;
+}
+.rec-status.success .rec-dot { background: #34d399; }
+@keyframes rec-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(248,113,113,.55); }
+    70%  { box-shadow: 0 0 0 8px rgba(248,113,113,0); }
+    100% { box-shadow: 0 0 0 0 rgba(248,113,113,0); }
+}
+.rec-status-count { margin-left: auto; font-variant-numeric: tabular-nums; opacity: .85; }
+
+/* Botones */
+.rec-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.rec-actions .btn-download { grid-column: 1 / -1; }
+.btn-rec {
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background .15s, box-shadow .15s, transform .05s;
+    font-family: inherit;
+}
+.btn-rec:active:not(:disabled) { transform: translateY(1px); }
+.btn-start { background: #22c55e; color: #fff; box-shadow: 0 2px 8px rgba(34,197,94,.4); }
+.btn-start:hover:not(:disabled) { background: #16a34a; }
+.btn-stop  { background: #ef4444; color: #fff; box-shadow: 0 2px 8px rgba(239,68,68,.4); }
+.btn-stop:hover:not(:disabled)  { background: #dc2626; }
+.btn-download { background: #3b82f6; color: #fff; box-shadow: 0 2px 8px rgba(59,130,246,.4); }
+.btn-download:hover:not(:disabled) { background: #2563eb; }
+.btn-rec:disabled { background: #1a2436; color: var(--ink-700, #64748b); cursor: not-allowed; box-shadow: none; border: 1px solid var(--line, #243044); }
+
+/* Banner de éxito */
+.rec-success {
+    display: none;
+    padding: 10px 12px;
+    background: rgba(16,185,129,.12);
+    border: 1px solid rgba(16,185,129,.35);
+    border-radius: 8px;
+    color: #6ee7b7;
+    font-size: .78rem;
+    font-weight: 600;
+    margin-top: 12px;
+    align-items: center;
+    gap: 8px;
+}
+.rec-success.show { display: flex; animation: rec-fadeUp .25s ease; }
+@keyframes rec-fadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Timeline de pasos */
+.rec-steps {
+    display: none;
+    margin-top: 14px;
+    max-height: 220px;
+    overflow-y: auto;
+    border: 1px solid var(--line, #243044);
+    border-radius: 8px;
+    background: #1a2436;
+}
+.rec-steps.show { display: block; }
+.rec-steps-header {
+    position: sticky;
+    top: 0;
+    background: #243044;
+    color: var(--ink-300, #cbd5e1);
+    font-size: .65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--line, #243044);
+}
+.rec-step-line {
+    display: grid;
+    grid-template-columns: 22px 60px 1fr;
+    align-items: baseline;
+    gap: 8px;
+    padding: 6px 10px;
+    border-bottom: 1px solid #1e2a3d;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: .68rem;
+    color: var(--ink-300, #cbd5e1);
+}
+.rec-step-line:last-child { border-bottom: none; }
+.rec-step-num {
+    color: var(--ink-700, #64748b);
+    font-weight: 700;
+    text-align: right;
+}
+.rec-step-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: .62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+.rec-type-click  { background: rgba(167,139,250,.18); color: #c4b5fd; }
+.rec-type-type   { background: rgba(96,165,250,.18); color: #93c5fd; }
+.rec-type-select { background: rgba(244,114,182,.18); color: #f9a8d4; }
+.rec-type-wait   { background: rgba(251,191,36,.18); color: #fcd34d; }
+.rec-type-text   { background: rgba(52,211,153,.18); color: #6ee7b7; }
+.rec-step-detail {
+    color: var(--ink-100, #e2e8f0);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.rec-step-detail .arg { color: var(--primary, #818cf8); }

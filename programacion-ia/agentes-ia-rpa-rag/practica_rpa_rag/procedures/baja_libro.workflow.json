@@ -1,0 +1,59 @@
+{
+  "id": "baja_libro",
+  "titulo": "Baja definitiva del fondo por número de registro",
+  "descripcion": "Retira un libro del fondo de la sección de la biblioteca de forma definitiva (extravío, deterioro, expurgo). NO es una devolución de préstamo: para eso usa devolucion_libro. Esta baja es permanente. Recibe el nº de registro R-NNNN. Si el usuario solo da el título, primero llama a listar_catalogo para resolver el nº de registro. Cancela automáticamente cualquier préstamo pendiente del libro retirado. Expresiones típicas: 'da de baja R-0003', 'retira del fondo el libro R-0007', 'el R-0042 lo expurgo', 'borra el libro X que se ha perdido', 'expurga este título por deterioro'.",
+  "app": "biblioteca_seccion",
+  "url": "{{FORM_URL_BAJA}}",
+  "tags": [
+    "baja definitiva",
+    "retirar fondo",
+    "expurgo",
+    "extravio libro",
+    "deterioro",
+    "baja por registro",
+    "R-NNNN"
+  ],
+  "param_schema": {
+    "id_libro": {
+      "type": "string",
+      "description": "Nº de registro del libro, formato R-NNNN (p. ej. R-0003)",
+      "required": true
+    }
+  },
+  "steps": [
+    {
+      "type": "wait",
+      "ms": 500
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#id_libro"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#id_libro"
+      },
+      "value": "{{id_libro}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#btn_eliminar"
+      }
+    },
+    {
+      "type": "wait_for_text",
+      "target": {
+        "by": "css",
+        "value": "#toast"
+      },
+      "contains": "eliminado"
+    }
+  ]
+}

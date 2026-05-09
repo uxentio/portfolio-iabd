@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alta de Libro</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            /* Acentos del tema (paleta indigo) */
+            --primary: #818cf8;
+            --primary-hover: #a5b4fc;
+            --primary-soft: rgba(129, 140, 248, .14);
+
+            /* Tonos slate para el dark theme */
+            --bg-base: #0b1220;
+            --bg-glow-1: rgba(79, 70, 229, .10);
+            --bg-glow-2: rgba(99, 102, 241, .08);
+            --surface: #111827;
+            --surface-2: #1e293b;
+            --field: #1e293b;
+            --field-hover: #273548;
+            --line: #243044;
+            --line-soft: #1e2a3d;
+            --ink-100: #e2e8f0;
+            --ink-300: #cbd5e1;
+            --ink-500: #94a3b8;
+            --ink-700: #64748b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background:
+                radial-gradient(1100px 700px at 0% -10%, var(--bg-glow-1), transparent 60%),
+                radial-gradient(900px 500px at 100% 0%, var(--bg-glow-2), transparent 55%),
+                var(--bg-base);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 48px 24px;
+            color: var(--ink-100);
+            -webkit-font-smoothing: antialiased;
+        }
+        .container { display: flex; gap: 28px; max-width: 1000px; width: 100%; align-items: flex-start; }
+        .card {
+            background: var(--surface);
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            box-shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.35);
+            padding: 0;
+            overflow: hidden;
+        }
+        .form-card { flex: 1; min-width: 380px; }
+
+        /* Navegación entre formularios estilo segmented */
+        .nav-pills {
+            display: flex;
+            gap: 4px;
+            padding: 18px 28px 0;
+            margin-bottom: 4px;
+        }
+        .nav-pills a {
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: .82rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--ink-500);
+            transition: background .15s, color .15s;
+        }
+        .nav-pills a:hover { color: var(--ink-100); background: var(--surface-2); }
+        .nav-pills a.active { color: var(--primary); background: var(--primary-soft); }
+
+        /* Cabecera del formulario con icono */
+        .form-header {
+            display: flex; gap: 14px; align-items: center;
+            padding: 18px 28px 22px;
+            border-bottom: 1px solid var(--line);
+            background: linear-gradient(180deg, var(--surface) 0%, #131c2e 100%);
+        }
+        .form-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 14px rgba(79,70,229,.45);
+            flex-shrink: 0;
+        }
+        .form-title h1 { font-size: 1.3rem; font-weight: 700; color: var(--ink-100); letter-spacing: -.01em; }
+        .form-title p { font-size: .82rem; color: var(--ink-500); margin-top: 2px; }
+
+        /* Cuerpo del formulario */
+        .form-body { padding: 24px 28px 28px; }
+        label {
+            display: block; font-weight: 600;
+            margin-bottom: 6px; color: var(--ink-100); font-size: .85rem;
+        }
+        .field-hint { color: var(--ink-700); font-weight: 500; font-size: .75rem; margin-left: 6px; }
+        input, select {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            font-size: .95rem;
+            margin-bottom: 16px;
+            background: var(--field);
+            color: var(--ink-100);
+            transition: border-color .15s, box-shadow .15s, background .15s;
+            font-family: inherit;
+        }
+        input::placeholder { color: var(--ink-700); }
+        input:hover:not(:focus), select:hover:not(:focus) { border-color: #38476a; background: var(--field-hover); }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--field-hover);
+            box-shadow: 0 0 0 4px var(--primary-soft);
+        }
+        select option { background: var(--surface); color: var(--ink-100); }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: .95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .15s, transform .05s, box-shadow .15s;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: #fff;
+            width: 100%;
+            box-shadow: 0 4px 16px rgba(79,70,229,.4);
+            margin-top: 6px;
+        }
+        .btn-primary:hover { background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%); box-shadow: 0 6px 22px rgba(79,70,229,.55); }
+        .btn:active { transform: translateY(1px); }
+
+        #toast {
+            position: fixed;
+            top: 24px; right: 24px;
+            background: linear-gradient(135deg, #10b981 0%, #22c55e 100%);
+            color: #fff;
+            padding: 14px 22px 14px 18px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: .9rem;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 12px 28px rgba(16,185,129,.5);
+            align-items: center;
+            gap: 10px;
+        }
+        #toast.show { display: flex; animation: slideIn .3s ease; }
+        @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Filas de dos columnas (precio/stock, año/isbn) */
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        /* Bloque del buscador externo (Open Library + Google Books + BNE) */
+        .search-block {
+            background: #1a2436;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 22px;
+        }
+        .search-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; }
+        .search-row input, .search-row select {
+            margin-bottom: 0;
+            padding: 9px 12px;
+            font-size: .88rem;
+        }
+        .btn-search {
+            padding: 9px 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: .85rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(79,70,229,.4);
+            transition: background .15s, box-shadow .15s, transform .05s;
+            font-family: inherit;
+        }
+        .btn-search:hover { background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%); }
+        .btn-search:active { transform: translateY(1px); }
+        .search-status { margin-top: 10px; font-size: .78rem; color: var(--ink-500); min-height: 1em; }
+        .search-status.error { color: #fca5a5; }
+        .search-results { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; max-height: 360px; overflow-y: auto; }
+        .search-result {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 4px 12px;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: var(--surface);
+            cursor: pointer;
+            transition: border-color .15s, background .15s, transform .05s;
+        }
+        .search-result:hover { border-color: var(--primary); background: #1f2a3f; }
+        .search-result:active { transform: translateY(1px); }
+        .search-result .titulo { font-weight: 600; color: var(--ink-100); font-size: .88rem; }
+        .search-result .autor { color: var(--ink-300); font-size: .78rem; }
+        .search-result .meta { font-size: .72rem; color: var(--ink-500); grid-column: 1 / -1; }
+        .source-badge {
+            font-size: .62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            align-self: start;
+        }
+        .source-OL    { background: rgba(96,165,250,.18);  color: #93c5fd; border: 1px solid rgba(96,165,250,.3); }
+        .source-GBooks{ background: rgba(244,114,182,.18); color: #f9a8d4; border: 1px solid rgba(244,114,182,.3); }
+        .source-BNE   { background: rgba(251,191,36,.18); color: #fcd34d; border: 1px solid rgba(251,191,36,.3); }
+    </style>
+    <!-- Estilos compartidos del recorder, reusados por baja.html y ajustar_copias.html -->
+    <link rel="stylesheet" href="./recorder.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card form-card">
+            <nav class="nav-pills" aria-label="Procedimientos">
+                <a href="./index.html" class="active">Alta</a>
+                <a href="./prestamo.html">Préstamo</a>
+                <a href="./devolucion.html">Devolución</a>
+                <a href="./ajustar_copias.html">Ajustar copias</a>
+                <a href="./baja.html">Baja</a>
+                <a href="./inventario.html">Inventario</a>
+            </nav>
+
+            <header class="form-header">
+                <div class="form-icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                </div>
+                <div class="form-title">
+                    <h1>Alta de Libro</h1>
+                    <p>Registra un nuevo título en el fondo de la sección.</p>
+                </div>
+            </header>
+
+            <div class="form-body">
+                <!-- Buscador externo: consulta a Open Library + Google Books + BNE
+                     en paralelo y autocompleta los campos del formulario al elegir
+                     uno de los resultados. -->
+                <div class="search-block">
+                    <div class="search-row">
+                        <input type="text" id="search_query" placeholder="Buscar libro por título, autor o ISBN..." />
+                        <select id="search_by">
+                            <option value="titulo">por título</option>
+                            <option value="autor">por autor</option>
+                            <option value="isbn">por ISBN</option>
+                        </select>
+                        <button type="button" id="btn_buscar" class="btn-search">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            Buscar
+                        </button>
+                    </div>
+                    <div id="search_status" class="search-status"></div>
+                    <div id="search_results" class="search-results"></div>
+                </div>
+
+                <form id="product_form" autocomplete="off">
+                    <label for="titulo">Título <span class="field-hint">obligatorio</span></label>
+                    <input type="text" id="titulo" name="titulo" placeholder="Ej: Cien años de soledad" required>
+
+                    <label for="autor">Autor <span class="field-hint">obligatorio · Apellido, Nombre</span></label>
+                    <input type="text" id="autor" name="autor" placeholder="Ej: García Márquez, Gabriel" required>
+
+                    <div class="form-row">
+                        <div>
+                            <label for="editorial">Editorial <span class="field-hint">opcional</span></label>
+                            <input type="text" id="editorial" name="editorial" placeholder="Ej: Cátedra">
+                        </div>
+                        <div>
+                            <label for="anio">Año <span class="field-hint">opcional</span></label>
+                            <input type="number" id="anio" name="anio" step="1" min="0" max="2100" placeholder="Ej: 1967">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div>
+                            <label for="isbn">ISBN <span class="field-hint">opcional</span></label>
+                            <input type="text" id="isbn" name="isbn" placeholder="Ej: 978-84-376-0494-7">
+                        </div>
+                        <div>
+                            <label for="paginas">Páginas <span class="field-hint">opcional</span></label>
+                            <input type="number" id="paginas" name="paginas" step="1" min="1" placeholder="Ej: 471">
+                        </div>
+                    </div>
+
+                    <label for="categoria">Género <span class="field-hint">obligatorio</span></label>
+                    <select id="categoria" name="categoria" required>
+                        <option value="">-- Seleccionar --</option>
+                        <option value="novela">Novela</option>
+                        <option value="poesia">Poesía</option>
+                        <option value="teatro">Teatro</option>
+                        <option value="ensayo">Ensayo</option>
+                        <option value="biografia">Biografía</option>
+                        <option value="historia">Historia</option>
+                        <option value="ciencia">Ciencia</option>
+                        <option value="filosofia">Filosofía</option>
+                        <option value="religion">Religión</option>
+                        <option value="arte">Arte</option>
+                        <option value="infantil">Infantil</option>
+                        <option value="juvenil">Juvenil</option>
+                        <option value="comic">Cómic / Novela gráfica</option>
+                        <option value="manual">Manual técnico</option>
+                        <option value="referencia">Referencia / Diccionarios</option>
+                        <option value="viajes">Viajes</option>
+                        <option value="cocina">Cocina</option>
+                        <option value="autoayuda">Autoayuda</option>
+                        <option value="idiomas">Idiomas</option>
+                        <option value="otros">Otros</option>
+                    </select>
+
+                    <div class="form-row">
+                        <div>
+                            <label for="idioma">Idioma <span class="field-hint">ISO 639 · default es</span></label>
+                            <input type="text" id="idioma" name="idioma" placeholder="es" maxlength="5" value="es">
+                        </div>
+                        <div>
+                            <label for="copias_total">Copias <span class="field-hint">ejemplares físicos</span></label>
+                            <input type="number" id="copias_total" name="copias_total" step="1" min="1" value="1" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn_guardar" class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                        Registrar en el catálogo
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="recorder-card">
+            <div class="rec-header">
+                <div class="rec-header-title">
+                    <div class="rec-icon" aria-hidden="true">●</div>
+                    <div>
+                        <div class="rec-title">Recorder</div>
+                        <div class="rec-subtitle">Captura acciones del formulario</div>
+                    </div>
+                </div>
+                <span class="rec-badge">JS</span>
+            </div>
+
+            <div class="rec-body">
+                <p class="rec-meta">
+                    Graba clicks, inputs y selects sobre este formulario y exporta un workflow JSON con placeholders.
+                    Alternativas externas: <code>playwright codegen</code> y <code>recorder_py.py</code>.
+                </p>
+
+                <div id="rec_indicator" class="rec-status">
+                    <span class="rec-dot"></span>
+                    <span id="rec_status_text">Listo para grabar</span>
+                    <span id="step_count" class="rec-status-count"></span>
+                </div>
+
+                <div class="rec-actions">
+                    <button id="btn_start" class="btn-rec btn-start" onclick="recorder.start()">
+                        <span aria-hidden="true">▶</span> Start
+                    </button>
+                    <button id="btn_stop" class="btn-rec btn-stop" onclick="recorder.stop()" disabled>
+                        <span aria-hidden="true">■</span> Stop
+                    </button>
+                    <button id="btn_download" class="btn-rec btn-download" onclick="recorder.download()" disabled>
+                        <span aria-hidden="true">⬇</span> Download JSON
+                    </button>
+                </div>
+
+                <div id="rec_success" class="rec-success">
+                    <span aria-hidden="true">✓</span>
+                    <span id="rec_success_text">Workflow grabado</span>
+                </div>
+
+                <div id="rec_steps" class="rec-steps">
+                    <div class="rec-steps-header">Pasos grabados</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span id="toast_text">Libro Guardado correctamente</span>
+    </div>
+
+    <script>
+        // ---------- Submit del alta de libro a la sección ----------
+        // POST /api/libros con todos los campos. El backend asigna número
+        // de registro R-NNNN y signatura topográfica. El toast los muestra
+        // y el step read_text del runner los captura para devolvérselos al
+        // agente.
+        document.getElementById('product_form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!e.target.checkValidity()) return;
+
+            const form = e.target;
+            const datos = {
+                titulo: form.titulo.value.trim(),
+                autor: form.autor.value.trim(),
+                editorial: form.editorial.value.trim(),
+                anio: form.anio.value ? parseInt(form.anio.value, 10) : null,
+                isbn: form.isbn.value.trim(),
+                paginas: form.paginas.value ? parseInt(form.paginas.value, 10) : null,
+                idioma: form.idioma.value.trim() || 'es',
+                categoria: form.categoria.value,
+                copias_total: parseInt(form.copias_total.value, 10) || 1,
+            };
+
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toast_text');
+
+            try {
+                const resp = await fetch('/api/libros', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos),
+                });
+                if (!resp.ok) {
+                    const err = await resp.json().catch(() => ({}));
+                    throw new Error(err.error || `HTTP ${resp.status}`);
+                }
+                const libro = await resp.json();
+                // El runner busca "Guardado" en el toast con wait_for_text.
+                // Mantengo esa palabra y añado el id y signatura para que
+                // un step read_text pueda capturarlos.
+                toastText.textContent =
+                    `Libro Guardado correctamente · ${libro.id} · sig. ${libro.signatura || '—'}`;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 4000);
+                form.reset();
+                form.idioma.value = 'es';
+                form.copias_total.value = 1;
+            } catch (err) {
+                toastText.textContent = `Error al guardar: ${err.message}`;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3500);
+            }
+        });
+
+        // ---------- Buscador externo (Open Library + Google Books + BNE) ----------
+        // Llama a /api/buscar-libro?q=...&by=... que la API FastAPI del agente
+        // expone como proxy a las tres fuentes en paralelo. Si la API del
+        // agente no está arrancada (puerto 8001), avisa al usuario.
+        const API_AGENT_BASE = 'http://localhost:8001';
+        const $ = (id) => document.getElementById(id);
+
+        async function buscarLibros() {
+            const query = $('search_query').value.trim();
+            const by = $('search_by').value;
+            const status = $('search_status');
+            const results = $('search_results');
+            results.innerHTML = '';
+            if (!query) {
+                status.textContent = '';
+                status.classList.remove('error');
+                return;
+            }
+            status.classList.remove('error');
+            status.textContent = `Buscando en Open Library, Google Books y BNE...`;
+            try {
+                const url = `${API_AGENT_BASE}/buscar-libro?q=${encodeURIComponent(query)}&by=${by}`;
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+                const items = data.candidatos || [];
+                if (items.length === 0) {
+                    status.textContent = `Sin resultados para "${query}".`;
+                    return;
+                }
+                const fuentesUsadas = data.fuentes_ok ? data.fuentes_ok.join(', ') : '';
+                const fuentesFallo = data.fuentes_fallo && data.fuentes_fallo.length
+                    ? ` · sin respuesta: ${data.fuentes_fallo.join(', ')}`
+                    : '';
+                status.textContent = `${items.length} resultado(s) · fuentes: ${fuentesUsadas}${fuentesFallo}`;
+                items.forEach((it) => results.appendChild(_filaResultado(it)));
+            } catch (err) {
+                status.classList.add('error');
+                status.textContent = `Error de búsqueda: ${err.message}. ¿Está la API del agente arrancada en :8001?`;
+            }
+        }
+
+        function _filaResultado(it) {
+            const div = document.createElement('div');
+            div.className = 'search-result';
+            const fuenteCls = `source-${it.fuente || 'OL'}`;
+            const anioStr = it.anio ? ` · ${it.anio}` : '';
+            const isbnStr = it.isbn ? ` · ISBN ${it.isbn}` : '';
+            const catStr = it.categoria ? ` · ${it.categoria}` : '';
+            div.innerHTML = `
+                <div>
+                    <div class="titulo">${_esc(it.titulo || '(sin título)')}</div>
+                    <div class="autor">${_esc(it.autor || '(autor desconocido)')}${anioStr}</div>
+                </div>
+                <span class="source-badge ${fuenteCls}">${_esc(it.fuente || 'OL')}</span>
+                <div class="meta">${_esc(isbnStr.replace(/^ · /, ''))}${catStr ? ' · ' + _esc(catStr.replace(/^ · /, '')) : ''}</div>
+            `;
+            div.addEventListener('click', () => _autocompletar(it));
+            return div;
+        }
+
+        function _esc(s) {
+            return String(s ?? '').replace(/[&<>"']/g, c => ({
+                '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+            }[c]));
+        }
+
+        function _autocompletar(it) {
+            // Rellena los campos del form con los datos del resultado elegido.
+            // Los campos numéricos / opcionales quedan vacíos si la API no
+            // nos los dio.
+            $('titulo').value = it.titulo || '';
+            $('autor').value = it.autor || '';
+            $('anio').value = it.anio || '';
+            $('isbn').value = it.isbn || '';
+            // Mapear las muchas categorías que devuelven OL/GBooks/BNE al
+            // enum de 20 valores que usa la biblioteca. Si no hay match
+            // claro, queda vacío y el bibliotecario elige.
+            const cat = (it.categoria || '').toLowerCase();
+            const map = {
+                'fiction': 'novela', 'novel': 'novela', 'novela': 'novela',
+                'literary fiction': 'novela', 'novela histórica': 'novela',
+                'poetry': 'poesia', 'poesía': 'poesia', 'poemas': 'poesia',
+                'drama': 'teatro', 'plays': 'teatro', 'teatro': 'teatro',
+                'essay': 'ensayo', 'essays': 'ensayo', 'ensayo': 'ensayo',
+                'biography': 'biografia', 'biografía': 'biografia', 'autobiography': 'biografia',
+                'history': 'historia', 'historia': 'historia',
+                'science': 'ciencia', 'ciencias': 'ciencia', 'physics': 'ciencia',
+                'philosophy': 'filosofia', 'filosofía': 'filosofia',
+                'religion': 'religion', 'religión': 'religion', 'theology': 'religion',
+                'art': 'arte', 'arte': 'arte', "fine arts": 'arte',
+                "children's books": 'infantil', "children": 'infantil', 'infantil': 'infantil',
+                'young adult fiction': 'juvenil', 'juvenil': 'juvenil',
+                'comics': 'comic', 'graphic novel': 'comic', 'cómic': 'comic',
+                'computers': 'manual', 'programming': 'manual', 'manual': 'manual', 'tutorial': 'manual',
+                'reference': 'referencia', 'referencia': 'referencia', 'dictionary': 'referencia',
+                'travel': 'viajes', 'viajes': 'viajes',
+                'cooking': 'cocina', 'cocina': 'cocina',
+                'self-help': 'autoayuda', 'autoayuda': 'autoayuda',
+                'language': 'idiomas', 'languages': 'idiomas', 'idiomas': 'idiomas',
+            };
+            $('categoria').value = map[cat] || '';
+            $('copias_total').focus();
+        }
+
+        $('btn_buscar').addEventListener('click', buscarLibros);
+        $('search_query').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); buscarLibros(); }
+        });
+    </script>
+    <script src="./recorder.js"></script>
+    <script>
+        // Recorder configurado para el flujo de alta de libro a la sección.
+        window.recorder = new FormRecorder(
+            {
+                id: 'alta_libro_grabado',
+                titulo: 'Alta de Libro a la sección de la biblioteca',
+                descripcion: 'Procedimiento para registrar un nuevo título en el fondo de la sección. Rellena título, autor, editorial (opc), año, ISBN, páginas, idioma, género y copias, y pulsa Registrar.',
+                app: 'biblioteca_seccion',
+                url: '{{FORM_URL}}',
+                tags: ['alta', 'libro', 'catalogo', 'biblioteca', 'registro'],
+                param_schema: {
+                    titulo: { type: 'string', description: 'Título del libro', required: true },
+                    autor: { type: 'string', description: 'Autor (Apellido, Nombre)', required: true },
+                    editorial: { type: 'string', description: 'Editorial', required: false },
+                    anio: { type: 'integer', description: 'Año de publicación', required: false },
+                    isbn: { type: 'string', description: 'ISBN', required: false },
+                    paginas: { type: 'integer', description: 'Páginas', required: false },
+                    idioma: { type: 'string', description: 'Idioma ISO 639', required: false },
+                    categoria: {
+                        type: 'enum',
+                        values: ['novela','poesia','teatro','ensayo','biografia','historia','ciencia','filosofia','religion','arte','infantil','juvenil','comic','manual','referencia','viajes','cocina','autoayuda','idiomas','otros'],
+                        description: 'Género del libro',
+                        required: true,
+                    },
+                    copias_total: { type: 'integer', description: 'Ejemplares físicos', required: true },
+                },
+            },
+            {
+                titulo: '{{titulo}}', autor: '{{autor}}', editorial: '{{editorial}}',
+                anio: '{{anio}}', isbn: '{{isbn}}', paginas: '{{paginas}}',
+                idioma: '{{idioma}}', categoria: '{{categoria}}',
+                copias_total: '{{copias_total}}',
+            },
+            window.RECORDER_UI_DEFAULTS,
+        );
+    </script>
+</body>
+</html>

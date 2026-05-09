@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:LucesIoT.MAUI.ViewModels"
+             x:Class="LucesIoT.MAUI.Views.SettingsPage"
+             x:DataType="viewmodels:SettingsViewModel"
+             Title="Ajustes"
+             BackgroundColor="#080C12">
+
+    <ScrollView>
+        <Grid Padding="30">
+            <Border StrokeShape="RoundRectangle 12" Stroke="#162032"
+                    BackgroundColor="#0B1018" Padding="30"
+                    MaximumWidthRequest="550" VerticalOptions="Start"
+                    HorizontalOptions="Center">
+                <VerticalStackLayout Spacing="22">
+
+                    <!-- Titulo -->
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="&#x2699;" FontSize="24"/>
+                        <Label Text="AJUSTES" FontSize="18" TextColor="#22D3EE"
+                               CharacterSpacing="2" FontAttributes="Bold" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+
+                    <BoxView HeightRequest="1" Color="#162032"/>
+
+                    <!-- LM Studio URL -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="URL DE LM STUDIO" FontSize="9" TextColor="#475569" CharacterSpacing="1.5"/>
+                        <Border StrokeShape="RoundRectangle 6" Stroke="#162032" BackgroundColor="#0A0E14" Padding="8,4">
+                            <Entry Text="{Binding LmStudioUrl}" TextColor="#C9D1D9" FontSize="13" BackgroundColor="Transparent"/>
+                        </Border>
+                        <Button Text="PROBAR CONEXION" Command="{Binding TestLmStudioCommand}"
+                                BackgroundColor="#0A1F15" TextColor="#22C55E" FontSize="9"
+                                CornerRadius="4" Padding="10,5" HorizontalOptions="Start"
+                                CharacterSpacing="1"/>
+                    </VerticalStackLayout>
+
+                    <!-- URL Node-RED -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="URL DE NODE-RED" FontSize="9" TextColor="#475569" CharacterSpacing="1.5"/>
+                        <Border StrokeShape="RoundRectangle 6" Stroke="#162032" BackgroundColor="#0A0E14" Padding="8,4">
+                            <Entry Text="{Binding NodeRedUrl}" TextColor="#C9D1D9" FontSize="13" BackgroundColor="Transparent"/>
+                        </Border>
+                        <Button Text="PROBAR CONEXION" Command="{Binding TestNodeRedCommand}"
+                                BackgroundColor="#0A1F15" TextColor="#22C55E" FontSize="9"
+                                CornerRadius="4" Padding="10,5" HorizontalOptions="Start"
+                                CharacterSpacing="1"/>
+                    </VerticalStackLayout>
+
+                    <!-- Modelo LLM (se carga automaticamente desde LM Studio) -->
+                    <VerticalStackLayout Spacing="6">
+                        <HorizontalStackLayout Spacing="8">
+                            <Label Text="MODELO LLM" FontSize="9" TextColor="#475569" CharacterSpacing="1.5"/>
+                            <ActivityIndicator IsRunning="{Binding CargandoModelos}"
+                                               IsVisible="{Binding CargandoModelos}"
+                                               HeightRequest="10" WidthRequest="10"
+                                               Color="#22D3EE"/>
+                        </HorizontalStackLayout>
+                        <Border StrokeShape="RoundRectangle 6" Stroke="#162032" BackgroundColor="#0A0E14" Padding="4">
+                            <Picker ItemsSource="{Binding AvailableModels}"
+                                    SelectedItem="{Binding ModelName}"
+                                    TextColor="#C9D1D9" FontSize="13"
+                                    BackgroundColor="Transparent"
+                                    Title="Seleccionar modelo"/>
+                        </Border>
+                        <Button Text="RECARGAR MODELOS" Command="{Binding CargarModelosCommand}"
+                                BackgroundColor="#0A1520" TextColor="#22D3EE" FontSize="9"
+                                CornerRadius="4" Padding="10,5" HorizontalOptions="Start"
+                                CharacterSpacing="1"/>
+                    </VerticalStackLayout>
+
+                    <!-- Broker MQTT (selector) -->
+                    <Grid ColumnSpacing="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <VerticalStackLayout Grid.Column="0" Spacing="6">
+                            <Label Text="BROKER MQTT" FontSize="9" TextColor="#475569" CharacterSpacing="1.5"/>
+                            <Border StrokeShape="RoundRectangle 6" Stroke="#162032" BackgroundColor="#0A0E14" Padding="4">
+                                <Picker ItemsSource="{Binding AvailableBrokers}"
+                                        SelectedItem="{Binding MqttBroker}"
+                                        TextColor="#C9D1D9" FontSize="13"
+                                        BackgroundColor="Transparent"
+                                        Title="Seleccionar broker"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="1" Spacing="6">
+                            <Label Text="TOPIC MQTT" FontSize="9" TextColor="#475569" CharacterSpacing="1.5"/>
+                            <Border StrokeShape="RoundRectangle 6" Stroke="#162032" BackgroundColor="#0A0E14" Padding="8,4">
+                                <Entry Text="{Binding MqttTopic}" TextColor="#C9D1D9" FontSize="13" BackgroundColor="Transparent"/>
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- Resultado del test -->
+                    <Label Text="{Binding TestResult}" FontSize="11" TextColor="#FB923C"/>
+
+                    <BoxView HeightRequest="1" Color="#162032"/>
+
+                    <!-- Boton volver -->
+                    <Button Text="VOLVER" Command="{Binding GoBackCommand}"
+                            BackgroundColor="#0E7A50" TextColor="White"
+                            FontSize="12" FontAttributes="Bold" CornerRadius="6"
+                            Padding="20,10" HorizontalOptions="Center"
+                            CharacterSpacing="1.5"/>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </ScrollView>
+</ContentPage>

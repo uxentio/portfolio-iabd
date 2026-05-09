@@ -1,0 +1,41 @@
+﻿<Window x:Class="AzureOpenAI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AzureOpenAI"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Input del usuario -->
+        <TextBox x:Name="txtPrompt"
+                 Height="30"
+                 Margin="0,0,0,10"
+                 FontSize="14"
+                 VerticalContentAlignment="Center"
+                 />
+
+        <!-- Respuesta del modelo -->
+        <TextBox x:Name="txtResponse"
+                 Grid.Row="1"
+                 TextWrapping="Wrap"
+                 AcceptsReturn="True"
+                 IsReadOnly="True"
+                 VerticalScrollBarVisibility="Auto"
+                 FontFamily="Consolas"
+                 FontSize="14"/>
+
+        <!-- Botón Enviar -->
+        <Button Grid.Row="2"
+                Content="Enviar"
+                Height="35"
+                Margin="0,10,0,0"
+                Click="BtnEnviar_Click" />
+    </Grid>
+</Window>

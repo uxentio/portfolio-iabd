@@ -1,0 +1,58 @@
+﻿<Window x:Class="FormRecognizerWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Form Recognizer UI" Height="600" Width="1000">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar -->
+        <StackPanel Orientation="Horizontal" Margin="5">
+            <Button Name="btnLoad"
+                    Click="BtnLoad_Click"
+                    Padding="10,5">Cargar imagen</Button>
+            <TextBlock Name="txtStatus"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Main Area -->
+        <Grid Grid.Row="1" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: preview + overlay -->
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto">
+                <Grid Name="previewGrid">
+
+
+                    <Image Name="imgDoc"
+                        Stretch="None"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"/>
+                    
+                    <Canvas Name="overlayCanvas"
+                        IsHitTestVisible="False"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        />
+
+                </Grid>
+            </ScrollViewer>
+
+            <!-- Right: console output -->
+            <TextBox Grid.Column="1"
+                     Name="txtOutput"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     IsReadOnly="True"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"/>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,45 @@
+CHECKLIST ANTES DE GRABAR EL VIDEO
+====================================
+
+PROGRAMAS QUE DEBEN ESTAR ABIERTOS:
+[ ] LM Studio con servidor arrancado (http://localhost:1234)
+    - Modelo de texto cargado: Llama 3.2 1B Instruct
+    - Modelo de vision cargado: LLaVA 1.5 7B (opcional, para demo de imagenes)
+    - Boton "Start Server" pulsado
+[ ] AnythingLLM Desktop corriendo (http://localhost:3001)
+    - Configurado con LM Studio como proveedor de LLM
+    - API Key generada
+[ ] Visual Studio con la solucion MauiRAG abierta
+    - Tener abiertas las pestanas de codigo que se muestran en el guion:
+      * AppShell.xaml
+      * BaseViewModel.cs
+      * ApiService.cs
+      * ImageProcessorService.cs
+      * PythonProcessorService.cs
+      * ConfigViewModel.cs
+      * WorkspacesViewModel.cs
+      * DocumentosViewModel.cs
+      * ChatViewModel.cs
+      * MainPage.xaml
+
+ARCHIVOS DE PRUEBA PARA LA DEMO:
+[ ] Historial_empleados.pdf (incluido en esta carpeta)
+[ ] empleados (1).csv (incluido en esta carpeta)
+[ ] Una imagen JPG cualquiera (foto hecha con el movil, con metadatos EXIF)
+    NOTA: la imagen del tractor (i5092222598.jpg) no esta en el proyecto,
+    busca la original o usa cualquier otra foto hecha con el movil
+
+ANTES DE DARLE A GRABAR:
+[ ] Cerrar notificaciones de Windows (modo No molestar)
+[ ] Poner el guion (guion_video.md) en el otro monitor
+[ ] Comprobar que la app MAUI compila y arranca correctamente
+[ ] Probar la conexion desde la pestana Config de la app
+[ ] Verificar que la ruta de los scripts de Python esta configurada en Config
+[ ] Crear al menos un workspace de prueba para la demo
+[ ] Tener una URL de YouTube a mano para la demo (ej: https://www.youtube.com/watch?v=SI7O81GMG2A)
+
+GRABACION:
+- SCROLL LOCK = empezar/parar grabacion
+- PAUSE = pausar/reanudar (usalo sin miedo entre secciones)
+
+DURACION ESTIMADA: 10-15 minutos

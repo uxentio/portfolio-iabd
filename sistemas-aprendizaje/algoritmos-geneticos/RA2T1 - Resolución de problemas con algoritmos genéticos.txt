@@ -1,0 +1,57 @@
+
+RA2T1 - Resolución de problemas con algoritmos genéticos
+Requisitos de finalización
+Apertura: jueves, 29 de enero de 2026, 19:10
+Cierre: jueves, 12 de febrero de 2026, 23:55
+Descripción del problema.
+
+Disponemos de:
+
+    N trabajadores
+    N tareas
+
+Cada trabajador tiene un coste distinto para realizar cada tarea. Es decir, los costes se representan mediante una matriz de costes.
+
+El objetivo es encontrar la mejor solución para asignar una tarea a cada trabajar de forma que:
+
+    Cada tarea sea asignada a un único trabajador
+    Se minimice el coste total de la asignación. 
+
+Resuelve el ejercicio en un cuaderno Jupyter siguiente los siguientes pasos:
+
+    Compresión del problema (1 punto).
+        Explicar:
+            En qué consiste el problema.
+            Qué se pretende optimizar
+            Por qué se puede resolver usando un algoritmo genético
+    Modelado de la solución (2 puntos).
+        Define y justifica:
+            Cómo representas una solución (individuo).
+            Qué significa cada gen.
+            Cómo garantizas soluciones válidas
+    Diseño del algoritmo genético (3 puntos).
+        Implementa y explica los motivos del diseño:
+            Inicialización de la población.
+            Función de fitness.
+            Selección.
+            Cruce.
+            Mutación.
+            Estrategia de reemplazo.
+            Estrategia de finalización.
+    Experimentación (2 puntos)
+        Ejecuta el algoritmo al menos tres veces
+        Representa gráficamente la convergencia
+        Analiza estabilidad y calidad de las soluciones.
+    Conclusiones (2 puntos).
+        Reflexiona:
+            Sobre el comportamiento del algoritmo.
+            Sobre las decisiones de diseño tomadas.
+            sobre posibles mejoras y/o más vías de investigación.
+
+Entrega.
+
+Debes entregar el cuaderno jupyter incluyendo todas las reflexiones y decisiones en celdas markdown y realizar un vídeo explicativo en el que presentes la solución implementada al problema, justifiques las decisiones de diseño, comentes los resultados de la experimentacion y las conclusiones a las que has llegado. 
+
+El vídeo no podrá tener una duración superior a diez minutos y deberá ser original (no generado con ninguna herramienta de IA como Notebook LM). 
+
+Aloja el vídeo en la nube personal de Google de tu cuenta de murciaeduca y entrega el enlace junto con el archivo del cuaderno jupyter. 

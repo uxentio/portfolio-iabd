@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:LucesIoT.MAUI.Converters"
+             xmlns:viewmodels="clr-namespace:LucesIoT.MAUI.ViewModels"
+             xmlns:models="clr-namespace:LucesIoT.MAUI.Models"
+             x:Class="LucesIoT.MAUI.Views.MainPage"
+             x:DataType="viewmodels:MainViewModel"
+             Title="Panel de Control IoT"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#080C12">
+
+    <ContentPage.Resources>
+        <converters:BoolToAlignmentConverter x:Key="BoolToAlignment"/>
+        <converters:BoolToColorConverter x:Key="BoolToColor"/>
+        <converters:BoolToTextColorConverter x:Key="BoolToTextColor"/>
+        <converters:BoolToMicColorConverter x:Key="BoolToMicColor"/>
+    </ContentPage.Resources>
+
+    <Grid RowSpacing="0" ColumnSpacing="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="60"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="370"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- BARRA SUPERIOR -->
+        <Border Grid.Row="0" Grid.ColumnSpan="2"
+                BackgroundColor="#0D1219" StrokeThickness="0">
+            <Grid Padding="20,0" ColumnSpacing="15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
+                    <Border WidthRequest="34" HeightRequest="34"
+                            StrokeShape="RoundRectangle 8"
+                            BackgroundColor="#0F3460" StrokeThickness="0">
+                        <Label Text="&#x26A1;" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Border>
+                    <VerticalStackLayout Spacing="0" VerticalOptions="Center">
+                        <Label Text="CONTROL IoT" FontSize="15" FontAttributes="Bold"
+                               TextColor="#E2E8F0" CharacterSpacing="1.5"/>
+                        <Label Text="Gestion inteligente de luces" FontSize="8"
+                               TextColor="#475569" CharacterSpacing="0.5"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
+                <BoxView Grid.Column="1"/>
+
+                <Border Grid.Column="2" BackgroundColor="#062013" StrokeThickness="0"
+                        StrokeShape="RoundRectangle 14" Padding="12,5" VerticalOptions="Center">
+                    <HorizontalStackLayout Spacing="6">
+                        <Ellipse WidthRequest="6" HeightRequest="6" Fill="#22C55E"/>
+                        <Label Text="CONECTADO" FontSize="8" TextColor="#22C55E"
+                               CharacterSpacing="1.2" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Border>
+
+                <Button Grid.Column="3" Text="&#x2699;"
+                        FontSize="18" BackgroundColor="Transparent"
+                        TextColor="#475569" Padding="8"
+                        Clicked="OnSettingsClicked"/>
+
+                <Button Grid.Column="4" Text="&#x21BB;"
+                        FontSize="16"
+                        Command="{Binding ClearChatCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="#EF4444" Padding="8"/>
+            </Grid>
+        </Border>
+
+        <BoxView Grid.Row="0" Grid.ColumnSpan="2" HeightRequest="1"
+                 Color="#1E293B" VerticalOptions="End"/>
+
+        <!-- CHAT (izquierda) -->
+        <Grid Grid.Row="1" Grid.Column="0" Padding="16" RowSpacing="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" BackgroundColor="#0F1520" StrokeThickness="0"
+                    StrokeShape="RoundRectangle 8,8,0,0" Padding="16,10">
+                <Grid>
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="$_" FontSize="13" TextColor="#22D3EE"
+                               FontAttributes="Bold" FontFamily="OpenSansSemibold"/>
+                        <Label Text="Terminal" FontSize="12" TextColor="#64748B"
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                    <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                       IsVisible="{Binding IsLoading}"
+                                       HorizontalOptions="End"
+                                       HeightRequest="14" WidthRequest="14"
+                                       Color="#22D3EE"/>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" BackgroundColor="#0B1018"
+                    Stroke="#162032" StrokeThickness="1"
+                    StrokeShape="RoundRectangle 0,0,8,8">
+                <CollectionView ItemsSource="{Binding Messages}"
+                                ItemsUpdatingScrollMode="KeepLastItemInView"
+                                Margin="6,6">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:ChatMessage">
+                            <Border Margin="4,3" Padding="14,10"
+                                    StrokeShape="RoundRectangle 10"
+                                    Stroke="Transparent" StrokeThickness="0"
+                                    HorizontalOptions="{Binding IsUser, Converter={StaticResource BoolToAlignment}}"
+                                    BackgroundColor="{Binding IsUser, Converter={StaticResource BoolToColor}}"
+                                    MaximumWidthRequest="450">
+                                <Label Text="{Binding Text}" FontSize="13"
+                                       TextColor="{Binding IsUser, Converter={StaticResource BoolToTextColor}}"
+                                       LineBreakMode="WordWrap"/>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Border>
+        </Grid>
+
+        <!-- PANEL DERECHO -->
+        <Grid Grid.Row="1" Grid.Column="1" Padding="0,16,16,16" RowSpacing="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- CONTROL DE LEDS -->
+            <Border Grid.Row="0" Stroke="#162032" StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10" BackgroundColor="#0B1018" Padding="20">
+                <VerticalStackLayout Spacing="18">
+                    <Label Text="CONTROL DE LEDS" FontSize="10" TextColor="#475569"
+                           CharacterSpacing="2"/>
+
+                    <Grid ColumnSpacing="15" HorizontalOptions="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="90"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- LED Verde -->
+                        <VerticalStackLayout Grid.Column="0" Spacing="10" HorizontalOptions="Center">
+                            <Border WidthRequest="50" HeightRequest="50"
+                                    StrokeShape="RoundRectangle 25"
+                                    Stroke="#1E3A2F" StrokeThickness="2"
+                                    BackgroundColor="{Binding LuzVerdeColor}"
+                                    Opacity="{Binding LuzVerdeOpacity}"
+                                    HorizontalOptions="Center">
+                                <Border.Shadow>
+                                    <Shadow Brush="{Binding LuzVerdeColor}"
+                                            Offset="0,0" Radius="22" Opacity="0.85"/>
+                                </Border.Shadow>
+                            </Border>
+                            <Button Text="VERDE" FontSize="9"
+                                    Command="{Binding ToggleVerdeCommand}"
+                                    BackgroundColor="#0A1F15" TextColor="#22C55E"
+                                    CornerRadius="5" Padding="0,6"
+                                    BorderColor="#1E3A2F" BorderWidth="1"
+                                    CharacterSpacing="1" WidthRequest="80"/>
+                        </VerticalStackLayout>
+
+                        <!-- LED Roja -->
+                        <VerticalStackLayout Grid.Column="1" Spacing="10" HorizontalOptions="Center">
+                            <Border WidthRequest="50" HeightRequest="50"
+                                    StrokeShape="RoundRectangle 25"
+                                    Stroke="#3A1E1E" StrokeThickness="2"
+                                    BackgroundColor="{Binding LuzRojaColor}"
+                                    Opacity="{Binding LuzRojaOpacity}"
+                                    HorizontalOptions="Center">
+                                <Border.Shadow>
+                                    <Shadow Brush="{Binding LuzRojaColor}"
+                                            Offset="0,0" Radius="22" Opacity="0.85"/>
+                                </Border.Shadow>
+                            </Border>
+                            <Button Text="ROJA" FontSize="9"
+                                    Command="{Binding ToggleRojaCommand}"
+                                    BackgroundColor="#1F0A0A" TextColor="#EF4444"
+                                    CornerRadius="5" Padding="0,6"
+                                    BorderColor="#3A1E1E" BorderWidth="1"
+                                    CharacterSpacing="1" WidthRequest="80"/>
+                        </VerticalStackLayout>
+
+                        <!-- LED Azul -->
+                        <VerticalStackLayout Grid.Column="2" Spacing="10" HorizontalOptions="Center">
+                            <Border WidthRequest="50" HeightRequest="50"
+                                    StrokeShape="RoundRectangle 25"
+                                    Stroke="#1E2A3A" StrokeThickness="2"
+                                    BackgroundColor="{Binding LuzAzulColor}"
+                                    Opacity="{Binding LuzAzulOpacity}"
+                                    HorizontalOptions="Center">
+                                <Border.Shadow>
+                                    <Shadow Brush="{Binding LuzAzulColor}"
+                                            Offset="0,0" Radius="22" Opacity="0.85"/>
+                                </Border.Shadow>
+                            </Border>
+                            <Button Text="AZUL" FontSize="9"
+                                    Command="{Binding ToggleAzulCommand}"
+                                    BackgroundColor="#0A0F1F" TextColor="#3B82F6"
+                                    CornerRadius="5" Padding="0,6"
+                                    BorderColor="#1E2A3A" BorderWidth="1"
+                                    CharacterSpacing="1" WidthRequest="80"/>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Button Text="APAGAR TODO" FontSize="10"
+                            Command="{Binding ApagarCommand}"
+                            BackgroundColor="#1C0A0A" TextColor="#EF4444"
+                            CornerRadius="5" Padding="0,8"
+                            BorderColor="#3A1E1E" BorderWidth="1"
+                            CharacterSpacing="1" HorizontalOptions="Fill"/>
+
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- SISTEMA -->
+            <Border Grid.Row="1" Stroke="#162032" StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10" BackgroundColor="#0B1018" Padding="18">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="SISTEMA" FontSize="10" TextColor="#475569" CharacterSpacing="2"/>
+
+                    <Grid RowSpacing="7" ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="55"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/><RowDefinition/>
+                            <RowDefinition/><RowDefinition/>
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" Text="LLM" FontSize="9" TextColor="#475569"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding InfoLlm}" FontSize="9" TextColor="#22D3EE"/>
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="MQTT" FontSize="9" TextColor="#475569"/>
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding InfoMqtt}" FontSize="9" TextColor="#22C55E"/>
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="TOPIC" FontSize="9" TextColor="#475569"/>
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding InfoTopic}" FontSize="9" TextColor="#A78BFA"/>
+
+                        <Label Grid.Row="3" Grid.Column="0" Text="NODE" FontSize="9" TextColor="#475569"/>
+                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding InfoNodeRed}" FontSize="9" TextColor="#FB923C"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- REGISTRO -->
+            <Border Grid.Row="2" Stroke="#162032" StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10" BackgroundColor="#0B1018" Padding="18">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="REGISTRO" FontSize="10" TextColor="#475569" CharacterSpacing="2"/>
+                    <Label Text="{Binding StatusText}" FontSize="11"
+                           TextColor="#94A3B8" LineBreakMode="WordWrap"/>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- BARRA DE ENTRADA -->
+        <Border Grid.Row="2" Grid.ColumnSpan="2"
+                BackgroundColor="#0D1219" StrokeThickness="0">
+            <Grid>
+                <BoxView HeightRequest="1" Color="#1E293B" VerticalOptions="Start"/>
+                <Grid Padding="16,0" ColumnSpacing="10" VerticalOptions="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Grid.Column="0" Text=">" FontSize="16"
+                           TextColor="#22D3EE" FontAttributes="Bold"
+                           VerticalOptions="Center"/>
+
+                    <Entry Grid.Column="1"
+                           Placeholder="Escribe un comando..."
+                           PlaceholderColor="#334155"
+                           Text="{Binding UserInput, Mode=TwoWay}"
+                           ReturnType="Send"
+                           ReturnCommand="{Binding SendCommand}"
+                           FontSize="14" TextColor="#E2E8F0"
+                           BackgroundColor="Transparent"/>
+
+                    <!-- Boton de micro - comandos por voz -->
+                    <Button Grid.Column="2"
+                            Text="MIC"
+                            Command="{Binding VoiceInputCommand}"
+                            BackgroundColor="Transparent"
+                            TextColor="{Binding IsListening, Converter={StaticResource BoolToMicColor}}"
+                            FontSize="10" FontAttributes="Bold"
+                            Padding="4,0" HeightRequest="36" WidthRequest="40"
+                            CharacterSpacing="0.5"
+                            ToolTipProperties.Text="Comando por voz"/>
+
+                    <Button Grid.Column="3" Text="ENVIAR"
+                            Command="{Binding SendCommand}"
+                            BackgroundColor="#0E7A50" TextColor="White"
+                            FontSize="11" FontAttributes="Bold"
+                            CornerRadius="6" Padding="22,0"
+                            HeightRequest="36" CharacterSpacing="1.5"/>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,1110 @@
+============================================================
+APUNTES DE JAVA: CLASES Y PROGRAMACION ORIENTADA A OBJETOS
+Fuente: 'Aprenda Java como si estuviera en Primero'
+Autores: J. Garcia de Jalon et al. - TECNUN, Universidad de Navarra
+Capitulo 3: Clases en Java (paginas 37-64)
+============================================================
+
+INDICE DEL CAPITULO:
+- Pagina 37: Generalidades sobre clases en Java
+- Pagina 39: Variables miembro y metodos
+- Pagina 41: Constructores y creacion de objetos
+- Pagina 45: Herencia
+- Pagina 49: Clases y metodos abstractos
+- Pagina 51: Interfaces
+- Pagina 55: Polimorfismo
+- Pagina 57: Casting y conversiones de tipo
+
+------------------------------------------------------------
+
+[Pagina 37] 3. CLASES EN JAVA
+[Pagina 37] Las clases  son el centro de la Programación Orientada a Objetos  (OOP - Object Oriented
+[Pagina 37] Programming ). Algunos de los conceptos más importantes  de la POO son los siguientes:
+[Pagina 37] 1. Encapsulación . Las clases pueden ser declaradas como públicas ( public ) y como package
+[Pagina 37] (accesibles sólo para otras clases del package ). Las variables miembro y los métodos
+[Pagina 37] pueden ser public , private , protected  y package . De es ta forma se puede controlar el
+[Pagina 37] acceso y evitar un uso inadecuado.
+[Pagina 37] 2. Herencia . Una clase puede derivar de otra ( extends ), y en ese caso hereda todas sus
+[Pagina 37] variables y métodos. Una clase derivada puede añadir  nuevas variables y métodos y/o
+[Pagina 37] redefinir  las variable s y métodos heredados.
+[Pagina 37] 3. Polimorfismo . Los objetos de distintas clases pertenecientes a una misma jerarquía o que
+[Pagina 37] implementan una misma interface pueden tratarse de una forma general e individualizada,
+[Pagina 37] al mismo tiempo. Esto, como se ha visto en el ejemplo d el Capítulo 1, facilita la
+[Pagina 37] programación y el mantenimiento del código.
+[Pagina 37] En este Capítulo se presentan las clases  y las interfaces  tal como están implementadas en el
+[Pagina 37] lenguaje Java .
+[Pagina 37] 3.1 CONCEPTOS BÁSICOS
+[Pagina 37] 3.1.1   Concepto de Clase
+[Pagina 37] Una clase e s una agrupación de datos  (variables o campos) y de funciones  (métodos) que operan
+[Pagina 37] sobre esos datos. La definición de una clase se realiza en la siguiente forma:
+[Pagina 37] [public] class Classname {
+[Pagina 37] // definición de variables y métodos
+[Pagina 37] ...
+[Pagina 37] }
+[Pagina 37] donde la palabra  public  es opcional: si no se pone, la clase tiene la visibilidad por defecto, esto es,
+[Pagina 37] sólo es visible para las demás clases del package . Todos los métodos y variables deben ser definidos
+[Pagina 37] dentro del bloque  {...} de la clase.
+[Pagina 37] Un objeto  (en inglés, instance ) es un ejemplar concreto de una clase. Las clases  son como
+[Pagina 37] tipos de variables, mientras que los objetos  son como variables concretas de un tipo determinado.
+[Pagina 37] Classname unObjeto;
+[Pagina 37] Classname otroObjeto;
+[Pagina 37] A continuación se enumeran algunas características impor tantes de las clases:
+[Pagina 37] 1. Todas las variables y funciones de Java  deben pertenecer a una clase. No hay variables y
+[Pagina 37] funciones globales.
+[Pagina 37] 2. Si una clase deriva de otra ( extends ), hereda todas sus variables y métodos.
+[Pagina 37] 3. Java  tiene una jerarquía de clases estándar de  la que pueden derivar las clases que crean
+[Pagina 37] los usuarios.
+
+[Pagina 38] 4. Una clase sólo puede heredar de una única clase (en Java  no hay herencia múltiple). Si al
+[Pagina 38] definir una clase no se especifica de qué clase deriva, por defecto la clase deriva de
+[Pagina 38] Object . La clase Object es la base de toda la jerarquía de clases de Java .
+[Pagina 38] 5. En un fichero se pueden definir varias clases, pero en un fichero no puede haber más que
+[Pagina 38] una clase public . Este fichero se debe llamar como la clase public  que contiene con
+[Pagina 38] extensión *.java . Con alguna s excepciones, lo habitual es escribir una sola clase por
+[Pagina 38] fichero.
+[Pagina 38] 6. Si una clase contenida en un fichero no es public , no es necesario que el fichero se llame
+[Pagina 38] como la clase.
+[Pagina 38] 7. Los métodos de una clase pueden referirse de modo global al objeto  de esa clase al  que se
+[Pagina 38] aplican por medio de la referencia this.
+[Pagina 38] 8. Las clases se pueden agrupar en packages , introduciendo una línea al comienzo del
+[Pagina 38] fichero ( package packageName; ). Esta agrupación en packages  está relacionada con la
+[Pagina 38] jerarquía de directorios y ficheros en la  que se guardan las clases.
+[Pagina 38] 3.1.2  Concepto de Interface
+[Pagina 38] Una interface  es un conjunto de declaraciones de funciones. Si una clase implementa ( implements )
+[Pagina 38] una interface , debe definir todas  las funciones especificadas por la interface . Las interfaces pueden
+[Pagina 38] definir  también variables finales  (constantes). Una clase  puede implementar más de una interface ,
+[Pagina 38] representando una alternativa a la herencia múltiple.
+[Pagina 38] En algunos aspectos los nombres de las interfaces  pueden utilizarse en lugar de las clases . Por
+[Pagina 38] ejemplo, las interfaces  sirven para definir referencias  a cualquier objeto de cualquiera de las clases
+[Pagina 38] que implementan esa interface . Con ese nombre o referencia, sin embargo, sólo se pueden utilizar
+[Pagina 38] los métodos de la interface. Éste es un aspecto importante del polimor fismo .
+[Pagina 38] Una interface  puede derivar de otra o incluso de varias interfaces , en cuyo caso incorpora las
+[Pagina 38] declaraciones de todos los métodos de las interfaces  de las que deriva (a diferencia de las clases, las
+[Pagina 38] interfaces de Java  sí tienen herencia múltiple).
+[Pagina 38] 3.2 EJEMPLO DE DEFINICIÓN  DE UNA CLASE
+[Pagina 38] A continuación se reproduce como ejemplo la clase Circulo , explicada en el Apartado 1.3.4 .
+[Pagina 38] // fichero Circulo.java
+[Pagina 38] public class Circulo extends Geometria {
+[Pagina 38] static int numCirculos  = 0;
+[Pagina 38] public static final double PI=3.14159265358979323846;
+[Pagina 38] public double x, y, r;
+[Pagina 38] public Circulo(double x, double y, double r) {
+[Pagina 38] this.x=x; this.y=y; this.r=r;
+[Pagina 38] numCirculos++;
+[Pagina 38] }
+[Pagina 38] public Circulo(double r) { this(0.0, 0.0, r); }
+[Pagina 38] public Circulo(Circulo c) { this(c.x, c.y, c.r); }
+[Pagina 38] public Circulo() { this(0.0, 0.0, 1.0); }
+
+[Pagina 39] public double perimetro () { return 2.0 * PI * r; }
+[Pagina 39] public double area() { return PI * r * r; }
+[Pagina 39] // método de objeto para comparar círculos
+[Pagina 39] public Circulo elMayor(Circulo c) {
+[Pagina 39] if (this.r>=c.r) return this; else return c;
+[Pagina 39] }
+[Pagina 39] // método de clase para comparar círculos
+[Pagina 39] public static Circulo elMayor(Circulo c, Circulo d) {
+[Pagina 39] if (c.r>=d.r) return c; else return d;
+[Pagina 39] }
+[Pagina 39] } // fin de la clase Circulo
+[Pagina 39] En este ejemplo se ve cómo se definen las variables miembro y los métodos (cuyos nombres
+[Pagina 39] se han resaltado en negrita) dentro de la clase. Dichas variables y métodos pueden ser de objeto  o de
+[Pagina 39] clase  (static ). Se puede ver también có mo el nombre del fichero coincide con el de la clase public
+[Pagina 39] con la extensión *.java .
+[Pagina 39] 3.3 VARIABLES MIEMBRO
+[Pagina 39] A diferencia de la programación algorítmica clásica, que estaba centrada en las funciones, la
+[Pagina 39] programación orientada a objetos está centrada en los datos . Una clase está constituida por unos
+[Pagina 39] datos  y unos métodos  que operan sobre esos datos.
+[Pagina 39] 3.3.1  Variables miembro de objeto
+[Pagina 39] Cada objeto, es decir cada ejemplar concreto de la clase, tiene su propia copia de las variables
+[Pagina 39] miembro. Las variables miembro de una clase  (también llamadas campos ) pueden ser de tipos
+[Pagina 39] primitivos (boolean , int, long, double , …) o referencias a objetos  de otra clase ( composición ).
+[Pagina 39] Un aspecto muy importante del correcto funcionamiento de los programas es que no haya
+[Pagina 39] datos sin inicializar. Por  eso las variables miembro de tipos primitivos  se inicializan siempre de
+[Pagina 39] modo automático, incluso antes de llamar al constructor  (false  para boolean , el carácter nulo para
+[Pagina 39] char  y cero para los tipos numéricos). De todas formas, lo más adecuado es inicializ arlas también
+[Pagina 39] en el constructor.
+[Pagina 39] Las variables miembro pueden también inicializarse explícitamente en la declaración , como
+[Pagina 39] las variables locales, por medio de constantes o llamadas a métodos (esta inicialización no está
+[Pagina 39] permitida en C++). Por ejemplo,
+[Pagina 39] long nDatos = 100;
+[Pagina 39] Las variables miembro se inicializan en el mismo orden en que aparecen en el código de la
+[Pagina 39] clase. Esto es importante porque unas variables pueden apoyarse en otras previamente definidas.
+[Pagina 39] Cada objeto  que se crea de una clase tiene su propia co pia de las variables miembro. Por
+[Pagina 39] ejemplo, cada objeto de la clase Circulo  tiene sus propias coordenadas del centro x e y, y su propio
+[Pagina 39] valor del radio r.
+[Pagina 39] Los métodos de objeto  se aplican a un objeto concreto poniendo el nombre del objeto y luego
+[Pagina 39] el nombre  del método, separados por un punto. A este objeto se le llama argumento implícito . Por
+[Pagina 39] ejemplo, para calcular el área de un objeto de la clase Circulo  llamado c1 se escribirá: c1.area(); .
+
+[Pagina 40] Las variables miembro del argumento implícito se acceden directamen te o precedidas por la palabra
+[Pagina 40] this y el operador punto.
+[Pagina 40] Las variables miembro pueden ir precedidas en su declaración por uno de los modificadores
+[Pagina 40] de acceso: public , private , protected  y package  (que es el valor por defecto y puede omitirse). Junto
+[Pagina 40] con los  modificadores de acceso de la clase ( public  y package ), determinan qué clases y métodos
+[Pagina 40] van a tener permiso para utilizar la clase y sus métodos y variables miembro. En el Apartado 3.11,
+[Pagina 40] en la página 60, se especifican con detalle las consecuencias de estos modificadores de acceso.
+[Pagina 40] Existen otros dos modificadores (no de acceso) para las variables miembro:
+[Pagina 40] 1. transient : indica que esta variable miembro no forma parte de la persistencia  (capacidad
+[Pagina 40] de lo s objetos de mantener su valor cuando termina la ejecución de un programa) de un
+[Pagina 40] objeto y por tanto no debe ser serializada  (convertida en flujo de caracteres para poder ser
+[Pagina 40] almacenada en disco o en una base de datos) con el resto del objeto.
+[Pagina 40] 2. volatile : ind ica que esta variable puede ser utilizada por distintas threads  sincronizadas
+[Pagina 40] (ver Apartado 6.3, en la página 131) y que el compilador no debe realizar optimizaciones
+[Pagina 40] con esta variable.
+[Pagina 40] Al nivel de  estos apuntes, los modificadores transient  y volatile  no serán utilizados.
+[Pagina 40] 3.3.2  Variables miembro de clase (static)
+[Pagina 40] Una clase puede tener variables propias de la clase y no de cada objeto. A estas variables se les
+[Pagina 40] llama variables de clase  o variables static . Las variables static  se suelen utilizar para definir
+[Pagina 40] constantes comunes para todos los objetos de la clase (por ejemplo PI en la clase Circulo ) o
+[Pagina 40] variables que sólo tienen sentido para toda la clase (por ejemplo, un contador de objetos creados
+[Pagina 40] como numCircu los en la clase Circulo ).
+[Pagina 40] Las variables de clase son lo más parecido que Java  tiene a las variables globales  de C/C++.
+[Pagina 40] Las variables de clase se crean anteponiendo la palabra static  a su declaración. Para llamarlas
+[Pagina 40] se suele utilizar el nombre de la clase ( no es imprescindible, pues se puede utilizar también el
+[Pagina 40] nombre de cualquier objeto), porque de esta forma su sentido queda más claro. Por ejemplo,
+[Pagina 40] Circulo.numCirculos  es una variable de clase que cuenta el número de círculos creados.
+[Pagina 40] Si no se les da valor en la declaración, las variables miembro static  se inicializan con los
+[Pagina 40] valores por defecto para los tipos primitivos ( false  para boolean , el carácter nulo para char  y cero
+[Pagina 40] para los tipos numéricos), y con null si es una referencia.
+[Pagina 40] Las variables miembro static se crean en el momento en que pueden ser necesarias: cuando se
+[Pagina 40] va a crear el primer objeto de la clase, en cuanto se llama a un método static  o en cuanto se utiliza
+[Pagina 40] una variable static  de dicha clase. Lo importante es que las variables miembro static  se inicializan
+[Pagina 40] siempre antes que cualquier objeto de la clase.
+[Pagina 40] 3.4 VARIABLES FINALES
+[Pagina 40] Una variable de un tipo primitivo declarada como final  no puede cambiar su valor a lo largo de la
+[Pagina 40] ejecución del programa. Puede ser considerada como una constante , y equivale a la palabra const  de
+[Pagina 40] C/C++.
+
+[Pagina 41] Java  permite separar la definición  de la inicialización  de una variable final . La inicialización
+[Pagina 41] puede hacerse más tarde, en tiempo de ejecución, llamando a métodos o en función de otros datos.
+[Pagina 41] La variable final  así definida e s constante  (no puede cambiar), pero no tiene por qué tener el mismo
+[Pagina 41] valor en todas las ejecuciones del programa, pues depende de cómo haya sido inicializada.
+[Pagina 41] Además de las variables miembro, también las variables locales y los propios argumentos de
+[Pagina 41] un mét odo pueden ser declarados final .
+[Pagina 41] Declarar como final  un objeto miembro de una clase hace constante  la referencia , pero no el
+[Pagina 41] propio objeto, que puede ser modificado a través de otra referencia. En Java  no es posible hacer que
+[Pagina 41] un objeto sea constante.
+[Pagina 41] 3.5 MÉTOD OS (FUNCIONES MIEMBRO )
+[Pagina 41] 3.5.1  Métodos de objeto
+[Pagina 41] Los métodos  son funciones definidas dentro de una clase. Salvo los métodos static  o de clase, se
+[Pagina 41] aplican siempre a un objeto de la clase por medio del operador punto (.). Dicho objeto es su
+[Pagina 41] argumento implícito . Los métodos pueden además tener otros argumentos explícitos  que van entre
+[Pagina 41] paréntesis, a continuación del nombre del método.
+[Pagina 41] La primera línea de la definición de un método se llama declaración  o header ; el código
+[Pagina 41] comprendido entre las llaves  {…} es el cuerpo  o body  del método. Considérese el siguiente método
+[Pagina 41] tomado de la clase Circulo :
+[Pagina 41] public Circulo elMayor(Circulo c) {      // header y comienzo del método
+[Pagina 41] if (this.r>=c.r)                     // body
+[Pagina 41] return this;                     // body
+[Pagina 41] else                                  // body
+[Pagina 41] return c;                        // body
+[Pagina 41] }                                        // final del método
+[Pagina 41] El header  consta del cualificador de acceso ( public , en este caso), del tipo del valor de retorno
+[Pagina 41] (Circul o en este ejemplo, void si no tiene), del nombre de la función  y de una lista de argumentos
+[Pagina 41] explícitos  entre paréntesis, separados por comas. Si no hay argumentos explícitos se dejan los
+[Pagina 41] paréntesis vacíos.
+[Pagina 41] Los métodos tienen visibilidad directa  de las vari ables miembro del objeto que es su
+[Pagina 41] argumento implícito , es decir, pueden acceder a ellas sin cualificarlas con un nombre de objeto y el
+[Pagina 41] operador punto (.). De todas formas, también se puede acceder a ellas mediante la referencia this, de
+[Pagina 41] modo discrecional (como en el ejemplo anterior con this.r ) o si alguna variable local o argumento
+[Pagina 41] las oculta.
+[Pagina 41] El valor de retorno puede ser un valor de un tipo primitivo  o una referencia . En cualquier
+[Pagina 41] caso no puede haber más que un único valor de retorno (que puede ser un o bjeto o un array). Se
+[Pagina 41] puede devolver también una referencia a un objeto por medio de un nombre de interface . El objeto
+[Pagina 41] devuelto debe pertenecer a una clase que implemente esa interface.
+[Pagina 41] Se puede devolver como valor de retorno un objeto de la misma clase q ue el método o de una
+[Pagina 41] sub-clase, pero nunca de una super -clase.
+
+[Pagina 42] Los métodos pueden definir variables locales . Su visibilidad llega desde la definición al final
+[Pagina 42] del bloque en el que han sido definidas. No hace falta inicializar las variables locales en el p unto en
+[Pagina 42] que se definen, pero el compilador no permite utilizarlas sin haberles dado un valor. A diferencia de
+[Pagina 42] las variables miembro, las variables locales no se inicializan por defecto.
+[Pagina 42] Si en el header  del método se incluye la palabra native  (Ej: public n ative void miMetodo(); )
+[Pagina 42] no hay que incluir el código o implementación del método. Este código deberá estar en una librería
+[Pagina 42] dinámica ( Dynamic Link Library  o DLL). Estas librerías son ficheros de funciones compiladas
+[Pagina 42] normalmente en lenguajes distintos de Java (C, C++, Fortran, etc.). Es la forma de poder utilizar
+[Pagina 42] conjuntamente funciones realizadas en otros lenguajes desde código escrito en Java . Este tema
+[Pagina 42] queda fuera del caracter fundamentalmente introductorio de este manual.
+[Pagina 42] Un método también puede declarars e como synchronized (Ej: public synchronized double
+[Pagina 42] miMetodoSynch(){...} ). Estos métodos tienen la particularidad de que sobre un objeto no pueden
+[Pagina 42] ejecutarse simultáneamente dos métodos que estén sincronizados (véase Apartado 6.3, en la página
+[Pagina 42] 131).
+[Pagina 42] 3.5.2  Métodos sobrecargados (overloaded)
+[Pagina 42] Al igual que C++, Java  permite métodos sobrecargados  (overloaded ), es decir, métodos distintos
+[Pagina 42] que tienen el mismo nombre , pero que se diferencian por el número y/o tip o de los argumentos. El
+[Pagina 42] ejemplo de la clase Circulo  del Apartado 3.2 presenta dos casos de métodos sobrecargados: los
+[Pagina 42] cuatro constructores y los dos métodos llamados elMayor() .
+[Pagina 42] A la hora de llamar a un método sobrecargado, Java  sigue unas reglas para determinar el
+[Pagina 42] método concreto que debe llamar:
+[Pagina 42] 1. Si existe el método cuyos argumentos se ajustan exactamente al tipo de los argumentos de
+[Pagina 42] la llamada (argumentos actuales), se llama ese método.
+[Pagina 42] 2. Si no existe un método que se ajuste exa ctamente, se intenta promover los argumentos
+[Pagina 42] actuales al tipo inmediatamente superior (por ejemplo char a int, int a long, float a double ,
+[Pagina 42] etc.) y se llama el método correspondiente.
+[Pagina 42] 3. Si sólo existen métodos con argumentos de un tipo más restringido (por ej emplo, int en
+[Pagina 42] vez de long), el programador debe hacer un cast explícito en la llamada,
+[Pagina 42] responsabilizándose de esta manera de lo que pueda ocurrir.
+[Pagina 42] 4. El valor de retorno no influye en la elección del método sobrecargado. En realidad es
+[Pagina 42] imposible saber desde e l propio método lo que se va a hacer con él. No es posible crear
+[Pagina 42] dos métodos sobrecargados, es decir con el mismo nombre, que sólo difieran en el valor
+[Pagina 42] de retorno.
+[Pagina 42] Diferente de la sobrecarga  de métodos es la redefinición . Una clase puede redefinir
+[Pagina 42] (overrid e) un método heredado de una superclase. Redefinir  un método es dar una nueva definición.
+[Pagina 42] En este caso el método debe tener exactamente los mismos argumentos en tipo y número que el
+[Pagina 42] método redefinido. Este tema se verá de nuevo al hablar de la herencia .
+
+[Pagina 43] 3.5.3  Paso de argumentos a métodos
+[Pagina 43] En Java  los argumentos de los tipos primitivos  se pasan siempre por valor . El método recibe una
+[Pagina 43] copia del argumento actual; si se modifica esta copia, el argumento original que se incluyó en la
+[Pagina 43] llamada no queda modificado. La for ma de modificar dentro de un método una variable de un tipo
+[Pagina 43] primitivo es incluirla como variable miembro en una clase y pasar como argumento una referencia a
+[Pagina 43] un objeto de dicha clase. Las referencias  se pasan también por valor , pero a través de ellas se
+[Pagina 43] pueden modificar los objetos referenciados.
+[Pagina 43] En Java  no se pueden pasar métodos como argumentos a otros métodos (en C/C++ se pueden
+[Pagina 43] pasar punteros a función como argumentos). Lo que se puede hacer en Java  es pasar una referencia
+[Pagina 43] a un objeto y dentro de la fu nción utilizar los métodos de ese objeto.
+[Pagina 43] Dentro de un método se pueden crear variables locales  de los tipos primitivos o referencias.
+[Pagina 43] Estas variables locales dejan de existir al terminar la ejecución del método1. Los argumentos
+[Pagina 43] formales de un método (las variables que aparecen en el header  del método para recibir el valor de
+[Pagina 43] los argumentos actuales) tienen categoría de variables locales del método.
+[Pagina 43] Si un método devuelve this (es decir, un objeto de la clase) o una referencia a otro objeto, ese
+[Pagina 43] objeto puede  encadenarse con otra llamada a otro método de la misma o de diferente clase y así
+[Pagina 43] sucesivamente. En este caso aparecerán varios métodos en la misma sentencia unidos por el
+[Pagina 43] operador punto (.), por ejemplo,
+[Pagina 43] String numeroComoString = ”8.978”;
+[Pagina 43] float  p = Floa t.valueOf(numeroComoString).floatValue();
+[Pagina 43] donde el método valueOf(String)  de la clase java.lang.Float  devuelve un objeto de la clase Float
+[Pagina 43] sobre el que se aplica el método floatValue() , que finalmente devuelve una variable primitiva de
+[Pagina 43] tipo float . El ejemp lo anterior se podía desdoblar en las siguientes sentencias:
+[Pagina 43] String numeroComoString = ”8.978”;
+[Pagina 43] Float  f = Float.valueOf(numeroComoString);
+[Pagina 43] float  p = f.floatValue();
+[Pagina 43] Obsérvese que se pueden encadenar varias llamadas a métodos por medio del operador punto
+[Pagina 43] (.) que, como todos los operadores de Java  excepto los de asignación, se ejecuta de izquierda a
+[Pagina 43] derecha (ver Apartado 2.2.11 , en la página 30).
+[Pagina 43] 3.5.4  Métodos de clase (static)
+[Pagina 43] Análogamente, puede también  haber métodos que no actúen sobre objetos concretos a través del
+[Pagina 43] operador punto. A estos métodos se les llama métodos de clase  o static . Los métodos de clase
+[Pagina 43] pueden recibir objetos de su clase como argumentos explícitos, pero no tienen argumento implícito
+[Pagina 43] ni pueden utilizar la referencia this. Un ejemplo típico de métodos static  son los métodos
+[Pagina 43] matemáticos de la clase java.lang.Math (sin(), cos() , exp() , pow() , etc.). De ordinario el argumento
+[Pagina 43] de estos métodos será de un tipo primitivo y se le pasará como argumento explícito. Estos métodos
+[Pagina 43] no tienen sentido como métodos de objeto.
+[Pagina 43] 1  En Java  no hay variables locales static , que en C/C++ y Visual Basic son variables locales que conservan su valor
+[Pagina 43] entre las distintas llamadas a un método.
+
+[Pagina 44] Los métodos y variables de clase se crean anteponiendo la palabra static . Para llamarlos se
+[Pagina 44] suele utilizar el nombre de la clase, en vez del nombre de un objeto de la clase (por e jemplo,
+[Pagina 44] Math.sin(ang) , para calcular el seno de un ángulo).
+[Pagina 44] Los métodos y las variables de clase son lo más parecido que Java  tiene a las funciones y
+[Pagina 44] variables globales de C/C++ o Visual Basic.
+[Pagina 44] 3.5.5  Constructores
+[Pagina 44] Un punto clave de la Programación Orientada Obje tos es el evitar información incorrecta por no
+[Pagina 44] haber sido correctamente inicializadas las variables. Java  no permite que haya variables miembro
+[Pagina 44] que no estén inicializadas2. Ya se ha dicho que Java  inicializa siempre con valores por defecto  las
+[Pagina 44] variables mi embro de clases y objetos. El segundo paso en la inicialización correcta de objetos es el
+[Pagina 44] uso de constructores .
+[Pagina 44] Un constructor  es un método que se llama automáticamente cada vez que se crea un objeto de
+[Pagina 44] una clase. La principal misión del constructor  es res ervar memoria e inicializar las variables
+[Pagina 44] miembro de la clase.
+[Pagina 44] Los constructores  no tienen valor de retorno (ni siquiera void) y su nombre  es el mismo que
+[Pagina 44] el de la clase. Su argumento implícito  es el objeto que se está creando.
+[Pagina 44] De ordinario una clase tien e varios constructores , que se diferencian por el tipo y número de
+[Pagina 44] sus argumentos (son un ejemplo típico de métodos sobrecargados ). Se llama constructor por
+[Pagina 44] defecto  al constructor que no tiene argumentos. El programador debe proporcionar en el código
+[Pagina 44] valor es iniciales adecuados para todas las variables miembro.
+[Pagina 44] Un constructor  de una clase puede llamar a otro constructor previamente definido  en la
+[Pagina 44] misma clase por medio de la palabra this. En este contexto, la palabra this sólo puede aparecer en la
+[Pagina 44] primera se ntencia  de un constructor .
+[Pagina 44] El constructor  de una sub-clase  puede llamar al constructor de su super -clase  por medio de la
+[Pagina 44] palabra super , seguida de los argumentos apropiados entre paréntesis. De esta forma, un constructor
+[Pagina 44] sólo tiene que inicializar por sí mismo las variables no heredadas.
+[Pagina 44] El constructor  es tan importante que, si el programador no prepara ningún constructor para
+[Pagina 44] una clase, el compilador  crea un constructor por defecto , inicializando las variables de los tipos
+[Pagina 44] primitivos a su valor por defect o, y los Strings  y las demás referencias  a objetos a null. Si hace
+[Pagina 44] falta, se llama al constructor  de la super -clase  para que inicialice las variables heredadas.
+[Pagina 44] Al igual que los demás métodos de una clase, los constructores  pueden tener también los
+[Pagina 44] modific adores de acceso public , private , protected  y package . Si un constructor  es private , ninguna
+[Pagina 44] otra clase puede crear un objeto de esa clase. En este caso, puede haber métodos public  y static
+[Pagina 44] (factory methods ) que llamen al constructor  y devuelvan un objeto de esa clase.
+[Pagina 44] Dentro de una clase, los constructores  sólo pueden ser llamados por otros constructores  o por
+[Pagina 44] métodos static . No pueden ser llamados por los métodos de objeto  de la clase.
+[Pagina 44] 2  Sí puede haber variables locales de métodos sin inicializar, pero el compilador da un error si se i ntentan utilizar sin
+[Pagina 44] asignarles previamente un valor.
+
+[Pagina 45] 3.5.6  Inicializadores
+[Pagina 45] Por motivos que se verán más adelante, Java  todavía di spone de una tercera línea de actuación para
+[Pagina 45] evitar que haya variables sin inicializar correctamente. Son los inicializadores , que pueden ser static
+[Pagina 45] (para la clase) o de objeto .
+[Pagina 45] 3.5.6.1  Inicializadores static
+[Pagina 45] Un inicializador  static  es un algo parecido a un método  (un bloque {…} de código, sin nombre y
+[Pagina 45] sin argumentos, precedido por la palabra static ) que se llama automáticamente al crear la clase (al
+[Pagina 45] utilizarla por primera vez). También se diferencia del constructor  en que no es llamado para cada
+[Pagina 45] objeto, sino una s ola vez para toda la clase.
+[Pagina 45] Los tipos primitivos pueden inicializarse directamente con asignaciones en la clase o en el
+[Pagina 45] constructor, pero para inicializar objetos o elementos más complicados es bueno utilizar un
+[Pagina 45] inicializador  (un bloque de código {…}), ya que permite gestionar excepciones3 con try…catch .
+[Pagina 45] Los inicializadores static  se crean dentro de la clase, como métodos sin nombre, sin
+[Pagina 45] argumentos y sin valor de retorno, con tan sólo la palabra static  y el código entre llaves {...}. En una
+[Pagina 45] clase pueden def inirse varios inicializadores static , que se llamarán en el orden en que han sido
+[Pagina 45] definidos.
+[Pagina 45] Los inicializadores static  se pueden utilizar para dar valor a las variables static . Además se
+[Pagina 45] suelen utilizar para llamar a métodos nativos , esto es, a métodos e scritos por ejemplo en C/C++
+[Pagina 45] (llamando a los métodos System.load()  o System.loadLibrary() , que leen las librerías nativas). Por
+[Pagina 45] ejemplo:
+[Pagina 45] static{
+[Pagina 45] System.loadLibrary("MyNativeLibrary");
+[Pagina 45] }
+[Pagina 45] 3.5.6.2  Inicializadores de objeto
+[Pagina 45] A partir de Java 1.1  existen también inicializadores de objeto , que no llevan la palabra static . Se
+[Pagina 45] utilizan para las clases anónimas , que por no tener nombre no pueden tener constructor. En este
+[Pagina 45] caso, los inicializadores de objeto se llaman cada vez que se crea un objeto de la clase anónima.
+[Pagina 45] 3.5.7  Resumen del proceso de creación de un objeto
+[Pagina 45] El proceso de creación de objetos de una clase es el siguiente:
+[Pagina 45] 1. Al crear el primer objeto de la clase o al utilizar el primer método o variable static  se localiza la
+[Pagina 45] clase y se carga en memoria.
+[Pagina 45] 2. Se ejecutan los inicializadores static  (sólo una vez).
+[Pagina 45] 3. Cada vez que se quiere crear un nuevo objeto :
+[Pagina 45] • se comienza reservando la memoria necesaria
+[Pagina 45] 3  Las excepciones  son situaciones de error o, en general, situaciones anómalas que puede exigir ciertas actuaciones del
+[Pagina 45] propio programa o del usuario. Las excepciones se explican con más detalle en el Capítulo 8.
+
+[Pagina 46] • se da valor por defecto a las variables miembro de los tipos primitivos
+[Pagina 46] • se ejecutan los inicializadores de objeto
+[Pagina 46] • se ejecutan los  constructores
+[Pagina 46] 3.5.8  Destrucción de objetos (liberación de memoria)
+[Pagina 46] En Java  no hay destructores  como en C++. El sistema se ocupa automáticamente de liberar la
+[Pagina 46] memoria de los objetos que ya han perdido la referencia , esto es, objetos que ya no tienen ningún
+[Pagina 46] nombr e que permita acceder a ellos, por ejemplo por haber llegado al final del bloque en el que
+[Pagina 46] habían sido definidos, porque a la referencia  se le ha asignado el valor null o porque a la referencia
+[Pagina 46] se le ha asignado la dirección de otro objeto. A esta caracter ística de Java  se le llama garbage
+[Pagina 46] collection  (recogida de basura).
+[Pagina 46] En Java  es normal que varias variables de tipo referencia apunten al mismo objeto. Java  lleva
+[Pagina 46] internamente un contador de cuántas referencias hay sobre cada objeto. El objeto podrá ser bor rado
+[Pagina 46] cuando el número de referencias sea cero. Como ya se ha dicho, una forma de hacer que un objeto
+[Pagina 46] quede sin referencia es cambiar ésta a null, haciendo por ejemplo:
+[Pagina 46] ObjetoRef = null;
+[Pagina 46] En Java  no se sabe exactamente cuándo se va a activar el garbage colle ctor. Si no falta
+[Pagina 46] memoria es posible que no se llegue a activar en ningún momento. No es pues conveniente confiar
+[Pagina 46] en él para la realización de otras tareas más críticas.
+[Pagina 46] Se puede llamar explícitamente al garbage collector  con el método System.gc() , aunque esto
+[Pagina 46] es considerado por el sistema sólo como una “sugerencia” a la JVM.
+[Pagina 46] 3.5.9  Finalizadores
+[Pagina 46] Los finalizadores  son métodos que vienen a completar la labor del garbage collector . Un
+[Pagina 46] finalizador  es un método que se llama automáticamente cuando se va a destruir un o bjeto (antes de
+[Pagina 46] que la memoria sea liberada de modo automático por el sistema). Se utilizan para ciertas
+[Pagina 46] operaciones de terminación  distintas de liberar memoria (por ejemplo: cerrar ficheros, cerrar
+[Pagina 46] conexiones de red, liberar memoria reservada por funcione s nativas, etc.). Hay que tener en cuenta
+[Pagina 46] que el garbage collector sólo libera la memoria reservada con new. Si por ejemplo se ha reservado
+[Pagina 46] memoria con funciones nativas en C (por ejemplo, utilizando la función malloc() ), esta memoria
+[Pagina 46] hay que liberarla exp lícitamente utilizando el método finalize() .
+[Pagina 46] Un finalizador  es un método de objeto (no static ), sin valor de retorno ( void), sin argumentos
+[Pagina 46] y que siempre se llama finalize() . Los finalizadores  se llaman de modo automático siempre que
+[Pagina 46] hayan sido definidos p or el programador de la clase. Para realizar su tarea correctamente, un
+[Pagina 46] finalizador  debería terminar siempre llamando al finalizador  de su super -clase .
+[Pagina 46] Tampoco se puede saber el momento preciso en que los finalizadores  van a ser llamados. En
+[Pagina 46] muchas ocasion es será conveniente que el programador realice esas operaciones de finalización de
+[Pagina 46] modo explícito mediante otros métodos que él mismo llame.
+[Pagina 46] El método System.runFinalization()  “sugiere” a la JVM que ejecute los finalizadores  de los
+[Pagina 46] objetos pendientes (que  han perdido la referencia). Parece ser que para que este método se ejecute,
+[Pagina 46] en Java 1.1 hay que llamar primero a gc() y luego a runFinalization() .
+
+[Pagina 47] 3.6 PACKAGES
+[Pagina 47] 3.6.1  Qué es un package
+[Pagina 47] Un package  es una agrupación de clases. En la API de Java 1.1  había 22 packages ; en Java 1.2  hay
+[Pagina 47] 59 packages , lo que da una idea del “crecimiento” experimentado por el lenguaje.
+[Pagina 47] Además, el usuario puede crear sus propios packages . Para que una clase pase a formar parte
+[Pagina 47] de un package  llamado pkgName , hay que introducir en ella la sente ncia:
+[Pagina 47] package pkgName;
+[Pagina 47] que debe ser la primera sentencia del fichero sin contar comentarios y líneas en blanco.
+[Pagina 47] Los nombres de los packages  se suelen escribir con minúsculas, para distinguirlos de las
+[Pagina 47] clases, que empiezan por mayúscula. El nombre de un package  puede constar de varios nombres
+[Pagina 47] unidos por puntos (los propios packages  de Java  siguen esta norma, como por ejemplo
+[Pagina 47] java.awt.event ).
+[Pagina 47] Todas las clases que forman parte de un package  deben estar en el mismo directorio. Los
+[Pagina 47] nombres compuestos de los packages  están relacionados con la jerarquía de directorios en que se
+[Pagina 47] guardan las clases. Es recomendable que los nombres de las clases  de Java  sean únicos en Internet .
+[Pagina 47] Es el nombre del package  lo que permite obtener esta característica. Una forma de consegui rlo es
+[Pagina 47] incluir el nombre del dominio  (quitando quizás el país), como por ejemplo en el package  siguiente:
+[Pagina 47] es.ceit.jgjalon.infor2.ordenar
+[Pagina 47] Las clases de un package  se almacenan en un directorio con el mismo nombre largo ( path)
+[Pagina 47] que el package . Por ejemplo, la  clase,
+[Pagina 47] es.ceit.jgjalon.infor2.ordenar.QuickSort.class
+[Pagina 47] debería estar en el directorio,
+[Pagina 47] CLASSPATH \es\ceit\jgjalon\infor2\ordenar\QuickSort.class
+[Pagina 47] donde CLASSPATH es una variable de entorno del PC que establece la posición absoluta de los
+[Pagina 47] directorios en los que hay clases de Java  (clases del sistema o de usuario), en este caso la posición
+[Pagina 47] del directorio es en los discos locales del ordenador.
+[Pagina 47] Los packages  se utilizan con las finalidades siguientes:
+[Pagina 47] 1. Para agrupar clases relacionadas.
+[Pagina 47] 2. Para evitar conflictos de nombres (se recuerda que el dominio de nombres de Java  es la
+[Pagina 47] Internet ). En caso de conflicto de nombres entre clases importadas, el compilador obliga a
+[Pagina 47] cualificar en el código los nombres de dichas clases con el nombre del package .
+[Pagina 47] 3. Para ayudar en el contr ol de la accesibilidad de clases y miembros.
+[Pagina 47] 3.6.2  Cómo funcionan los packages
+[Pagina 47] Con la sentencia import packname; se puede evitar tener que utilizar nombres muy largos, al
+[Pagina 47] mismo tiempo que se evitan los conflictos entre nombres. Si a pesar de todo hay conflicto e ntre
+
+[Pagina 48] nombres de clases, Java  da un error y obliga a utilizar los nombres de las clases cualificados con el
+[Pagina 48] nombre del package .
+[Pagina 48] El importar un package  no hace que se carguen todas las clases del package : sólo se cargarán
+[Pagina 48] las clases public  que se vayan a uti lizar. Al importar un package  no se importan los sub-packages .
+[Pagina 48] Éstos deben ser importados explícitamente, pues en realidad son packages  distintos. Por ejemplo, al
+[Pagina 48] importar  java.awt  no se importa java.awt.event .
+[Pagina 48] Es posible guardar en jerarquías de directori os diferentes los ficheros *.class  y *.java , con
+[Pagina 48] objeto por ejemplo de no mostrar la situación del código fuente. Los packages  hacen referencia a
+[Pagina 48] los ficheros compilados *.class .
+[Pagina 48] En un programa de Java , una clase puede ser referida con su nombre completo ( el nombre del
+[Pagina 48] package  más el de la clase, separados por un punto). También se pueden referir con el nombre
+[Pagina 48] completo las variables y los métodos de las clases. Esto se puede hacer siempre de modo opcional,
+[Pagina 48] pero es incómodo y hace más difícil el reutilizar e l código y portarlo a otras máquinas.
+[Pagina 48] La sentencia import  permite abreviar los nombres de las clases, variables y métodos, evitando
+[Pagina 48] el tener que escribir continuamente el nombre del package  importado. Se importan por defecto el
+[Pagina 48] package  java.lang  y el packa ge actual o por defecto (las clases del directorio actual).
+[Pagina 48] Existen dos formas de utilizar import : para una clase  y para todo un package :
+[Pagina 48] import es.ceit.jgjalon.infor2.ordenar.QuickSort.class;
+[Pagina 48] import es.ceit.jgjalon.infor2.ordenar.*;
+[Pagina 48] que deberían estar en el directorio:
+[Pagina 48] classpath \es\ceit\jgjalon\infor2\ordenar
+[Pagina 48] El cómo afectan los packages  a los permisos de acceso de una clase se estudia en el Apartado
+[Pagina 48] 3.11, en la página 60.
+[Pagina 48] 3.7 HERENCIA
+[Pagina 48] 3.7.1  Concepto de here ncia
+[Pagina 48] Se puede construir una clase a partir de otra mediante el mecanismo de la herencia . Para indicar que
+[Pagina 48] una clase deriva de otra se utiliza la palabra extends , como por ejemplo:
+[Pagina 48] class CirculoGrafico extends Circulo {...}
+[Pagina 48] Cuando una clase deriva de otra, hereda todas sus variables y métodos. Estas funciones y
+[Pagina 48] variables miembro pueden ser redefinidas  (overridden ) en la clase derivada, que puede también
+[Pagina 48] definir o añadir nuevas variables y métodos. En cierta forma es como si la sub-clase  (la clase
+[Pagina 48] derivada) “ contuviera” un objeto de la super -clase ; en realidad lo “amplía” con nuevas variables y
+[Pagina 48] métodos.
+[Pagina 48] Java  permite múltiples niveles de herencia, pero no permite que una clase derive de varias (no
+[Pagina 48] es posible la herencia múltiple). Se pueden crear tantas clases derivadas de una misma clase como
+[Pagina 48] se quiera.
+[Pagina 48] Todas las clases de Java  creadas por el programador tienen una super -clase . Cuando no se
+[Pagina 48] indica explícitamente una super -clase  con la palabra extends , la clase deriva de java.lang.Object ,
+
+[Pagina 49] que es la clase raíz de  toda la jerarquía de clases de Java . Como consecuencia, todas las clases
+[Pagina 49] tienen algunos métodos que han heredado de Object .
+[Pagina 49] La composición  (el que una clase contenga un objeto de otra clase como variable miembro) se
+[Pagina 49] diferencia de la herencia  en que incorp ora los datos del objeto miembro, pero no sus métodos o
+[Pagina 49] interface (si dicha variable miembro se hace private ).
+[Pagina 49] 3.7.2  La clase Object
+[Pagina 49] Como ya se ha dicho, la clase Object  es la raíz de toda la jerarquía de clases de Java . Todas las
+[Pagina 49] clases de Java  derivan de Objec t.
+[Pagina 49] La clase Object  tiene métodos interesantes para cualquier objeto que son heredados por
+[Pagina 49] cualquier clase. Entre ellos se pueden citar los siguientes:
+[Pagina 49] 1. Métodos que pueden ser redefinidos por el programador:
+[Pagina 49] clone()  Crea un objeto a partir de otro objeto de  la misma clase. El método original heredado
+[Pagina 49] de Object  lanza una CloneNotSupportedException . Si se desea poder clonar una clase hay que
+[Pagina 49] implementar la interface Cloneable  y redefinir el método clone() . Este método debe hacer una
+[Pagina 49] copia miembro a miembro del  objeto original. No debería llamar al operador new ni a los
+[Pagina 49] constructores.
+[Pagina 49] equals()  Indica si dos objetos son o no iguales. Devuelve true si son iguales, tanto si son
+[Pagina 49] referencias al mismo objeto como si son objetos distintos con iguales valores de las var iables
+[Pagina 49] miembro.
+[Pagina 49] toString()  Devuelve un String  que contiene una representación del objeto como cadena de
+[Pagina 49] caracteres, por ejemplo para imprimirlo o exportarlo.
+[Pagina 49] finalize()  Este método ya se ha visto al hablar de los finalizadores .
+[Pagina 49] 2. Métodos que no pueden ser r edefinidos (son métodos final ):
+[Pagina 49] getClass()  Devuelve un objeto de la clase Class , al cual se le pueden aplicar métodos para
+[Pagina 49] determinar el nombre de la clase, su super -clase, las interfaces implementadas, etc. Se puede
+[Pagina 49] crear un objeto de la misma clase que o tro sin saber de qué clase es.
+[Pagina 49] notify() , notifyAll()  y wait()   Son métodos relacionados con las threads  y se verán en el Capítulo
+[Pagina 49] 6.
+[Pagina 49] 3.7.3  Redefinición de métodos heredados
+[Pagina 49] Una clase puede redefinir  (volver a definir) cualquiera de l os métodos heredados de su super -clase
+[Pagina 49] que no sean final . El nuevo método sustituye al heredado para todos los efectos en la clase que lo ha
+[Pagina 49] redefinido.
+[Pagina 49] Las métodos de la super -clase  que han sido redefinidos pueden ser todavía accedidos por
+[Pagina 49] medio de la pal abra super  desde los métodos de la clase derivada, aunque con este sistema sólo se
+[Pagina 49] puede subir un nivel en la jerarquía de clases.
+
+[Pagina 50] Los métodos redefinidos pueden ampliar los derechos de acceso  de la super -clase  (por
+[Pagina 50] ejemplo ser public , en vez de protected  o package ), pero nunca restringirlos.
+[Pagina 50] Los métodos de clase  o static  no pueden ser redefinidos en las clases derivadas.
+[Pagina 50] 3.7.4  Clases y métodos abstractos
+[Pagina 50] Una clase abstracta  (abstract ) es una clase de la que no se pueden crear objetos. Su utilidad es
+[Pagina 50] permitir que  otras clases deriven de ella, proporcionándoles un marco o modelo que deben seguir y
+[Pagina 50] algunos métodos de utilidad general. Las clases abstractas se declaran anteponiéndoles la palabra
+[Pagina 50] abstract , como por ejemplo,
+[Pagina 50] public abstract class Geometria { ... }
+[Pagina 50] Una clase abstract  puede tener métodos declarados como abstract , en cuyo caso no se da
+[Pagina 50] definición del método. Si una clase tiene algún método abstract  es obligatorio que la clase sea
+[Pagina 50] abstract . En cualquier sub-clase  este método deberá bien ser redefinido, bien  volver a declararse
+[Pagina 50] como abstract  (el método y la sub-clase ).
+[Pagina 50] Una clase abstract  puede tener métodos que no son abstract . Aunque no se puedan crear
+[Pagina 50] objetos de esta clase, sus sub-clases  heredarán el método completamente a punto para ser utilizado.
+[Pagina 50] Como lo s métodos static  no pueden ser redefinidos, un método abstract  no puede ser static .
+[Pagina 50] 3.7.5  Constructores en clases derivadas
+[Pagina 50] Ya se comentó que un constructor  de una clase puede llamar por medio de la palabra this a otro
+[Pagina 50] constructor  previamente definido en la mism a clase. En este contexto, la palabra this sólo puede
+[Pagina 50] aparecer en la primera sentencia de un constructor .
+[Pagina 50] De forma análoga el constructor  de una clase derivada puede llamar al constructor  de su
+[Pagina 50] super -clase  por medio de la palabra super() , seguida entre pa réntesis de los argumentos apropiados
+[Pagina 50] para uno de los constructores de la super -clase . De esta forma, un constructor  sólo tiene que
+[Pagina 50] inicializar directamente las variables no heredadas.
+[Pagina 50] La llamada al constructor  de la super -clase  debe ser la primera sentenc ia del constructor4,
+[Pagina 50] excepto si se llama a otro constructor de la misma clase con this() . Si el programador no la incluye,
+[Pagina 50] Java  incluye automáticamente una llamada al constructor por defecto  de la super -clase , super() .
+[Pagina 50] Esta llamada en cadena a los construc tores de las super -clases  llega hasta el origen de la jerarquía
+[Pagina 50] de clases, esto es al constructor de Object .
+[Pagina 50] Como ya se ha dicho, si el programador no prepara un constructor por defecto , el compilador
+[Pagina 50] crea uno, inicializando las variables de los tipos prim itivos  a sus valores por defecto, y los Strings  y
+[Pagina 50] demás referencias  a objetos a null. Antes, incluirá una llamada al constructor de la super -clase .
+[Pagina 50] En el proceso de finalización o de liberación de recursos (diferentes de la memoria reservada
+[Pagina 50] con new, de la  que se encarga el garbage collector ), es importante llamar a los finalizadores  de las
+[Pagina 50] distintas clases, normalmente en orden inverso al de llamada de los constructores. Esto hace que el
+[Pagina 50] finalizador de la sub -clase  deba realizar todas sus tareas primero y luego llamar al finalizador de la
+[Pagina 50] 4  De todas formas, antes de ejecutar esa llamada ya se ha reservado la memoria necesaria para crear el objeto y se han
+[Pagina 50] inicializado las variables miembro (ver Apartado 3.5.7 ).
+
+[Pagina 51] super -clase en la forma super.finalize() . Los métodos finalize()  deben ser al menos protected , ya
+[Pagina 51] que el método finalize()  de Object  lo es, y no está permitido reducir los permisos de acceso en la
+[Pagina 51] herencia.
+[Pagina 51] 3.8 CLASES Y MÉTODO S FINALES
+[Pagina 51] Recuérdese que las variables  declaradas como final  no pueden cambiar su valor una vez que han
+[Pagina 51] sido inicializadas. En este apartado se van a presentar otros dos usos de la palabra final .
+[Pagina 51] Una clase  declarada final  no puede tener clases derivadas. E sto se puede hacer por motivos de
+[Pagina 51] seguridad  y también por motivos de eficiencia , porque cuando el compilador sabe que los métodos
+[Pagina 51] no van a ser redefinidos puede hacer optimizaciones adicionales.
+[Pagina 51] Análogamente, un método  declarado como final  no puede ser red efinido por una clase que
+[Pagina 51] derive de su propia clase.
+[Pagina 51] 3.9 INTERFACES
+[Pagina 51] 3.9.1  Concepto de interface
+[Pagina 51] Una interface  es un conjunto de declaraciones de métodos (sin definición ). También puede definir
+[Pagina 51] constantes , que son implícitamente public , static  y final , y deben siempr e inicializarse en la
+[Pagina 51] declaración. Estos métodos definen un tipo de conducta . Todas las clases que implementan una
+[Pagina 51] determinada interface  están obligadas a proporcionar una definición de los métodos de la interface ,
+[Pagina 51] y en ese sentido adquieren una conducta  o modo de funcionamiento .
+[Pagina 51] Una clase  puede implementar  una o varias interfaces . Para indicar que una clase implementa
+[Pagina 51] una o más interfaces se ponen los nombres de las interfaces , separados por comas, detrás de la
+[Pagina 51] palabra implements , que a su vez va siempre a la derecha del nombre de la clase o del nombre de la
+[Pagina 51] super -clase en el caso de herencia. Por ejemplo,
+[Pagina 51] public class CirculoGrafico extends Circulo
+[Pagina 51] implements  Dibujable, Cloneable {
+[Pagina 51] ...
+[Pagina 51] }
+[Pagina 51] ¿Qué diferencia hay entre una interf ace y una clase abstract ? Ambas tienen en común que
+[Pagina 51] pueden contener varias declaraciones de métodos (la clase abstract  puede además definirlos). A
+[Pagina 51] pesar de esta semejanza, que hace que en algunas ocasiones se pueda sustituir una por otra, existen
+[Pagina 51] también a lgunas diferencias importantes :
+[Pagina 51] 1. Una clase no puede heredar de dos clases abstract , pero sí puede heredar de una clase
+[Pagina 51] abstract  e implementar una interface , o bien implementar dos o más interfaces .
+[Pagina 51] 2. Una clase no puede heredar métodos -definidos - de una inter face, aunque sí constantes .
+[Pagina 51] 3. Las interfaces  permiten mucha más flexibilidad para conseguir que dos clases tengan el
+[Pagina 51] mismo comportamiento, inpendientemente de su situación en la jerarquía de clases de
+[Pagina 51] Java .
+
+[Pagina 52] 4. Las interfaces  permiten “publicar” el comportamien to de una clase desvelando un mínimo
+[Pagina 52] de información.
+[Pagina 52] 5. Las interfaces  tienen una jerarquía  propia, independiente y más flexible que la de las
+[Pagina 52] clases, ya que tienen permitida la herencia múltiple .
+[Pagina 52] 6. De cara al polimorfismo  (recordar el Apartado 1.3.8 , a partir de la página 15), las
+[Pagina 52] referencias  de un tipo interface  se pueden utilizar de modo similar a las clases abstract .
+[Pagina 52] 3.9.2  Definición de interfaces
+[Pagina 52] Una interface  se define de un modo muy similar a las clase s. A modo de ejemplo se reproduce aquí
+[Pagina 52] la definición de la interface Dibujable  dada en el Apartado 1.3.5 :, en la página 13:
+[Pagina 52] // fichero Dibujable.java
+[Pagina 52] import java.awt.Graphics;
+[Pagina 52] public interface Di bujable {
+[Pagina 52] public void setPosicion(double x, double y);
+[Pagina 52] public void dibujar(Graphics dw);
+[Pagina 52] }
+[Pagina 52] Cada interface  public  debe ser definida en un fichero *.java  con el mismo nombre de la
+[Pagina 52] interface . Los nombres de las interfaces  suelen comenzar también con mayúscula .
+[Pagina 52] Las interfaces  no admiten más que los modificadores de acceso public y package . Si la
+[Pagina 52] interface  no es public  no será accesible desde fuera del package  (tendrá la accesibilidad por
+[Pagina 52] defecto, que es package ). Los métodos declarados en una interface  son siempre public  y abstract ,
+[Pagina 52] de modo implícito.
+[Pagina 52] 3.9.3  Herencia en interfaces
+[Pagina 52] Entre las interfaces  existe una jerarquía  (independiente de la de las clases) que permite herencia
+[Pagina 52] simple y múltiple . Cuando una interface  deriva de otra, incluye todas sus constantes  y declaraciones
+[Pagina 52] de métodos.
+[Pagina 52] Una interface  puede derivar de varias interfaces . Para la herencia de interfaces  se utiliza
+[Pagina 52] asimismo la palabra extends , seguida por el nombre de las interfaces  de las que deriva, separadas
+[Pagina 52] por comas.
+[Pagina 52] Una interface  puede ocult ar una constante definida en una super -interface  definiendo otra
+[Pagina 52] constante con el mismo nombre. De la misma forma puede ocultar, re -declarándolo de nuevo, la
+[Pagina 52] declaración de un método heredado de una super -interface .
+[Pagina 52] Las interfaces  no deberían ser modifica das más que en caso de extrema necesidad. Si se
+[Pagina 52] modifican, por ejemplo añadiendo alguna nueva declaración de un método, las clases que hayan
+[Pagina 52] implementado dicha interface  dejarán de funcionar, a menos que implementen el nuevo método.
+[Pagina 52] 3.9.4  Utilización de interfac es
+[Pagina 52] Las constantes  definidas en una interface  se pueden utilizar en cualquier clase (aunque no
+[Pagina 52] implemente la interface ) precediéndolas del nombre de la interface , como por ejemplo (suponiendo
+[Pagina 52] que PI hubiera sido definida en Dibujable ):
+
+[Pagina 53] area = 2.0*Dibujable. PI*r;
+[Pagina 53] Sin embargo, en las clases que implementan  la interface  las constantes se pueden utilizar
+[Pagina 53] directamente, como si fueran constantes de la clase. A veces se crean interfaces para agrupar
+[Pagina 53] constantes simbólicas relacionadas (en este sentido pueden en part e suplir las variables enum  de
+[Pagina 53] C/C++).
+[Pagina 53] De cara al polimorfismo , el nombre de una interface  se puede utilizar como un  nuevo tipo de
+[Pagina 53] referencia . En este sentido, el nombre de una interface puede ser utilizado en lugar del nombre de
+[Pagina 53] cualquier clase que la imp lemente, aunque su uso estará restringido a los métodos de la interface .
+[Pagina 53] Un objeto de ese tipo puede también ser utilizado como valor de retorno o como argumento de un
+[Pagina 53] método.
+[Pagina 53] 3.10 CLASES INTERNAS
+[Pagina 53] Una clase interna  es una clase definida dentro de otra clase, ll amada clase contenedora , en alguna
+[Pagina 53] variante de la siguiente forma general:
+[Pagina 53] class ClaseContenedora {
+[Pagina 53] ...
+[Pagina 53] class ClaseInterna {
+[Pagina 53] ...
+[Pagina 53] }
+[Pagina 53] ...
+[Pagina 53] }
+[Pagina 53] Las clases internas  fueron introducidas en la versión Java 1.1 . Además de su utilidad en sí,
+[Pagina 53] las clases internas  se utilizan mucho en el nuevo modelo de eventos  que se introdujo en dicha
+[Pagina 53] versión de Java .
+[Pagina 53] Hay cuatro tipos de clases internas :
+[Pagina 53] 1. Clases internas static .
+[Pagina 53] 2. Clases internas miembro .
+[Pagina 53] 3. Clases internas locales .
+[Pagina 53] 4. Clases anónimas .
+[Pagina 53] En lo sucesivo se  utilizará la terminología clase contenedora  o clase global  para hacer
+[Pagina 53] referencia a la clase que contiene a la clase interna .
+[Pagina 53] Hay que señalar que la JVM ( Java Virtual Machine ) no sabe nada de la existencia de clases
+[Pagina 53] internas . Por ello, el compilador convi erte estas clases en clases globales , contenidas en ficheros
+[Pagina 53] *.class  cuyo nombre es ClaseContenedora$ClaseInterna.class . Esta conversión inserta variables
+[Pagina 53] ocultas, métodos y argumentos en los constructores. De todas formas, lo que más afecta al
+[Pagina 53] programador  de todo esto es lo referente al nombre de los ficheros que aparecen en el directorio
+[Pagina 53] donde se realiza la compilación, que pueden resultar sorprendentes si no se conoce su origen.
+[Pagina 53] 3.10.1  Clases e interfaces internas static
+[Pagina 53] Se conocen también con el nombre de clases anidadas  (nested classes ). Las clases e interfaces
+[Pagina 53] internas static sólo pueden ser creadas dentro de otra clase al máximo nivel , es decir directamente
+
+[Pagina 54] en el bloque de definición de la clase contenedora  y no en un bloque más interno. Es posible definir
+[Pagina 54] clases e interfaces internas static  dentro de una interface contenedora . Este tipo de clases internas
+[Pagina 54] se definen utilizando la palabra static . Todas las interfaces internas  son implícitamente static .
+[Pagina 54] En cierta forma, las clases internas static se comportan como clases normales en un package .
+[Pagina 54] Para utilizar su nombre desde fuera de la clase contenedora hay que precederlo por el nombre de la
+[Pagina 54] clase contenedora  y el operador punto  (.) Este tipo de relación entre clases se puede utilizar para
+[Pagina 54] agrupar varias clases  dentro de una clase más general. Lo mismo puede decirse de las  interfaces
+[Pagina 54] internas .
+[Pagina 54] Las clases internas static  pueden ver y utilizar los miembros static  de la clase contenedora .
+[Pagina 54] No se necesitan objetos de la clase contenedora para crear objetos de la clase interna static . Los
+[Pagina 54] métodos de la clase interna static  no pueden acceder directamente a los objetos de la clase
+[Pagina 54] contenedora, caso de que los haya: deben disponer de una referencia a dichos objetos, como
+[Pagina 54] cualquier otra clase.
+[Pagina 54] La sentencia import  puede uti lizarse para importar una clase interna static , en la misma
+[Pagina 54] forma que si se tratara de importar una clase de un package  (con el punto (.)). Por ejemplo, si la
+[Pagina 54] interface Linkable  es interna a la clase List, para implementar dicha interface hay que escribir,
+[Pagina 54] ... implements List.Linkable
+[Pagina 54] y para importarla hay que usar,
+[Pagina 54] import List.*;  // o bien
+[Pagina 54] import List.Linkable;
+[Pagina 54] Otras características importantes son las siguientes:
+[Pagina 54] 1. Pueden definirse clases  e interfaces internas  dentro de interface  y clases contenedoras ,
+[Pagina 54] con las cuatro combinaciones posibles.
+[Pagina 54] 2. Puede haber varios niveles , esto es una clase interna static  puede ser clase contenedora
+[Pagina 54] de otra clase interna static , y así sucesivamente.
+[Pagina 54] 3. Las clases e interfaces internas static  pertenecen al package  de la clase cont enedora .
+[Pagina 54] 4. Pueden utilizarse los calificadores final , public , private  y protected . Ésta es una forma
+[Pagina 54] más de controlar el acceso a ciertas clases.
+[Pagina 54] A continuación se presenta un ejemplo de clase interna static :
+[Pagina 54] // fichero ClasesIntStatic.java
+[Pagina 54] class A {
+[Pagina 54] int i=1;             // variable miembro de objeto
+[Pagina 54] static int is= -1;    // variable miembro de clase
+[Pagina 54] public A(int i) {this.i=i;} // constructor
+[Pagina 54] // a los métodos de la clase contenedora hay que pasarles referencias
+[Pagina 54] //     a los objetos de la c lase interna static
+[Pagina 54] public void printA(Bs unBs) {
+[Pagina 54] System.out.println("i="+i+" unBs.j="+unBs.j);
+[Pagina 54] }
+[Pagina 54] // definición de una clase interna static
+[Pagina 54] static class Bs {
+[Pagina 54] int j=2;
+[Pagina 54] public Bs(int j) {this.j=j;} // constructor
+
+[Pagina 55] // los métodos de la clase interna static no pueden acceder a la i
+[Pagina 55] //     pues es una variable de objeto. Sí pueden acceder a is
+[Pagina 55] public void printBs() {
+[Pagina 55] System.out.println(" j=" + j + " is=" + is);
+[Pagina 55] }
+[Pagina 55] } // fin c lase Bs
+[Pagina 55] } // fin clase contenedora A
+[Pagina 55] class ClasesIntStatic {
+[Pagina 55] public static void main(String [] arg) {
+[Pagina 55] A a1 = new A(11), a2 = new A(12);
+[Pagina 55] println("a1.i=" + a1.i + "  a2.i=" + a2.i);
+[Pagina 55] // dos formas de crear objetos de la clase in terna static
+[Pagina 55] A.Bs b1 = new A.Bs( -10);  // necesario poner A.Bs
+[Pagina 55] A.Bs b2 = a1.new Bs( -11); // b2 es independiente de a1
+[Pagina 55] // referencia directa a los objetos b1 y b2
+[Pagina 55] println("b1.j=" + b1.j + " b2.j=" + b2.j);
+[Pagina 55] // los mé todos de la clase interna acceden directamente a las variables
+[Pagina 55] //     de la clase contenedora sólo si son static
+[Pagina 55] b1.printBs() ;  // escribe:   j= -10 is=-1
+[Pagina 55] b2.printBs() ;  // escribe:   j= -20 is=-1
+[Pagina 55] // a los métodos de la clas e contenedora hay que pasarles referencias
+[Pagina 55] //     a los objetos de la clase interna, pera que puedan identificarlos
+[Pagina 55] a1.printA(b1) ; // escribe: i=11 unBs.j= -10
+[Pagina 55] a1.printA(b2) ; // escribe: i=11 unBs.j= -11
+[Pagina 55] } // fin de main()
+[Pagina 55] public static void println(String str) {System.out.println(str);}
+[Pagina 55] }  // fin clase ClasesIntStatic
+[Pagina 55] 3.10.2  Clases internas miembro (no static)
+[Pagina 55] Las clases internas miembro  o simplemente clases internas , son clases definidas al máximo nivel
+[Pagina 55] de la clase contenedora  (directamente en el bloque de diminución de dicha clase), sin la palabra
+[Pagina 55] static . Se suelen llamar clases internas miembro  o simplemente clases internas . No existen
+[Pagina 55] interfaces internas  de este tipo.
+[Pagina 55] Las clases internas  no pueden tener variables miembro static . Tienen una nueva sintaxis para
+[Pagina 55] las palabras this, new y super , que se verá un poco más adelante.
+[Pagina 55] La característica principal de estas clases internas e que cada objeto de la clase interna existe
+[Pagina 55] siempre dentro de un y sólo un objeto de la clase contened ora. Un objeto de la clase contenedora
+[Pagina 55] puede estar relacionado con uno o más objetos de la clase interna . Tener esto presente es muy
+[Pagina 55] importante para entender las características que se explican a continuación.
+[Pagina 55] Relación entre las clases interna  y contenedor a respecto al acceso a las variables miembro :
+[Pagina 55] 1. Debido a la relación uno a uno, los métodos de la clase interna ven directamente las
+[Pagina 55] variables miembro del objeto de la clase contenedora, sin necesidad de cualificarlos.
+[Pagina 55] 2. Sin embargo, los métodos de la clase co ntenedora no ven directamente las variables
+[Pagina 55] miembro de los objetos de la clase interna: necesitan cualificarlos con una referencia a los
+
+[Pagina 56] correspondientes objetos. Esto es consecuencia de la relación uno a varios que existe
+[Pagina 56] entre los objetos de la clase co ntenedora y los de la clase interna.
+[Pagina 56] 3. Otras clases diferentes  de las clases contenedora  e interna  pueden utilizar directamente
+[Pagina 56] los objetos de la clase interna , sin cualificarlos con el objeto o el nombre de la clase
+[Pagina 56] contenedora . De hecho, se puede seguir ac cediendo a los objetos de la clase interna
+[Pagina 56] aunque se pierda la referencia al objeto de la clase contenedora con el que están asociados.
+[Pagina 56] Respecto a los permisos de acceso :
+[Pagina 56] 1. Las clases internas  pueden también ser private  y protected  (las clases normales sólo
+[Pagina 56] pueden ser public  y package ). Esto permite nuevas posibilidades de encapsulación.
+[Pagina 56] 2. Los métodos de las clases internas  acceden directamente a todos los miembros, incluso
+[Pagina 56] private , de la  clase contenedora .
+[Pagina 56] 3. También la clase contenedora  puede acceder –si dispon e de una referencia - a todas las
+[Pagina 56] variables miembro (incluso private ) de sus clases internas .
+[Pagina 56] 4. Una clase interna  puede acceder también a los miembros (incluso private ) de otras clases
+[Pagina 56] internas  definidas en la misma clase contenedora .
+[Pagina 56] Otras características de  las clases internas son las siguientes:
+[Pagina 56] 1. Una clase interna miembro  puede contener otra clase interna miembro , hasta el nivel que
+[Pagina 56] se desee (aunque no se considera buena técnica de programación utilizar muchos niveles).
+[Pagina 56] 2. En la clase interna , la palabra this se refiere al objeto de la propia clase interna . Para
+[Pagina 56] acceder al objeto de la clase contenedora  se utiliza ClaseContenedora.this .
+[Pagina 56] 3. Para crear un nuevo objeto de la clase interna  se puede utilizar new, precedido por la refe -
+[Pagina 56] rencia al objeto de la clase conten edora  que contendrá el nuevo objeto: unObjCC.new() .
+[Pagina 56] El tipo del objeto  es el nombre de la clase contenedora seguido del nombre de la clase
+[Pagina 56] interna, como por ejemplo:
+[Pagina 56] ClaseCont.ClaseInt unObjClInt = unObjClaCont.new ClaseInt(...);
+[Pagina 56] 4. Supóngase como ejemplo adi cional que B es una clase interna de A y que C es una clase
+[Pagina 56] interna de B. La creación de objetos de las tres clases se puede hacer del siguiente modo:
+[Pagina 56] A a = new A();         // se crea un objeto de la clase A
+[Pagina 56] A.B b = a.new B();     // b es un objeto de la clase interna B dentro de a
+[Pagina 56] A.B.C c = b.new C();   // c es un objeto de la clase interna C dentro de b
+[Pagina 56] 5. Nunca se puede crear un objeto de la clase interna  sin una referencia a un objeto de la
+[Pagina 56] clase contenedora . Los constructores  de la clase interna  tienen c omo argumento oculto
+[Pagina 56] una referencia al objeto de la clase contenedora .
+[Pagina 56] 6. El nuevo significado de la palabra super  es un poco complicado: Si una clase deriva de
+[Pagina 56] una clase interna , su constructor no puede llamar a super() directamente. Ello hace que el
+[Pagina 56] compila dor no pueda crear un constructor por defecto . Al constructor hay que pasarle una
+[Pagina 56] referencia a la clase contenedora  de la clase interna super -clase , y con esa referencia ref
+[Pagina 56] llamar a ref.super() .
+[Pagina 56] Las clases internas  pueden derivar  de otras clases diferente s de la clase contenedora . En este
+[Pagina 56] caso, conviene tener en cuenta las siguientes reglas:
+
+[Pagina 57] 1. Las clases internas  constituyen como una segunda jerarquía de clases  en Java : por una
+[Pagina 57] parte están en la clases contenedora  y ven sus variables; por otra parte pueden d erivar de
+[Pagina 57] otra clase  que no tenga nada que ver con la clase contenedora . Es muy importante evitar
+[Pagina 57] conflictos con los nombres. En caso de conflicto entre un nombre heredado y un nombre
+[Pagina 57] en la clase contenedora, el nombre heredado debe tener prioridad.
+[Pagina 57] 2. En cas o de conflicto de nombres, Java  obliga a utilizar la referencia this con un nuevo
+[Pagina 57] significado: para referirse a la variable o método miembro heredado  se utiliza this.name ,
+[Pagina 57] mientras que se utiliza NombreClaseCont.this.name  para el miembro de la clase
+[Pagina 57] conten edora ..
+[Pagina 57] 3. Si una clase contenedora  deriva de una super -clase  que tiene una clase interna , la clase
+[Pagina 57] interna de la sub -clase  puede a su vez derivar de la clase interna de la super -clase  y
+[Pagina 57] redefinir todos los métodos que necesite. La casuística se puede complic ar todo lo que se
+[Pagina 57] desee, pero siempre hay que recomendar hacer las cosas lo más sencillas que sea posible.
+[Pagina 57] El uso de las clases internas miembro  tiene las siguientes restricciones:
+[Pagina 57] 1. Las clases internas no pueden tener el mismo nombre que la clase contenedor a o
+[Pagina 57] package .
+[Pagina 57] 2. Tampoco pueden tener miembros static : variables, métodos o clases.
+[Pagina 57] A continuación se presenta un ejemplo completo de utilización de clases internas miembro :
+[Pagina 57] // fichero ClasesInternas.java
+[Pagina 57] // clase contenedora
+[Pagina 57] class A {
+[Pagina 57] int i=1;                     // variable miembro
+[Pagina 57] public A(int i) {this.i=i;}  // constructor
+[Pagina 57] // los métoodos de la clase contenedora necesitan una
+[Pagina 57] //     referencia a los objetos de la clase interna
+[Pagina 57] public void printA(B unB) {
+[Pagina 57] System.out.println("i="+ i+" unB.j="+unB.j); // sí acepta unB.j
+[Pagina 57] }
+[Pagina 57] // la clase interna puede tener cualquier visibilidad. Con private da error
+[Pagina 57] //     porque main() no puede acceder a la clase interna
+[Pagina 57] protected class B {
+[Pagina 57] int j=2;
+[Pagina 57] public B(int j) {this .j=j;} // constructor
+[Pagina 57] public void printB() {
+[Pagina 57] System.out.println("i=" + i + " j=" + j); // sí sabe qué es j
+[Pagina 57] }
+[Pagina 57] } // fin clase B
+[Pagina 57] } // fin clase contenedora A
+[Pagina 57] class ClasesInternas {
+[Pagina 57] public static void main(String [] arg) {
+[Pagina 57] A a1 = new A(11); A a2 = new A(12);
+[Pagina 57] println("a1.i=" + a1.i + "  a2.i=" + a2.i);
+[Pagina 57] // forma de crear objetos de la clase interna
+[Pagina 57] //     asociados a un objeto de la clase contenedora
+[Pagina 57] A.B b1 = a1.new B( -10), b2 = a1.new B(-20);
+[Pagina 57] // referencia directa a los objetos b1 y b2 (sin cualificar).
+[Pagina 57] println("b1.j=" + b1.j + " b2.j=" + b2.j);
+
+[Pagina 58] // los métodos de la clase interna pueden acceder directamente a
+[Pagina 58] //    las variables miembro del objeto de l a clase contenedora
+[Pagina 58] b1.printB() ;  // escribe:   i=11 j= -10
+[Pagina 58] b2.printB() ;  // escribe:   i=11 j= -20
+[Pagina 58] // los métodos de la clase contenedora deben recibir referencias
+[Pagina 58] //     a los objetos de la clase interna, pera que puedan ide ntificarlos
+[Pagina 58] a1.printA(b1) ; a1.printA(b2) ;
+[Pagina 58] A a3 = new A(13);
+[Pagina 58] A.B b3 = a3.new B( -30);
+[Pagina 58] println("b3.j=" + b3.j);
+[Pagina 58] a3 = null; // se destruye la referencia al objeto de la clase contenedora
+[Pagina 58] b3.printB() ;    // escri be:   i=13 j= -30
+[Pagina 58] a3 = new A(14); // se crea un nuevo objeto asociado a la referencia a3
+[Pagina 58] // b3 sigue asociado an anterior objeto de la clase contenedora
+[Pagina 58] b3.printB() ;  // escribe:   i=13 j= -30
+[Pagina 58] } // fin de main()
+[Pagina 58] public stati c void println(String str) {System.out.println(str);}
+[Pagina 58] } // fin clase ClasesInternas
+[Pagina 58] 3.10.3  Clases internas locales
+[Pagina 58] Las clases internas locales  o simplemente clases locales  no se declaran dentro de otra clase al
+[Pagina 58] máximo nivel, sino dentro de un bloque de código , normalmente en un método , aunque también se
+[Pagina 58] pueden crear en un inicializador  static  o de objeto.
+[Pagina 58] Las principales características de las clases locales  so las siguientes:
+[Pagina 58] 1. Como las variables locales , las clases locales  sólo son visibles y utilizables en el blo que
+[Pagina 58] de código en el que están definidas. Los objetos de la clase local  deben ser creados en el
+[Pagina 58] mismo bloque en que dicha clase ha sido definida. De esta forma se puede acercar la
+[Pagina 58] definición al uso de la clase.
+[Pagina 58] 2. Las clases internas locales  tienen acceso a to das las variables miembro y métodos de la
+[Pagina 58] clase contenedora . Pueden ver también los miembros heredados , tanto por la clase
+[Pagina 58] interna local  como por la clase contenedora .
+[Pagina 58] 3. Las clases locales pueden utilizar las variables locales y argumentos de métodos visibl es
+[Pagina 58] en ese bloque de código , pero sólo si son final5 (en realidad la clase local  trabaja con sus
+[Pagina 58] copias de las variables locales  y por eso se exige que sean final  y no puedan cambiar).
+[Pagina 58] 4. Un objeto de una clase interna local  sólo puede existir en relación con  un objeto de la
+[Pagina 58] clase contenedora , que debe existir previamente.
+[Pagina 58] 5. La palabra this se puede utilizar en la misma forma que en las clases internas  miembro,
+[Pagina 58] pero no las palabras new y super .
+[Pagina 58] Restricciones  en el uso de las clases internas locales :
+[Pagina 58] 1. No pueden te ner el mismo nombre que ninguna de sus clases contenedoras.
+[Pagina 58] 2. No pueden definir variables, métodos y clases static .
+[Pagina 58] 5  En Jav a 1.0 el cualificador final  podía aplicarse a variables miembro, métodos y clases. En Java 1.1 puede también
+[Pagina 58] aplicarse a variables locales, argumentos de métodos e incluso al argumento de una exception .
+
+[Pagina 59] 3. No pueden ser declaradas public , protected , private  o package , pues su visibilidad es
+[Pagina 59] siempre la de las variables locales, es decir, la del bl oque en que han sido definidas.
+[Pagina 59] Las clases internas locales  se utilizan para definir clases Adapter  en el AWT. A continuación
+[Pagina 59] se presenta un ejemplo de definición de clases internas locales:
+[Pagina 59] // fichero ClasesIntLocales.java
+[Pagina 59] // Este fichero demuestra cómo s e crean clases locales
+[Pagina 59] class A {
+[Pagina 59] int i= -1;    // variable miembro
+[Pagina 59] // constructor
+[Pagina 59] public A(int i) {this.i=i;}
+[Pagina 59] // definición de un método de la clase A
+[Pagina 59] public void getAi(final long k)  {    // argumento final
+[Pagina 59] final double f=3.14;              // variable local final
+[Pagina 59] // definición de una clase interna local
+[Pagina 59] class BL {
+[Pagina 59] int j=2;
+[Pagina 59] public BL(int j) {this.j=j;} // constructor
+[Pagina 59] public void printBL() {
+[Pagina 59] System.out.println(" j ="+j+" i="+i+" f="+f+" k="+k);
+[Pagina 59] }
+[Pagina 59] } // fin clase BL
+[Pagina 59] // se crea un objeto de BL
+[Pagina 59] BL bl = new BL(2*i);
+[Pagina 59] // se imprimen los datos de ese objeto
+[Pagina 59] bl.printBL();
+[Pagina 59] } // fin getAi
+[Pagina 59] } // fin clase contenedora A
+[Pagina 59] class ClasesIntLocales {
+[Pagina 59] public static void main(String [] arg) {
+[Pagina 59] // se crea dos objetos de la clase contenedora
+[Pagina 59] A a1 = new A( -10);
+[Pagina 59] A a2 = new A( -11);
+[Pagina 59] // se llama al método getAi()
+[Pagina 59] a1.getAi(1000); // se crea y acce de a un objeto de la clase local
+[Pagina 59] a2.getAi(2000);
+[Pagina 59] } // fin de main()
+[Pagina 59] public static void println(String str) {System.out.println(str);}
+[Pagina 59] }  // fin clase ClasesIntLocales
+[Pagina 59] 3.10.4  Clases anónimas
+[Pagina 59] Las clases anónimas  son muy similares a las clases inte rnas locales , pero sin nombre . En las
+[Pagina 59] clases internas locales  primero se define la clase y luego se crean uno o más objetos. En las clases
+[Pagina 59] anónimas  se unen estos dos pasos: Como la clase no tiene nombre sólo se puede crear un único
+[Pagina 59] objeto, ya que las clase s anónimas  no pueden definir constructores . Las clases anónimas se utilizan
+[Pagina 59] con mucha frecuencia en el AWT para definir clases y objetos que gestionen los eventos de los
+[Pagina 59] distintos componentes de la interface de usuario. No hay interfaces anónimas .
+[Pagina 59] Formas d e definir una clase anónima :
+
+[Pagina 60] 1. Las clases anónimas  requieren una extensión de la palabra clave new. Se definen en una
+[Pagina 60] expresión de Java , incluida en una asignación o en la llamada a un método. Se incluye la
+[Pagina 60] palabra new seguida de la definición de la clase an ónima , entre llaves {…}.
+[Pagina 60] 2. Otra forma de definirlas es mediante la palabra new seguida del nombre de la clase de la
+[Pagina 60] que hereda (sin extends ) y la definición de la clase anónima  entre llaves {…}. El nombre
+[Pagina 60] de la super -clase  puede ir seguido de argumentos para  su constructor  (entre paréntesis,
+[Pagina 60] que con mucha frecuencia estarán vacíos pues se utilizará un constructor por defecto).
+[Pagina 60] 3. Una tercera forma de definirlas es con la palabra new seguida del nombre de la interface
+[Pagina 60] que implementa (sin implements ) y la definici ón de la clase anónima  entre llaves {…}.
+[Pagina 60] En este caso la clase anónima  deriva de Object . El nombre de la interface  va seguido por
+[Pagina 60] paréntesis vacíos, pues el constructor de Object  no tiene argumentos.
+[Pagina 60] Para las clases anónimas compiladas  el compilador produc e ficheros con un nombre del tipo
+[Pagina 60] ClaseContenedora$1.class , asignando un número correlativo a cada una de las clases anónimas .
+[Pagina 60] Conviene ser muy cuidadoso respecto a los aspectos tipográficos de la definición de clases
+[Pagina 60] anónimas , pues al no tener nombre dich as clases suelen resultar difíciles de leer e interpretar. Se
+[Pagina 60] aconseja utilizar las siguientes normas tipográficas :
+[Pagina 60] 1. Se aconseja que la palabra new esté en la misma línea que el resto de la expresión.
+[Pagina 60] 2. Las llaves  se abren en la misma línea que new, después d el cierre del paréntesis de los
+[Pagina 60] argumentos del constructor.
+[Pagina 60] 3. El cuerpo de la clase anónima  se debe sangrar o indentar respecto a las líneas anteriores
+[Pagina 60] de código para que resulte claramente distinguible.
+[Pagina 60] 4. El cierre de las llaves  va seguido por el resto de la expresión  en la que se ha definido la
+[Pagina 60] clase anónima . Esto puede servir como indicación tipográfica del cierre. Puede ser algo
+[Pagina 60] así como }; o });
+[Pagina 60] A continuación se presenta un ejemplo de definición de clase anónima en relación con el
+[Pagina 60] AWT:
+[Pagina 60] unObjeto.addActionL istener( new ActionListener()  {
+[Pagina 60] public void actionPerformed(ActionEvent e) {
+[Pagina 60] ...
+[Pagina 60] }
+[Pagina 60] });
+[Pagina 60] donde en negrita se señala la clase anónima , que deriva de Object  e implementa la interface
+[Pagina 60] ActionListener .
+[Pagina 60] Las clases anónimas  se utilizan en lugar de clases locales  para clases con muy poco código,
+[Pagina 60] de las que sólo hace falta un objeto. No pueden tener constructores , pero sí inicializadores  static  o
+[Pagina 60] de objeto . Además de las restricciones citadas, tienen restricciones  similares a las clases locales .
+[Pagina 60] 3.11 PERMIS OS DE ACCESO EN JAVA
+[Pagina 60] Una de las características de la Programación Orientada a Objetos  es la encapsulación , que
+[Pagina 60] consiste básicamente en ocultar la información que no es pertinente o necesaria para realizar una
+
+[Pagina 61] determinada tarea. Los permisos de acceso de Java son una de las herramientas para conseguir esta
+[Pagina 61] finalidad.
+[Pagina 61] 3.11.1  Accesibilidad de los packages
+[Pagina 61] El primer tipo de accesibilidad hace referencia a la conexión física de los ordenadores y a los
+[Pagina 61] permisos de acceso entre ellos y en sus directorios y ficheros. En este sentido, un package  es
+[Pagina 61] accesible si sus directorios y ficheros son accesibles (si están en un ordenador accesible y se tiene
+[Pagina 61] permiso de lectura). Además de la propia conexión física, serán accesibles aquellos packages  que se
+[Pagina 61] encuentren en la variable CLASSPATH  del sistema.
+[Pagina 61] 3.11.2  Accesibilidad de clases o interfaces
+[Pagina 61] En principio, cualquier clase  o interface  de un package  es accesible para todas las demás clases del
+[Pagina 61] package , tanto si es public  como si no lo es. Una clase public  es accesible para cualquier otra  clase
+[Pagina 61] siempre que su package  sea accesible. Recuérdese que las clases  e interfaces  sólo pueden ser public
+[Pagina 61] o package  (la opción por defecto cuando no se pone ningún modificador).
+[Pagina 61] 3.11.3  Accesibilidad de las variables y métodos miembros de una clase:
+[Pagina 61] Desde dentro de la propia clase:
+[Pagina 61] 1. Todos los miembros de una clase son directamente accesibles (sin cualificar con ningún
+[Pagina 61] nombre o cualificando con la referencia this) desde dentro de la propia clase. Los métodos
+[Pagina 61] no necesitan que las variables miembro sean pasadas como a rgumento.
+[Pagina 61] 2. Los miembros private  de una clase sólo son accesibles para la propia clase.
+[Pagina 61] 3. Si el constructor  de una clase es private , sólo un método static  de la propia clase puede
+[Pagina 61] crear objetos.
+[Pagina 61] Desde una sub-clase :
+[Pagina 61] 1. Las sub-clases  heredan los miembros privat e de su super -clase , pero sólo pueden acceder a
+[Pagina 61] ellos a través de métodos public , protected  o package  de la super -clase.
+[Pagina 61] Desde otras clases del package :
+[Pagina 61] 1. Desde una clase de un package  se tiene acceso a todos los miembros que no sean private  de
+[Pagina 61] las demás cla ses del package .
+[Pagina 61] Desde otras clases fuera del package :
+[Pagina 61] 1. Los métodos y variables son accesibles si la clase es public  y el miembro es public .
+[Pagina 61] 2. También son accesibles si la clase que accede es una sub-clase  y el miembro es protected .
+[Pagina 61] La Tabla 3.1 muestra un resumen de los permisos de acceso en Java .
+
+[Pagina 62] 3.12 TRANSFORMACIONES DE T IPO: CASTING
+[Pagina 62] En muchas ocasio nes hay que transformar una variable de un tipo a otro, por ejemplo de int a
+[Pagina 62] double , o de float a long. En otras ocasiones la conversión debe hacerse entre objetos de clases
+[Pagina 62] diferentes, aunque relacionadas mediante la herencia. En este apartado se explican  brevemente estas
+[Pagina 62] transformaciones de tipo.
+[Pagina 62] 3.12.1  Conversión de tipos primitivos
+[Pagina 62] La conversión entre tipos primitivos es más sencilla. En Java  se realizan de modo automático
+[Pagina 62] conversiones implícitas de un tipo a otro de más precisión , por ejemplo de int a long, de float  a
+[Pagina 62] double , etc. Estas conversiones se hacen al mezclar variables de distintos tipos en expresiones
+[Pagina 62] matemáticas o al ejecutar sentencias de asignación en las que el miembro izquierdo tiene un tipo
+[Pagina 62] distinto (más amplio) que el resultado de evaluar el miembro derecho.
+[Pagina 62] Las conversiones de un tipo de mayor a otro de menor precisión requieren una orden explícita
+[Pagina 62] del programador, pues son conversiones inseguras  que pueden dar lugar a errores (por ejemplo,
+[Pagina 62] para pasar a short  un número almacenado como int, hay que estar seguro de que puede ser
+[Pagina 62] representado con el número de cifras binarias de short ). A estas conversiones explícitas de tipo se
+[Pagina 62] les llama cast. El cast se hace poniendo el tipo al que se desea transformar entre paréntesis, como
+[Pagina 62] por ejemplo,
+[Pagina 62] long result;
+[Pagina 62] result = (long) (a/(b+c));
+[Pagina 62] A diferencia de C/C++, en Java  no se puede convertir un tipo numérico a boolean .
+[Pagina 62] La conversión de Strings  (texto) a números se verá en el Apartado 4.3, en la página 69.
+[Pagina 62] 3.13 POLIMORFISMO
+[Pagina 62] Ya se vio en el ejemplo presentado en el Apartado 1.3.8  y en los comentarios incluidos en qué
+[Pagina 62] consistía el polimorfismo .
+[Pagina 62] El polimorfismo  tiene que ver con la relación que se establece entre la llamada a un m étodo y
+[Pagina 62] el código que efectivamente se asocia con dicha llamada. A esta relación se llama vinculación
+[Pagina 62] (binding ). La vinculación  puede ser temprana  (en tiempo de compilación) o tardía  (en tiempo de
+[Pagina 62] ejecución). Con funciones normales o sobrecargadas se utili za vinculación temprana (es posible y es
+[Pagina 62] lo más eficiente). Con funciones redefinidas en Java  se utiliza siempre vinculación tardía , excepto
+[Pagina 62] si el método es final . El polimorfismo  es la opción por defecto  en Java . Visibilidad  public  protected  private  default
+[Pagina 62] Desde la propia clase  Sí Sí Sí Sí
+[Pagina 62] Desde otra clase en el propio package  Sí Sí No Sí
+[Pagina 62] Desde otra clase fuera del package  Sí No No No
+[Pagina 62] Desde u na sub -clase en el propio package  Sí Sí No Sí
+[Pagina 62] Desde una sub -clase fuera del propio package  Sí Sí No No
+[Pagina 62] Tabla 3.1. Resumen de los permisos de acceso de Java.
+
+[Pagina 63] La vinculación tardía  hace posible que, co n un método declarado en una clase base (o en una
+[Pagina 63] interface) y redefinido en las clases derivadas (o en clases que implementan esa interface), sea el
+[Pagina 63] tipo de objeto  y no el tipo de la referencia  lo que determine qué definición del método se va a
+[Pagina 63] utilizar. El tipo del objeto al que apunta una referencia sólo puede conocerse en tiempo de
+[Pagina 63] ejecución, y por eso el polimorfismo  necesita evaluación tardía.
+[Pagina 63] El polimorfismo  permite a los programadores separar las cosas que cambian de las que no
+[Pagina 63] cambian, y de esta ma nera hacer más fácil la ampliación, el mantenimiento y la reutilización de los
+[Pagina 63] programas.
+[Pagina 63] El polimorfismo  puede hacerse con referencias de super -clases abstract , super -clases
+[Pagina 63] normales  e interfaces . Por su mayor flexibilidad y por su independencia de la jer arquía de clases
+[Pagina 63] estándar, las interfaces  permiten ampliar muchísimo las posibilidades del polimorfismo.
+[Pagina 63] 3.13.1  Conversión de objetos
+[Pagina 63] El polimorfismo  visto previamente está basado en utilizar referencias de un tipo más “amplio” que
+[Pagina 63] los objetos a los que apuntan. Las ventajas del polimorfismo son evidentes, pero hay una importante
+[Pagina 63] limitación: el tipo de la referencia (clase abstracta, clase base o interface) limita los métodos que se
+[Pagina 63] pueden utilizar y las variables miembro a las que se pueden acceder. Por ejemplo, un objeto puede
+[Pagina 63] tener una referencia cuyo tipo sea una interface , aunque sólo en el caso en que su clase  o una de
+[Pagina 63] sus super -clases  implemente dicha interface . Un objeto cuya referencia es un tipo interface  sólo
+[Pagina 63] puede utilizar los métodos definidos en dicha  interface . Dicho de otro modo, ese objeto no puede
+[Pagina 63] utilizar las variables y los métodos propios de su clase. De esta forma las referencias de tipo
+[Pagina 63] interface  definen, limitan y unifican la forma de utilizarse de objetos pertenecientes a clases muy
+[Pagina 63] distinta s (que implementan dicha interface).
+[Pagina 63] Si se desea utilizar todos los métodos y acceder a todas las variables que la clase de un objeto
+[Pagina 63] permite, hay que utilizar un cast explícito , que convierta su referencia más general en la del tipo
+[Pagina 63] específico del objeto.  De aquí una parte importante del interés del cast entre objetos (más bien entre
+[Pagina 63] referencias, habría que decir).
+[Pagina 63] Para la conversión entre objetos de distintas clases, Java  exige que dichas clases estén
+[Pagina 63] relacionadas por herencia  (una deberá ser sub-clase  de la otra). Se realiza una conversión implícita
+[Pagina 63] o automática  de una sub-clase  a una super -clase  siempre que se necesite, ya que el objeto de la
+[Pagina 63] sub-clase  siempre tiene toda la información necesaria para ser utilizado en lugar de un objeto de la
+[Pagina 63] super -clase . No importa que la super -clase  no sea capaz de contener toda la información de la sub-
+[Pagina 63] clase .
+[Pagina 63] La conversión en sentido contrario -utilizar un objeto de una super -clase  donde se espera
+[Pagina 63] encontrar uno de la sub-clase - debe hacerse de modo explícito  y puede pro ducir errores por falta de
+[Pagina 63] información o de métodos. Si falta información, se obtiene una ClassCastException .
+[Pagina 63] No se puede acceder a las variables exclusivas de la sub -clase a través de una referencia de
+[Pagina 63] la super -clase. Sólo se pueden utilizar los métodos definidos en la super -clase, aunque la definición
+[Pagina 63] utilizada para dichos métodos sea la de la sub -clase.
+[Pagina 63] Por ejemplo, supóngase que se crea un objeto de una sub-clase  B y se referencia con un
+[Pagina 63] nombre de una super -clase  A,
+
+[Pagina 64] A a = new B();
+[Pagina 64] en este caso el obje to creado dispone de más información de la que la referencia a le permite
+[Pagina 64] acceder (podría ser, por ejemplo, una nueva variable miembro j declarada en B). Para acceder a esta
+[Pagina 64] información adicional hay que hacer un cast explícito en la forma (B)a. Para impri mir esa variable j
+[Pagina 64] habría que escribir (los paréntesis son necesarios):
+[Pagina 64] System.out.println( ((B)a).j );
+[Pagina 64] Un cast de un objeto a la super -clase  puede permitir utilizar variables -no métodos - de la
+[Pagina 64] super -clase , aunque estén redefinidos en la sub-clase . Consid érese el siguiente ejemplo: La clase C
+[Pagina 64] deriva de B y B deriva de A. Las tres definen una variable x. En este caso, si desde el código de la
+[Pagina 64] sub-clase C se utiliza:
+[Pagina 64] x               // se accede a la x de C
+[Pagina 64] this.x          // se accede a la x de C
+[Pagina 64] super.x         // se accede a la x de B. Sólo se puede subir un nivel
+[Pagina 64] ((B)this).x     // se accede a la x de B
+[Pagina 64] ((A)this).x     // se accede a la x de A

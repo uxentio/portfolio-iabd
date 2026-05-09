@@ -1,0 +1,91 @@
+# =============================================================================
+# docker-compose.override.yml  --  Reto 02 RA5 (autor)
+#
+# Override que NO toca el docker-compose.yml original del profesor.
+# Docker Compose carga este fichero ADICIONALMENTE cuando lo pasamos con
+# la opcion -f, fusionando los servicios definidos:
+#
+#   docker compose \
+#     -f docker-compose.yml \
+#     -f entorno_overrides/docker-compose.override.yml \
+#     --profile core --profile batch --profile orchestration \
+#     up -d --build
+#
+# Que aporta este override sobre los servicios airflow:
+#   1. Cambia la imagen "apache/airflow:2.8.3" por una construida desde
+#      airflow.Dockerfile (anyade docker.io CLI + libs Python para los jobs).
+#   2. Monta /var/run/docker.sock para permitir 'docker exec' desde Airflow
+#      al contenedor jupyter-aula (donde corren los scripts PySpark).
+#   3. Monta src/jobs y src/quality dentro del contenedor airflow para que los
+#      BashOperator puedan invocar los scripts en /opt/airflow/jobs y leer
+#      las reglas YAML en /opt/airflow/quality (todo en solo-lectura, ":ro").
+#
+# Decision arquitectonica documentada en docs/arquitectura.md:
+# Reusamos PySpark+Java ya instalados en jupyter-aula (UT4 03b_Spark_ETL_Basico)
+# en lugar de engordar la imagen de Airflow. Mismo principio pedagogico que
+# usa el profesor al compartir PostgreSQL entre Superset y Airflow.
+# =============================================================================
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # airflow-init: aplica la migracion de BBDD y crea el usuario admin.
+  # IMPORTANTE: este servicio NO lleva user: root porque solo necesita
+  # ejecutar `airflow db migrate` y `airflow users create`. El binario
+  # airflow esta instalado en /home/airflow/.local/, accesible solo para
+  # el usuario airflow. Webserver y scheduler SI llevan user: root porque
+  # ademas necesitan acceder al socket Docker.
+  # ---------------------------------------------------------------------------
+  airflow-init:
+    image: airflow-iot-medallion:2.8.3
+    build:
+      context: .
+      dockerfile: entorno_overrides/airflow.Dockerfile
+    volumes:
+      - ./src/airflow/dags:/opt/airflow/dags
+      - ./src/airflow/logs:/opt/airflow/logs
+      - ./src/airflow/plugins:/opt/airflow/plugins
+      - ./src/jobs:/opt/airflow/jobs:ro
+      - ./src/quality:/opt/airflow/quality:ro
+      # data/raw: el generador escribe aqui ANTES de subir a HDFS Bronze.
+      # Mapeamos a la misma carpeta que ve jupyter-aula (./data) para que
+      # ambos contenedores compartan los mismos JSONL si hace falta debug.
+      - ./data:/opt/airflow/data
+
+  # ---------------------------------------------------------------------------
+  # airflow-webserver: la UI :8081 desde donde lanzamos el DAG manualmente.
+  # ---------------------------------------------------------------------------
+  airflow-webserver:
+    image: airflow-iot-medallion:2.8.3
+    build:
+      context: .
+      dockerfile: entorno_overrides/airflow.Dockerfile
+    user: root
+    volumes:
+      - ./src/airflow/dags:/opt/airflow/dags
+      - ./src/airflow/logs:/opt/airflow/logs
+      - ./src/airflow/plugins:/opt/airflow/plugins
+      - ./src/jobs:/opt/airflow/jobs:ro
+      - ./src/quality:/opt/airflow/quality:ro
+      - ./data:/opt/airflow/data
+      # Socket Docker para que los DAG puedan lanzar 'docker exec jupyter-aula ...'
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  # ---------------------------------------------------------------------------
+  # airflow-scheduler: el componente que realmente EJECUTA las tareas.
+  # Aqui es donde necesitamos imprescindiblemente el socket Docker.
+  # ---------------------------------------------------------------------------
+  airflow-scheduler:
+    image: airflow-iot-medallion:2.8.3
+    build:
+      context: .
+      dockerfile: entorno_overrides/airflow.Dockerfile
+    user: root
+    volumes:
+      - ./src/airflow/dags:/opt/airflow/dags
+      - ./src/airflow/logs:/opt/airflow/logs
+      - ./src/airflow/plugins:/opt/airflow/plugins
+      - ./src/jobs:/opt/airflow/jobs:ro
+      - ./src/quality:/opt/airflow/quality:ro
+      - ./data:/opt/airflow/data
+      - /var/run/docker.sock:/var/run/docker.sock

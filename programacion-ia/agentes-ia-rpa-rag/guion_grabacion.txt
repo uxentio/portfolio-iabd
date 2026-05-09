@@ -1,0 +1,1357 @@
+# Guion Video - Practica RPA + RAG con LangChain / LangGraph
+# Orden: CODIGO primero (bloques 1-9), DEMO despues (bloques 10-13), cierre.
+# Sin estres con el tiempo: explicacion buena > caber en 20 min exactos.
+
+SCROLL LOCK = empezar/parar grabacion
+PAUSE = pausar/reanudar entre secciones (usalo sin miedo)
+
+
+===================================================================
+ ENFOQUE NARRATIVO - LEER ANTES DE EMPEZAR
+===================================================================
+
+REGLA DE ORO: en cada bloque NO basta con decir "esto hace X". El
+profesor pide justificacion. Cada decision tecnica se explica
+respondiendo a tres preguntas en este orden:
+
+  1. PARA QUE  -> que problema resolvia esto en el sistema.
+                   Ejemplo: "para que el agente no dispare el RPA
+                   sin confirmacion humana antes del side-effect".
+  2. POR QUE asi  -> por que esta opcion y no otra. Que alternativas
+                      mire y por que las descarte.
+                      Ejemplo: "lo monte como nodo del grafo y no
+                      como middleware lateral porque un middleware
+                      decide en el mismo turno y no puede pausar".
+  3. QUE HACE  -> el que tecnico, breve, despues del por que.
+                   Ejemplo: "interrupt_before=['confirmar_rpa']
+                   persiste el estado y devuelve el control al
+                   cliente".
+
+Si en algun bloque solo se me sale el "que hace" sin "para que" ni
+"por que", parar y reformular. Es lo que distingue una explicacion
+de manual de una explicacion de ingeniero.
+
+Plantillas de frases utiles para enlazar:
+  - "Esto lo hago para..."
+  - "La razon de hacerlo asi y no con X es..."
+  - "Mire la alternativa Y, pero la descarte porque..."
+  - "El problema que resolvia era..."
+  - "Sin esto, lo que pasaba era..."
+
+
+
+
+-------------------------------------------------------------------
+ PREPARACION ANTES DE EMPEZAR (no se graba)
+-------------------------------------------------------------------
+
+1) En Visual Studio Code abre la carpeta practica_rpa_rag y deja
+   preparadas estas 10 pestanas en este orden de izquierda a derecha,
+   CADA UNA colocada en la linea que se usa al principio de su
+   seccion. Asi durante la grabacion solo tienes que pulsar Ctrl+Tab
+   (o Ctrl+Av/Re Pag en VS Code).
+
+  PESTANA   ARCHIVO                                       LINEA
+  -------   --------------------------------------        ------
+  1         web_form/index.html                              48
+  2         web_form/recorder.js                             10
+  3         procedures/alta_libro.workflow.json         1
+  4         rag/index_procedures.py                          43
+  5         agent/tools.py                                   53
+  6         agent/agent.py                                    1
+  7         agent/agent_langgraph.py                          1
+  8         agent/runner.py                                  72
+  9         agent/api.py                                    105
+  10        ui_maui/ViewModels/MainViewModel.cs              53
+
+   Para posicionar cada pestana en su linea: abrela, pulsa Ctrl+G,
+   escribe el numero y Enter.
+
+2) En el navegador deja abiertas estas 2 pestanas:
+
+  - http://localhost:8080/index.html  (formulario de libros)
+  - http://localhost:1234              (LM Studio Local Server)
+
+3) En Visual Studio 2022 (no VS Code, el "grande"):
+  - Abrir ui_maui/RpaChatApp.sln
+  - Seleccionar "Windows Machine" como target
+  - NO arranques aun
+
+4) En 3 terminales aparte deja preparados los comandos:
+
+  Terminal A:  python web_form/server.py
+  Terminal B:  python rag/index_procedures.py
+  Terminal C:  python -m uvicorn agent.api:app --port 8001
+
+   No los lances todavia, los lanzas durante la demo.
+
+5) Atajos clave durante la grabacion:
+  - Ctrl+Tab     -> siguiente pestana abierta
+  - Ctrl+G <num> -> ir a una linea concreta
+  - Ctrl+rueda   -> agrandar letra (hazlo ANTES de grabar)
+
+6) Escenas OBS:
+  - "Codigo"  -> pantalla completa del editor
+  - "Web"     -> navegador con el formulario
+  - "Demo"    -> pantalla con MAUI + ventana del Chromium del RPA
+
+
+-------------------------------------------------------------------
+ SALTOS Ctrl+G por archivo (te los avisa el guion)
+-------------------------------------------------------------------
+
+  index.html .................. 48, 60, 86, 97
+  recorder.js ................. 10, 35, 77, 109
+  recorder_py.py .............. (cabecera, _RECORDER_JS, grabar_workflow)
+  alta_libro.workflow.json .... (scroll libre, abrir tambien prestamo_libro
+                                 para ver un caso con campos opcionales)
+  index_procedures.py ......... 27, 43, 97
+  tools.py .................... 53, 104, 140, 158, 212, 296, 358, 430
+                                 (las 4 nuevas: listar_catalogo,
+                                 listar_prestamos, buscar_libro, ademas de
+                                 las 4 originales)
+  agent.py .................... 1, 22, 46, 77, 112
+  agent_langgraph.py .......... 1, 37, 124, 170, 190, 240
+                                 (linea 170: ToolNode con 7 tools seguras)
+  runner.py ................... 48, 72, 85, 149, 256
+  api.py ...................... 67, 96, 105, 121
+                                 (linea 96: _activar_cache_llm)
+  MainViewModel.cs ............ 53, 68, 95
+
+
+===================================================================
+ PARTE 1: CODIGO  (explicas todo el sistema sin ejecutar nada)
+===================================================================
+
+-------------------------------------------------------------------
+ INTRO  (~45s)  --  Escena: Codigo  --  Pestana: cualquiera
+-------------------------------------------------------------------
+
+(VS Code abierto con la carpeta practica_rpa_rag)
+
+"Hola, soy autor. Esta es la practica de la unidad de
+automatizacion de procesos: un agente LLM que orquesta un RPA
+sobre un formulario web de un catalogo de libros.
+
+PARA QUE existe el sistema: para que un usuario sin conocimientos
+tecnicos pueda dar de alta libros en el catalogo escribiendo en
+lenguaje natural, igual que le hablaria a un companero, en lugar
+de tener que recordar nombres de campos, ordenes de pulsacion o
+formatos de datos.
+
+POR QUE con un agente LLM y no con un script o un boton: porque
+los scripts solo cubren los caminos que se han pensado de antemano.
+Si el usuario dice 'borra el libro 1984' o 'que copias quedan de
+Cien anos de soledad', un script clasico necesita un parser nuevo
+para cada caso. Un agente con tools tipadas escala porque la
+unidad de funcionalidad pasa a ser la tool, no el if/else.
+
+POR QUE LangGraph y no solo LangChain: porque el flujo tiene una
+asimetria que merece estar en la topologia y no escondida tras
+middleware. Siete tools son idempotentes (buscar, listar, extraer,
+consultar externo); la octava (run_workflow) abre Chromium y
+rellena un formulario real. Quiero un punto de pausa explicito,
+con persistencia de estado, antes de tocar el navegador. LangGraph
+me da interrupt_before como nodo del grafo; LangChain me obligaria
+a meterlo como middleware lateral que decide en el mismo turno y
+no puede esperar al usuario unos minutos.
+
+Hay dos puntos importantes que quiero ensenar:
+  - Que NO hay un pipeline cableado a mano: es el agente el que
+    decide la cadena de tools, no un if/else en codigo.
+  - Que el HITL vive como nodo del propio grafo (confirmar_rpa)
+    porque pausa de seguridad antes de un side-effect irreversible
+    es un asunto de TOPOLOGIA, no un anadido lateral.
+
+Antes de entrar en codigo, dos cosas sobre el dominio para que se
+entiendan los ejemplos: trabajo con el fondo de una seccion de
+biblioteca regional. Un libro tiene un numero de registro R-NNNN
+y una signatura tipo 'GAR cie' (tres letras del primer apellido
+del autor + tres del titulo). Los socios usan carnet S-NNNN. Cada
+prestamo activo es un P-NNNN con plazo de devolucion. Los libros
+no tienen precio: tienen copias_total y copias_disponibles. Eso
+explica por que los workflows son 'alta de libro', 'baja
+definitiva del fondo', 'ajuste de copias', 'prestamo a un socio',
+'devolucion al fondo' y 'encargo a tienda externa'.
+
+El sistema tiene ocho tools (cuatro de orquestacion: search, list,
+extract, run; dos de consulta del fondo: listar_catalogo,
+listar_prestamos; una de busqueda externa: buscar_libro contra
+Open Library + Google Books + BNE en paralelo; y una mas para
+catalogo externo: consultar_libreria_externa). Y dos backends del
+agente: la version LangChain con create_agent y middlewares, y la
+version LangGraph con StateGraph propio de cuatro nodos. Voy a
+ensenar las dos para que se vea por que la segunda aporta valor.
+
+Primero enseno el codigo en orden, y luego hago la demo en vivo
+con LM Studio y la app MAUI."
+
+
+-------------------------------------------------------------------
+ 1. ESTRUCTURA DEL PROYECTO  (~30s)  --  Escena: Codigo
+-------------------------------------------------------------------
+
+Accion: foco en el explorador de archivos (panel izquierdo de VS Code).
+
+"En la raiz tengo siete carpetas. web_form es el formulario que
+proporciona el material base, con el recorder JS que monte yo
+encima. procedures son los workflows JSON. rag tiene la indexacion
+y busqueda en ChromaDB. agent es el corazon: el agente LangGraph,
+las tools, el runner Playwright, la API FastAPI y la CLI. ui_maui
+es la app .NET MAUI con MVVM. shared son las utilidades comunes:
+carga del modelo, prompts, templating, modelos Pydantic y el bus
+de eventos para la UI. Y tests es el smoke sin LLM.
+
+Sin prefijos numericos a proposito: con prefijos como '04_agent'
+no podia hacer 'from agent.tools import ALL_TOOLS' porque '04_agent'
+no es un identificador Python valido. Quitarlos me dejo hacer
+imports limpios."
+
+
+-------------------------------------------------------------------
+ 2. FORMULARIO WEB Y RECORDER JS  (~75s)  --  Escena: Codigo
+ Pestana: (1) web_form/index.html
+-------------------------------------------------------------------
+
+Accion: clic en index.html. Ctrl+G -> 48.
+
+"El formulario tiene los campos del esquema bibliotecario:
+titulo, autor, editorial, anio, isbn, paginas, idioma, categoria,
+copias_total y copias_disponibles. Los IDs los mantengo en
+castellano para que casen sin traduccion con el param_schema de
+los workflows. El dominio es el fondo de una seccion de
+biblioteca regional, asi que los valores del enum de categoria
+son generos literarios cerrados: novela, poesia, teatro, ensayo,
+biografia, historia, ciencia, filosofia, religion, arte,
+infantil, juvenil, comic, manual, referencia, viajes, cocina,
+autoayuda, idiomas y otros."
+
+Accion: Ctrl+G -> 60.
+
+"Aqui se ve el select de categoria con los veinte generos
+cerrados. Los placeholders del input ('Ej: Cien anos de soledad',
+'Garcia Marquez', '5' copias) marcan al usuario el formato
+esperado y dejan claro que estamos en un fondo bibliotecario:
+un libro identificado, no un producto a la venta."
+
+Accion: Ctrl+G -> 86.
+
+"Linea 86: el unico script inline. Solo maneja el submit del
+formulario: muestra el toast 'Libro Guardado correctamente' con
+el R-NNNN y la signatura asignados, y resetea los campos.
+
+PARA QUE no persisto en backend: porque el formulario es solo la
+superficie de demostracion sobre la que actua el RPA, no es el
+producto. La parte que se evalua es el agente y el orquestador,
+no la base de datos del catalogo.
+
+POR QUE 'Guardado' como texto del toast: el runner se entera de
+que el alta tuvo exito con un wait_for_text que busca esa palabra
+concreta. Si en lugar de un toast tuviera una redirect, tendria
+que detectarlo por URL y eso acopla el RPA a la rutas internas
+del backend. Un texto en el DOM es la senal mas estable y
+agnostica que tengo."
+
+Accion: Ctrl+G -> 97.
+
+"El recorder esta en archivo aparte (recorder.js) y se carga con
+<script src>. Lo saque del HTML porque ensuciaba el documento y
+porque me permite refactorizar el recorder sin tocar el formulario."
+
+
+-------------------------------------------------------------------
+ 3. RECORDER JS  (~70s)  --  Escena: Codigo
+ Pestana: (2) web_form/recorder.js
+-------------------------------------------------------------------
+
+Accion: clic en recorder.js. Ctrl+G -> 10.
+
+"Encapsulo el recorder en una clase ES6 con metadata,
+placeholders e IDs del panel inyectados por constructor. POR QUE
+asi y no como funciones sueltas: porque el panel JS vive en
+seis paginas distintas (alta, baja, ajuste de copias, prestamo,
+devolucion, inventario) y todas reusan exactamente este
+recorder cambiando solo la metadata. Si lo hubiera hecho con
+funciones sueltas y variables globales, anadir una pagina nueva
+implicaria copiar codigo; con una clase basta con un new."
+
+Accion: Ctrl+G -> 35.
+
+"Los handlers de click, input y change. El truco es capture=true:
+los listeners se enganchan en fase de captura, antes de que el
+formulario consuma el evento. Si no, en fase de bubbling perderia
+los clicks que el form hace stopPropagation."
+
+Accion: Ctrl+G -> 77.
+
+"start() y stop() encienden y apagan los listeners. Lo unico
+no trivial esta en stop(): inyecto un wait_for_text sobre el
+toast 'Guardado' como ultimo paso del workflow. PARA QUE: si no
+lo metiera, el runner cerraria el navegador en cuanto enviara
+el formulario y nunca veria la confirmacion del backend, asi que
+un fallo silencioso (campo rechazado, validacion HTML5) pasaria
+desapercibido. El wait_for_text es la senal explicita de exito."
+
+Accion: Ctrl+G -> 109.
+
+"download() empaqueta el JSON con un detalle deliberado: un
+wait de 500 ms al principio del array de steps. PARA QUE: en
+otra ejecucion el primer click podria caer sobre una pagina a
+medio renderizar, especialmente con red lenta o backend frio.
+El wait inicial paga 500 ms a cambio de robustez en arranque."
+
+
+-------------------------------------------------------------------
+ 3b. RECORDER PYTHON  (~50s)  --  Escena: Codigo
+ Pestana: (2b) web_form/recorder_py.py
+-------------------------------------------------------------------
+
+Accion: clic en recorder_py.py. Scroll desde la cabecera.
+
+"PARA QUE existe este recorder en Python ademas del JS embebido:
+porque el JS solo sirve cuando el formulario esta bajo mi control
+y le puedo inyectar el panel. Para grabar contra paginas externas
+(Google Forms, panel de admin, httpbin.org) no puedo inyectar el
+panel: tengo que controlar el navegador desde fuera.
+
+POR QUE Playwright headed y no codegen de Playwright: codegen
+genera scripts Python o JS, no el DSL que consume mi runner.
+Necesito que el output sea exactamente el mismo .workflow.json
+que produce el recorder JS para que el resto del sistema (RAG,
+extract_parameters, run_workflow) lo trate igual sin saber con
+cual de los dos recorders se grabo."
+
+Accion: scroll a la constante _RECORDER_JS.
+
+"El truco esta en add_init_script: Playwright inyecta este snippet
+JS en cada documento ANTES de cualquier carga, asi engancho los
+listeners de click/input/change con capture=true contra
+window.__pyRec.steps. Es el mismo patron que en el recorder JS
+embebido pero con un banner rojo arriba a la derecha para que el
+usuario sepa que esta grabando, sin botones porque la control la
+lleva la consola Python."
+
+Accion: scroll a grabar_workflow().
+
+"El flujo: levanto Chromium, abro la URL, espero a que el usuario
+pulse Enter en la consola (o cierre la ventana), leo
+window.__pyRec.steps con page.evaluate, y monto el JSON con la
+metadata que vino por argv (--titulo, --app, --tag, --placeholders)
+y los steps grabados. Salida: procedures/<id>.workflow.json, listo
+para reindexar el RAG."
+
+Accion: cerrar pestana.
+
+"Lo uso en directo en la demo del bloque 14: regrabar el workflow
+de encargo contra httpbin con el recorder Python para ver una
+operacion completa de grabacion contra un formulario externo."
+
+
+-------------------------------------------------------------------
+ 4. WORKFLOW JSON  (~40s)  --  Escena: Codigo
+ Pestana: (3) procedures/alta_libro.workflow.json
+-------------------------------------------------------------------
+
+Accion: clic en alta_libro.workflow.json. Scroll natural.
+
+"Este es el workflow exportado por el recorder. Tiene los ocho
+campos del DSL: id, titulo, descripcion, app, url, tags,
+param_schema y steps. La descripcion la enriqueci a mano con
+expresiones tipicas que diria el usuario, porque son las que el
+embedding del RAG va a comparar para discriminar entre workflows.
+
+El param_schema declara cuatro campos tipados con required y, en
+el caso de categoria, un enum cerrado con los veinte generos.
+Esto es lo que despues build_model_from_schema convierte en un
+BaseModel de Pydantic en runtime.
+
+Los steps usan el DSL pequeno: wait, click, type y select para
+rellenar el formulario, y wait_for_text al final para detectar el
+toast de confirmacion."
+
+
+-------------------------------------------------------------------
+ 5. RAG: indexacion en ChromaDB  (~70s)  --  Escena: Codigo
+ Pestana: (4) rag/index_procedures.py
+-------------------------------------------------------------------
+
+Accion: clic en index_procedures.py. Ctrl+G -> 27.
+
+"Este script indexa los workflows de procedures/ en ChromaDB.
+Empiezo por los embeddings: uso sentence-transformers/all-MiniLM-L6-v2
+via HuggingFaceEmbeddings. Es local, gratuito, sin API key, y pesa
+solo 90 MB. Probe tambien Ollama y embeddings de LM Studio, pero
+LM Studio no expone /embeddings de forma estable con todos los
+modelos, asi que descartado.
+
+La instancia de embeddings la guardo en variable de modulo. Antes
+la creaba en cada llamada y el smoke test cargaba el modelo seis
+veces, una por consulta. Cachearla a nivel de modulo lo bajo a una
+sola carga por proceso."
+
+Accion: Ctrl+G -> 43.
+
+"Por cada workflow construyo un Document de LangChain cuyo
+page_content es titulo + descripcion + tags. NO meto los nombres
+de los parametros en el texto a indexar porque al repetirse entre
+workflows ensucian la similitud del embedding."
+
+Accion: Ctrl+G -> 97.
+
+"Y la persistencia es Chroma con persist_directory en rag/.chroma.
+Mire FAISS, que hace lo mismo, pero la persistencia es manual con
+archivos sueltos. Con Chroma borrar la carpeta y reindexar es un
+shutil.rmtree, mucho mas comodo cuando estas trasteando."
+
+
+-------------------------------------------------------------------
+ 6. TOOLS DEL AGENTE  (~120s)  --  Escena: Codigo
+ Pestana: (5) agent/tools.py
+-------------------------------------------------------------------
+
+Accion: clic en tools.py. Ctrl+G -> 1.
+
+"Tengo ocho tools en total, agrupadas por funcion:
+
+  Orquestacion (las cuatro del flujo principal):
+    - search_procedures (RAG sobre los workflows)
+    - list_procedures (listado plano para casos ambiguos)
+    - extract_parameters (LLM + Pydantic dinamico)
+    - run_workflow (la unica con side-effect: dispara el RPA)
+
+  Consulta del fondo local:
+    - listar_catalogo (libros por titulo/autor/R-NNNN/ISBN)
+    - listar_prestamos (prestamos activos por socio o libro)
+
+  Consulta externa al fondo:
+    - buscar_libro (Open Library + Google Books + BNE en
+      paralelo, con dedupe por ISBN y por titulo+apellido)
+    - consultar_libreria_externa (scraping de books.toscrape
+      como ejemplo de catalogo de tienda externa)
+
+POR QUE separo orquestacion y consulta: las cuatro de orquestacion
+son las imprescindibles para que el agente decida y ejecute. Las
+otras cuatro le permiten resolver R-NNNN desde un titulo, ver
+prestamos pendientes antes de una devolucion o autocompletar
+metadatos al dar de alta sin que el bibliotecario tenga que
+saberse el ISBN de memoria.
+
+Las docstrings de cada tool son lo que el LLM lee para decidir
+cuando usarla, asi que estan escritas en clave de 'cuando usar
+esto', no de 'que hace por dentro'. Eso se nota en la calidad de
+las llamadas."
+
+Accion: Ctrl+G -> 53.
+
+"search_procedures es la puerta de entrada del RAG. PARA QUE
+devuelvo top-k y no top-1: porque MiniLM-L6-v2 a veces empata
+dos workflows con palabras-pivote comunes ('libro', 'fondo'),
+y dejar que el LLM elija con vista panoramica del param_schema
+de los tres mejores funciona mejor que forzar la decision al
+embedding. Devuelvo tambien el param_schema para que el agente
+no tenga que ir a buscarlo despues."
+
+Accion: Ctrl+G -> 104.
+
+"extract_parameters: la tool con LLM dentro. Cuando el agente la
+llama, dentro de la tool se hace OTRA llamada al modelo para
+extraer los parametros tipados de la peticion original. La razon
+de meter un LLM dentro: el schema de extraccion depende del
+workflow concreto, y delegarlo al agente principal me obligaria
+a meter todos los param_schemas en su prompt aunque solo se vaya
+a usar uno."
+
+Accion: Ctrl+G -> 140.
+
+"Aqui la cadena: prompt -> llm -> _strip_fences -> JsonOutputParser
+con pydantic_object. El _strip_fences es importante: los modelos
+cuantizados envuelven el JSON en bloques de markdown ```json...```
+aunque les digas que no. No hay forma de quitarles la mania con
+instrucciones, lo probe. Por eso meto la limpieza manual antes del
+parser."
+
+Accion: Ctrl+G -> 158.
+
+"run_workflow: la tool del RPA. Recibe el workflow_id y los params
+ya validados, renderiza los placeholders con shared.templating y
+delega en agent/runner.py para ejecutar. Devuelve un dict con
+ok/ko, duracion, pasos ejecutados y el ultimo toast observado.
+Devolver dict y no excepciones es a proposito: el consumidor es
+un LLM, que necesita un resumen estructurado para contarselo al
+usuario, no un stack trace."
+
+Accion: Ctrl+G -> 212.
+
+"Y consultar_libreria_externa: scraping ligero contra
+books.toscrape.com. Es un sandbox publico hecho a proposito para
+practicar scraping. Cosas que hago para no abusar del servidor:
+User-Agent identificativo, timeout corto, y cache en memoria con
+TTL de 5 minutos para que invocaciones repetidas no peguen otra
+vez al servidor. Es la diferencia entre una tool 'civil' y una
+que un dia te bloquea por flooding."
+
+
+-------------------------------------------------------------------
+ 7. AGENTE LANGCHAIN (PRIMERA VERSION)  (~60s)  --  Escena: Codigo
+ Pestana: (6) agent/agent.py
+-------------------------------------------------------------------
+
+Accion: clic en agent.py. Ctrl+G -> 1.
+
+"La primera version del agente la monte con LangChain. Es la mas
+directa: create_agent recibe el modelo, las tools y un prompt de
+sistema, y devuelve un agente que ya razona y llama a las tools
+por su cuenta. La logica transversal va en tres middlewares que
+son lo que voy a recorrer ahora."
+
+Accion: Ctrl+G -> 22.
+
+"LoggingMiddleware imprime en before_model el numero de paso y
+en after_model los tool_calls que el LLM acaba de decidir. PARA
+QUE: sin trazas en consola una demo de agente es indistinguible
+de un script con texto generado. Las trazas convierten 'el agente
+decide' en algo verificable: el espectador ve search -> extract
+-> run en directo, no solo el resultado final."
+
+Accion: Ctrl+G -> 46.
+
+"ConfirmRunWorkflowMiddleware: el HITL en LangChain. Hook
+before_tool. Si el tool_name no es run_workflow, devuelve None y
+sigue. Si es run_workflow, imprime los argumentos por consola y
+pide s/N. Con n, devuelve un tool_output forzado con
+cancelled_by_user=True para que el agente lo cuente al usuario.
+Decide en el mismo turno; no puede pausar el flujo y retomarlo
+mas tarde como el interrupt_before del grafo."
+
+Accion: Ctrl+G -> 77.
+
+"UIFeedbackMiddleware publica los eventos del agente en un bus
+asyncio y la API los emite por SSE a la UI. POR QUE un bus y no
+llamada directa: porque la UI puede estar suscrita o no, e incluso
+estarlo desde varios navegadores a la vez. Con bus, el agente
+publica una vez y el numero de consumidores es transparente. En
+after_model emite tool_call (o answer si no hay), en after_tool
+emite tool_result. Cada uno cae en una burbuja del chat MAUI."
+
+Accion: Ctrl+G -> 112.
+
+"build_agent monta create_agent pasando el LLM, las tools, el
+checkpointer y la lista de middlewares. El kwarg del system prompt
+puede llamarse prompt o system_prompt segun la version de
+LangChain, asi que inspecciono la signature y elijo el correcto.
+
+Esta version cumple el flujo completo del agente sobre las cinco
+tools sin tocar nada mas. Es lo que arranca con el flag --lc."
+
+
+-------------------------------------------------------------------
+ 8. AGENTE LANGGRAPH (TRADUCCION A NODOS)  (~100s)  --  Escena: Codigo
+ Pestana: (7) agent/agent_langgraph.py
+-------------------------------------------------------------------
+
+Accion: clic en agent_langgraph.py. Ctrl+G -> 1.
+
+"La segunda version traduce la arquitectura de Chains a
+Nodos / Estados / Edges con LangGraph. Lo mas rapido habria sido
+usar create_react_agent prebuilt, que monta un grafo estandar
+agente-tools-fin. Lo descarte porque las ocho tools no son
+simetricas: cuatro son idempotentes y se pueden ejecutar sin
+avisar, pero run_workflow rellena un formulario real y no tiene
+vuelta atras. Un ReAct estandar las mete a todas en el mismo
+nodo, asi que la confirmacion humana habria que anadirla por
+fuera con un middleware lateral, igual que en la version LangChain.
+
+Con un StateGraph propio el HITL es un nodo mas del grafo, no un
+parche."
+
+Accion: Ctrl+G -> 37.
+
+"El sistema de middlewares lo monte a mano porque LangGraph no
+trae uno como el de LangChain 1.x. Cada middleware es una clase
+con before_node y after_node, y se aplica envolviendo cada nodo
+con _with_middleware. Esto es lo que me permite enchufar el
+feedback al UI bus desde dentro del grafo."
+
+Accion: Ctrl+G -> 124.
+
+"Los cuatro nodos: agente decide, tools_seguras ejecuta las
+idempotentes, confirmar_rpa pausa el grafo con interrupt_before,
+y ejecutar_rpa solo se ejecuta si el usuario confirmo. Que
+confirmar_rpa sea un nodo aparte de ejecutar_rpa es lo que me
+permite cortar antes de tocar Playwright."
+
+Accion: Ctrl+G -> 190.
+
+"router_agente es el edge condicional, y su unica logica esta
+pensada para que run_workflow sea el unico camino que pasa por
+el HITL. Mira los tool_calls del ultimo AIMessage: si no hay, FIN;
+si alguno es run_workflow, va a confirmar_rpa con interrupt_before;
+si no, va a tools_seguras y vuelve al agente. POR QUE no enrutar
+todo por confirmar_rpa: porque pausar el grafo cada turno mata
+la conversacion fluida. Solo el side-effect irreversible justifica
+la interrupcion."
+
+Accion: Ctrl+G -> 240.
+
+"Y aqui el compile con interrupt_before=['confirmar_rpa']. Esto
+es lo que pausa el grafo justo antes del nodo de confirmacion.
+El checkpointer guarda el estado y el cliente puede reanudar
+con graph.invoke(None, ...) o cancelar inyectando un ToolMessage
+con update_state."
+
+
+-------------------------------------------------------------------
+ 9. RUNNER PLAYWRIGHT  (~80s)  --  Escena: Codigo
+ Pestana: (8) agent/runner.py
+-------------------------------------------------------------------
+
+Accion: clic en runner.py. Ctrl+G -> 48.
+
+"con_reintentos: solo reintenta PWTimeout. Si reintentara un
+ValueError por un selector mal formado, solo conseguiria
+ralentizar el error. La espera entre intentos es constante (1.5s)
+porque en UI no merece la pena ir alargandola."
+
+Accion: Ctrl+G -> 72.
+
+"RPAChain: el patron de cadena de pasos. Tiene add_step y run,
+contexto compartido y captura de pantalla en cada error.
+
+Eligo Playwright sobre Selenium porque trae auto-wait, es decir,
+espera por su cuenta a que el elemento este visible y clicable
+antes de actuar. Eso ahorra la mayoria de las esperas explicitas
+y los reintentos por timeout."
+
+Accion: Ctrl+G -> 85.
+
+"RPAChain.run: politica fail-fast. Si un paso falla, captura
+pantalla, registra y devuelve dict con ok=False. No intenta
+seguir porque los pasos del workflow dependen unos de otros: no
+tiene sentido pulsar Guardar si no se rellenaron los campos
+previos."
+
+Accion: Ctrl+G -> 149.
+
+"Aqui los builders: cada step del JSON se convierte en una
+funcion lambda. La cadena se construye en runtime a partir del
+workflow, no a mano. Asi el runner es agnostico al procedimiento:
+el mismo runner sirve para cualquier workflow nuevo grabado con
+el Recorder, sin tocar Python."
+
+Accion: Ctrl+G -> 256.
+
+"En modo visible cada accion lleva 400 ms de slow_mo por defecto
+para que se vea como se rellena el formulario en la demo. Y al
+terminar, el navegador se queda abierto esperando a que pulses
+Enter en consola, asi puedes inspeccionar el resultado."
+
+
+-------------------------------------------------------------------
+ 10. API FASTAPI Y UI MAUI  (~75s)  --  Escena: Codigo
+ Pestana: (9) agent/api.py
+-------------------------------------------------------------------
+
+Accion: clic en api.py. Ctrl+G -> 67.
+
+"El agente y el checkpointer se construyen en el lifespan de
+FastAPI, no en module scope. Si lo construyera al importar, un
+test que solo necesite la API peta porque LM Studio no esta
+arrancado. Con lifespan, el cierre del SqliteSaver va al finally,
+que FastAPI si garantiza llamar al apagar."
+
+Accion: Ctrl+G -> 105.
+
+"La API tiene tres endpoints: /health, /procedures y /chat. La
+clave es /chat con SSE. Uso SSE y no WebSocket porque el flujo es
+solo servidor->cliente: la UI manda un POST y se queda escuchando
+los eventos. SSE va sobre HTTP plano, lo lee cualquier HttpClient
+sin librerias extra, y atraviesa proxies sin negociar upgrades.
+Un WebSocket seria full duplex y aqui el canal de vuelta no me
+hace falta."
+
+Accion: Ctrl+G -> 121.
+
+"El endpoint /chat se suscribe al UI bus, lanza el agente como
+task de asyncio y va emitiendo SSE conforme llegan eventos al bus.
+La API no orquesta nada del agente: solo es transporte."
+
+Accion: clic en MainViewModel.cs. Ctrl+G -> 53.
+
+"En el lado MAUI, MainViewModel construye sus propias dependencias
+con new. La UI es autocontenida y no hay DI registrada en
+MauiProgram. Para dos pantallas sin tests unitarios no compensaba
+montar contenedor."
+
+Accion: Ctrl+G -> 68.
+
+"El send manda la peticion al servicio. IsBusy hace de guard
+contra reentrada para que el usuario no pueda enviar dos mensajes
+seguidos antes de que termine el primero."
+
+Accion: Ctrl+G -> 95.
+
+"HandleAgentEvent recibe los SSE en un hilo del HttpClient (no en
+el de UI). Para tocar la ObservableCollection desde ahi uso
+MainThread.BeginInvokeOnMainThread; sin esto, peta con cross-thread
+exception. Por cada tool_call y tool_result genero una burbuja
+distinta en el chat, asi se ve en directo que tool ha invocado el
+agente y que ha devuelto."
+
+
+===================================================================
+ PARTE 2: DEMO  (LM Studio + agente + UI MAUI en vivo)
+===================================================================
+
+
+-------------------------------------------------------------------
+ PREPARATIVOS DE LA DEMO (no se graba)
+-------------------------------------------------------------------
+
+  [ ] LM Studio abierto con el modelo lmstudio-community/
+      Qwen2.5-7B-Instruct-1M-GGUF cargado en cuantizacion Q4_K_M
+      y servidor en http://localhost:1234 (pestana Developer).
+      Configuracion al cargar:
+        - API Identifier: qwen2.5-7b-instruct-1m
+        - Longitud del Contexto: 4096
+        - Descarga a GPU: 8 capas (con 2-4 GB VRAM); subir al
+          maximo si hay 8 GB+ VRAM
+        - Marcar "Remember settings"
+      Aviso de velocidad: con CPU de 4 nucleos + GPU 2 GB VRAM
+      (8 capas en GPU, 20 en CPU), cada turno del agente ronda los
+      90-130 segundos en pruebas reales; el prompt eval va a unos
+      13 tokens/s y la generacion a unos 3,4 tokens/s. La primera
+      invocacion tarda mas por warmup. Una conversacion completa
+      search -> extract -> run encadena tres turnos: del orden de
+      4-7 minutos en total. Esto se cortara en post-produccion
+      (Premiere/CapCut/DaVinci) acelerando los tramos de espera o
+      cortando directo del prompt al resultado, manteniendo la
+      explicacion en off. Con GPU de 8 GB+, los tiempos bajan a
+      1-3 segundos por turno y no hace falta cortar.
+
+      Recomendacion para que el agente NO pida confirmaciones: la
+      peticion debe ir con todos los datos explicitos y, si hace
+      falta, una frase final tipo "procede sin pedir confirmacion".
+      Mensaje de demostracion sugerido (mandalo TAL CUAL para que
+      el LLM no se vaya a preguntar el genero a parte):
+        Dame de alta este libro en el catalogo con todos los datos
+        completos: titulo "Cien años de soledad", autor
+        "Gabriel Garcia Marquez", editorial "Sudamericana", anio 1967,
+        copias_total 5, categoria novela. Procede con el RPA sin
+        pedir confirmacion.
+
+  [ ] El .env del proyecto debe tener OPENAI_MODEL coincidiendo
+      con el API Identifier que muestra LM Studio. Si LM Studio
+      muestra "qwen2.5-7b-instruct-1m", el .env tiene que decir
+      OPENAI_MODEL=qwen2.5-7b-instruct-1m
+
+  [ ] Terminal A:  python web_form/server.py            (no arrancada)
+  [ ] Terminal B:  python rag/index_procedures.py       (no arrancada)
+  [ ] Terminal C:  python -m uvicorn agent.api:app --port 8001    (no arrancada)
+  [ ] Visual Studio 2022 con RpaChatApp.sln abierto y target Windows
+  [ ] OBS con escena "Demo" lista
+
+
+-------------------------------------------------------------------
+ 11. ARRANQUE DE LA INFRAESTRUCTURA  (~40s)  --  Escena: Demo
+-------------------------------------------------------------------
+
+Accion: enfocar Terminal A.
+
+"Arranco el servidor del formulario."
+
+Accion: ejecutar en Terminal A:  python web_form/server.py
+
+"Sirviendo en localhost:8080. Verifico abriendo el navegador."
+
+Accion: ALT+TAB al navegador con http://localhost:8080/index.html
+
+"Aqui esta el formulario de alta de libro con el panel del
+recorder al lado: Start, Stop y Download JSON. El titulo dice
+'Alta de Libro', los campos son titulo, autor, editorial, anio,
+isbn, paginas, idioma, categoria, copias_total y copias_disponibles,
+y el enum tiene los cuatro generos."
+
+Accion: ALT+TAB de vuelta a la terminal. Enfoco Terminal B.
+
+"Indexo el RAG. Esto carga los embeddings y deja los workflows
+en ChromaDB."
+
+Accion: ejecutar en Terminal B:  python rag/index_procedures.py
+
+"Seis workflows indexados: alta_libro, baja_libro,
+ajuste_copias, prestamo_libro, devolucion_libro y encargo_libro."
+
+Accion: enfocar Terminal C.
+
+"Y arranco la API."
+
+Accion: ejecutar en Terminal C:  python -m uvicorn agent.api:app --port 8001
+
+"Backend LangGraph activo, lifespan ha construido el agente. Ya
+puedo lanzar la UI MAUI."
+
+
+-------------------------------------------------------------------
+ 12. DEMO CON LA UI MAUI  (~150s)  --  Escena: Demo
+-------------------------------------------------------------------
+
+Accion: ALT+TAB a Visual Studio 2022. Pulsar F5.
+
+(esperar 30-60s mientras compila MAUI la primera vez. Si ya esta
+compilado, sale en 5-10s)
+
+"La app abre. Conectada a localhost:8001. El chat dice hola y me
+sugiere ejemplos. Vamos a probar el flujo principal."
+
+Accion: en el campo de texto de la UI MAUI escribir:
+        "Dame de alta el libro Cien anos de soledad de Garcia Marquez,
+editorial Sudamericana, 5 copias, categoria novela"
+
+Accion: pulsar Enviar.
+
+"Mirad lo que pasa. Aparece la primera burbuja: tool · search_procedures.
+El agente decidio buscar el procedimiento. La siguiente: tool ·
+extract_parameters, ha sacado los datos tipados. Y ahora..."
+
+(En este punto, si HITL estuviera activado en la API el grafo
+pausaria. La API tiene hitl_before_run=False porque un servidor
+HTTP no puede hacer input() bloqueante; la confirmacion la hago
+en el modo CLI mas tarde.)
+
+Accion: esperar a que aparezca tool · run_workflow.
+
+"tool · run_workflow. El agente lanza el RPA."
+
+Accion: cambiar foco al Chromium que se abre con el formulario.
+
+"Ahi esta. Chromium se abre solo, navega al formulario, rellena
+titulo, autor, editorial, anio, copias_total, selecciona la
+categoria novela y pulsa Guardar.
+El slow_mo de 400 ms hace que se vea cada accion. Aparece el toast
+'Libro Guardado correctamente'."
+
+Accion: cambiar foco a la consola de uvicorn.
+
+"En la consola de la API se ven las trazas: tool-call, tool-result,
+y el ack. Y en la UI..."
+
+Accion: cambiar foco a la UI MAUI.
+
+"...la respuesta final del agente: 'Libro dado de alta correctamente'.
+
+Es importante: yo no he cableado nada de esto. El agente ha
+decidido por su cuenta llamar a search, luego a extract, y luego
+a run. Si yo escribiera 'que puedes hacer', llamaria a
+list_procedures en lugar de a search."
+
+Accion: en la UI MAUI escribir:  "que puedes hacer"
+
+Accion: pulsar Enviar.
+
+"Y efectivamente, tool · list_procedures. La respuesta enumera los
+seis workflows."
+
+
+-------------------------------------------------------------------
+ 12b. DEMO PRESTAMO Y DEVOLUCION  (~90s)  --  Escena: Demo
+-------------------------------------------------------------------
+
+(Importante: este bloque ensena la mitad bibliotecaria que no se
+ve en alta. Los prestamos y devoluciones son lo que distingue una
+biblioteca de un catalogo plano de productos.)
+
+Accion: en la UI MAUI, escribir y enviar:
+
+"Presta el libro Cien anos de soledad al socio S-0042 durante
+14 dias."
+
+"PARA QUE este caso: el agente recibe un titulo, no un R-NNNN. La
+gracia es que tiene que resolver primero el numero de registro
+con listar_catalogo y luego encadenar a prestamo_libro. La traza
+deberia ser:
+
+   1. search_procedures -> prestamo_libro (top score)
+   2. listar_catalogo(filtro='Cien anos de soledad')
+      -> devuelve R-NNNN del libro
+   3. extract_parameters con id_libro=R-NNNN, id_socio=S-0042,
+      dias_prestamo=14
+   4. (HITL: confirmacion en la UI antes de tocar el formulario)
+   5. run_workflow -> Chromium rellena prestamo.html y vuelve
+      con el P-NNNN del nuevo prestamo.
+
+POR QUE meto el HITL antes del prestamo y no antes del alta: porque
+prestar un ejemplar decrementa copias_disponibles y bloquea el
+libro hasta la devolucion. Es un side-effect bibliotecariamente
+significativo: si me equivoco de socio, hay que cancelar el
+prestamo a mano."
+
+Accion: confirmar el HITL en la UI ('s' o boton).
+
+"Mira el evento tool_result de run_workflow: ok=True, P-0008
+asignado, copias_disponibles bajado en 1. Eso es lo que persiste
+en data/prestamos.json."
+
+Accion: en la UI MAUI, escribir y enviar:
+
+"Apunta la devolucion del prestamo P-0008."
+
+"Ahora el agente tira de devolucion_libro directamente porque ya
+tengo el P-NNNN explicito. No necesita resolver nada con
+listar_catalogo. Solo extract_parameters + run_workflow.
+
+(HITL: confirmar otra vez)
+
+Y al confirmar, copias_disponibles vuelve a subir y el prestamo
+queda cerrado en el JSON. La operacion es simetrica al prestamo
+y reusa el mismo runner.
+
+POR QUE devolucion es un workflow distinto y no un toggle del
+prestamo: porque el formulario humano de la biblioteca tiene una
+pagina dedicada de devoluciones (devolucion.html), y el RPA imita
+exactamente lo que haria el bibliotecario en la web. Un toggle
+acoplaria los dos casos en el JSON y perderia la trazabilidad."
+
+
+-------------------------------------------------------------------
+ 13. DEMO HITL POR CONSOLA  (~80s)  --  Escena: Demo
+-------------------------------------------------------------------
+
+Accion: cerrar la app MAUI. ALT+TAB a Terminal C, parar uvicorn.
+
+Accion: Terminal C, ejecutar:  python agent/app.py
+
+"En modo CLI tengo el HITL activo via interrupt_before. Lo voy a
+ensenar. Le pido un alta."
+
+Accion: cuando pregunte thread_id, pulsar Enter.
+
+Accion: escribir:  "borra del catalogo el libro 1984 de Orwell"
+
+(El agente hace search, identifica baja_libro con score
+alto, y va a extract_parameters)
+
+Accion: esperar a que el grafo se pause.
+
+"Aqui esta. El grafo se ha pausado antes de confirmar_rpa y me
+ensena los args:
+  workflow_id : baja_libro
+  params      : {'nombre': '1984'}
+'Ejecutar? [s/N]'."
+
+Accion: escribir 's' y Enter.
+
+"Confirmo. El grafo retoma desde el checkpoint y ejecuta el
+workflow. Se abre Chromium en la pagina de baja, rellena el
+nombre del libro, pulsa Eliminar y aparece el toast."
+
+Accion: ahora probar la cancelacion.
+
+Accion: escribir:  "elimina del sistema el libro Don Quijote"
+
+(Esperar a que pause)
+
+Accion: cuando pregunte 'Ejecutar? [s/N]', escribir 'n' y Enter.
+
+"Cancelo. El grafo no llama a Playwright. En su lugar, inyecto un
+ToolMessage 'cancelado por el usuario' y el agente lo cuenta en
+la respuesta final: 'Cancelacion confirmada, no se ha eliminado
+nada'."
+
+
+-------------------------------------------------------------------
+ 14. DEMO TOOL DE SCRAPING  (~50s)  --  Escena: Demo
+-------------------------------------------------------------------
+
+Accion: en la consola del agente, escribir:  "que libros hay en la tienda externa"
+
+"El agente decide que esto NO es una accion local, asi que llama
+a consultar_libreria_externa. Mirad la traza: tool · consultar,
+result, y la respuesta lista los primeros libros de
+books.toscrape.com con titulo y disponibilidad. La tool devuelve
+un campo precio_gbp para uso interno tecnico, pero el system
+prompt prohibe citar importes al usuario: una biblioteca presta,
+no vende.
+
+Ninguna de las otras siete tools sirve para esto. Es la pareja
+'leer fuera' que complementa al RPA local."
+
+
+-------------------------------------------------------------------
+ 14b. GRABACION DE WORKFLOWS Y SESIONES CON PLAYWRIGHT  (~90s)  --  Escena: Demo
+-------------------------------------------------------------------
+
+(Bloque dedicado a ensenar las tres formas de grabar que ofrece
+ Playwright. Se hace despues de la demo principal y antes del cierre.
+ La idea es demostrar que el sistema NO necesita un recorder casero
+ para ningun caso: Playwright trae todo de fabrica.)
+
+
+  PARTE A - codegen (recorder oficial de Playwright)
+
+Accion: en una terminal nueva ejecutar:
+    python -m playwright codegen http://localhost:8080/index.html
+
+"Lo que sale ahora es el codegen de Playwright: a la izquierda
+abre Chromium real con la pagina del formulario, a la derecha un
+inspector que va escribiendo el codigo Python equivalente a cada
+accion. Sirve para grabar workflows nuevos sin escribirlos a mano."
+
+Accion: en el Chromium del codegen, hacer una secuencia ejemplo:
+   1) clic en #titulo, escribir "Demo Playwright"
+   2) clic en #autor, escribir "Cervantes"
+   3) clic en #copias_total, escribir "3"
+   4) seleccionar "novela" en #categoria
+   5) clic en #guardar
+   6) esperar a que aparezca el toast verde
+
+"Cada paso aparece en el panel derecho como page.fill, page.click,
+page.select_option, page.wait_for_selector. Si quisiera anadir un
+quinto workflow al proyecto, copiaria estos pasos a un nuevo JSON
+en procedures/ siguiendo el mismo schema que los otros cuatro."
+
+Accion: cerrar el codegen.
+
+
+  PARTE B - tracing on-error
+
+Accion: en la terminal de la API parar uvicorn (Ctrl+C). Reabrirlo
+con el flag de tracing activado:
+    set RPA_TRACE_ON_ERROR=1
+    python -m uvicorn agent.api:app --port 8001
+
+"He encendido el tracing. Lo que hace es arrancar tracing.start
+al abrir el navegador y, si la cadena de pasos del RPA falla,
+guarda un trace.zip en data/traces/ con DOM, screenshots, network
+y consola por cada accion. Si va todo bien, el trace se descarta."
+
+Accion: forzar un fallo. En la UI MAUI escribir una peticion que
+provoque error (por ejemplo, mandar un workflow contra una URL
+inalcanzable, o cambiar a mano el #titulo a un id inexistente
+antes de lanzar). Otra opcion mas controlada: cerrar el server
+del formulario (Ctrl+C en Terminal A) y mandar un alta normal.
+
+"Con el formulario apagado, Playwright no encuentra los selectores,
+agota los reintentos y la cadena devuelve ok=False. Mirad lo que
+me deja el runner."
+
+Accion: mostrar el archivo nuevo en data/traces/. Abrirlo con:
+    python -m playwright show-trace data/traces/<archivo>.zip
+
+"Esto es el Trace Viewer de Playwright. A la izquierda el timeline
+de cada accion con su duracion, en el centro un screenshot del DOM
+en ese instante, y a la derecha consola y network. Puedo navegar
+paso a paso y ver donde rompio. Esta herramienta es la que usaria
+para depurar cualquier RPA que se cae en produccion."
+
+Accion: cerrar el visor. Reabrir el servidor del formulario.
+
+
+  PARTE C - vídeo .webm de la sesion
+
+Accion: parar uvicorn otra vez y reabrirlo con el flag de video:
+    set RPA_RECORD_VIDEO=1
+    python -m uvicorn agent.api:app --port 8001
+
+"Ahora cada sesion del navegador queda grabada como .webm en
+data/videos/. Lanzo un alta normal."
+
+Accion: en la UI MAUI escribir una peticion completa de alta y
+enviarla. Esperar a que termine el RPA.
+
+Accion: abrir la carpeta data/videos/ y mostrar el .webm generado.
+Reproducirlo unos segundos en el visor de Windows.
+
+"Esto sirve como material directo para grabaciones de demo: en
+lugar de capturar pantalla con OBS, reutilizo el .webm que genero
+el propio runner. Ya esta encuadrado en la pestana del navegador,
+sin barras del sistema, sin notificaciones."
+
+Accion: parar uvicorn y reabrirlo SIN flags antes de seguir con el
+cierre.
+
+
+-------------------------------------------------------------------
+ 15. CIERRE  (~30s)  --  Escena: Codigo o Demo, da igual
+-------------------------------------------------------------------
+
+"Y esto es todo. Un agente LLM que orquesta un RPA real sobre un
+formulario de catalogo de libros, con ocho tools tipadas, RAG en
+ChromaDB, validacion Pydantic dinamica, HITL como nodo del grafo
+con interrupt_before, persistencia con SqliteSaver, scraping
+ligero a una web ajena, una API FastAPI con SSE y una UI MAUI con
+MVVM que se ve en directo. Todo local, sin APIs de pago, con LM
+Studio.
+
+Lo que mas me llevo: que disenar bien las tools (docstring +
+schema tipado) importa mas que elegir modelo, y que separar
+idempotente de irreversible en la topologia del grafo es lo que
+de verdad hace que el HITL este en el sitio adecuado.
+
+Gracias por ver el video."
+
+
+===================================================================
+ FIN DE LA GRABACION  (SCROLL LOCK)
+===================================================================
+
+
+-------------------------------------------------------------------
+ LISTA DE SALTOS Ctrl+G  (recordatorio rapido)
+-------------------------------------------------------------------
+
+  index.html .................. 48, 60, 86, 97
+  recorder.js ................. 10, 35, 77, 109
+  index_procedures.py ......... 27, 43, 97
+  tools.py .................... 53, 104, 140, 158, 212
+  agent.py .................... 1, 22, 46, 77, 112
+  agent_langgraph.py .......... 1, 37, 124, 190, 240
+  runner.py ................... 48, 72, 85, 149, 256
+  api.py ...................... 67, 105, 121
+  MainViewModel.cs ............ 53, 68, 95
+
+
+-------------------------------------------------------------------
+ CHECKLIST ANTES DE GRABAR
+-------------------------------------------------------------------
+
+[ ] Notificaciones de Windows en silencio
+[ ] LM Studio con Qwen2.5-7B-Instruct cargado (puerto 1234)
+[ ] VS Code con las 10 pestanas abiertas en orden y en su linea
+[ ] Visual Studio 2022 con RpaChatApp.sln abierto, target Windows
+[ ] 3 terminales abiertas con los comandos preparados
+[ ] OBS con las escenas Codigo, Web y Demo listas
+[ ] Ctrl+rueda en VS Code para agrandar letra (16-18 pt)
+[ ] Tema claro o oscuro consistente entre VS Code y VS 2022
+
+
+-------------------------------------------------------------------
+ CHECKLIST DE PRUEBAS DE LA DEMO
+-------------------------------------------------------------------
+
+[ ] python web_form/server.py             -> sirve en :8080
+[ ] python rag/index_procedures.py         -> indexa los 6 workflows
+[ ] python -m uvicorn agent.api:app --port 8001      -> /health responde 200
+[ ] MAUI compila y se abre con saludo del agente
+[ ] "Dame de alta Cien anos de soledad..."  -> RPA en Chromium
+[ ] "que puedes hacer"                      -> list_procedures
+[ ] python agent/app.py + alta              -> grafo pausa, HITL
+[ ] "borra del catalogo el libro 1984..."   -> baja_libro
+[ ] HITL: respuesta 's'                     -> ejecuta
+[ ] HITL: respuesta 'n'                     -> cancela limpio
+[ ] "que libros hay en la tienda externa"   -> consultar
+[ ] Ningun comando devuelve excepcion en la consola
+
+
+-------------------------------------------------------------------
+ IMPREVISTOS Y PLAN B
+-------------------------------------------------------------------
+
+- Si LM Studio tarda mucho en responder (>20s) en la primera tool
+  call: dilo en alto, "estoy en CPU, en GPU baja a 2-3s", y sigue.
+
+- Si Chromium se abre detras de la ventana de OBS: tienes la
+  variable RPA_VIEW_DELAY_MS=keep en .env, no se cierra solo, asi
+  puedes traerlo al frente sin perder la captura.
+
+- Si el RAG falla y devuelve un workflow que no toca: corta y
+  rehaz la query con un verbo mas distintivo ("borra" en lugar de
+  "elimina del catalogo"). El RAG con MiniLM a veces empata.
+
+- Si la UI MAUI no compila en directo: cierra y reabre Visual
+  Studio, eso suele desbloquear. Si no, salta a la demo del modo
+  CLI con python agent/app.py, que cubre todo lo importante salvo
+  la UI.
+
+- Si LM Studio se cuelga: en la pestana Developer hay un boton de
+  Stop/Start del servidor. Reinicia y sigue.
+
+
+===================================================================
+ FLUJO DE GRABACION + EDICION DEL VIDEO (OBS + Clipchamp)
+===================================================================
+
+El proyecto graba automaticamente cada ejecucion del RPA en .webm
+(via Playwright, RPA_RECORD_VIDEO=1 en .env). Esos .webm son tomas
+limpias del Chromium rellenandose, sin raton, sin notificaciones,
+sin overlay de OBS. Los puedes usar como pista limpia para insertar
+sobre la captura principal de OBS, o dejarlos como evidencia anexa.
+
+-------------------------------------------------------------------
+ 0. ANTES DE EMPEZAR A GRABAR
+-------------------------------------------------------------------
+
+[ ] Cerrar todo lo que no necesites (Slack, Telegram, navegador
+    personal). Notificaciones en silencio.
+
+[ ] LM Studio con Qwen2.5-7B-Instruct cargado, puerto 1234, server
+    arrancado, "Remember settings" marcado.
+
+[ ] Verificar que .env tiene:
+        RPA_RECORD_VIDEO=1
+        RPA_TRACE_ON_ERROR=1
+    (ya esta puesto, pero comprueba antes de empezar)
+
+[ ] Limpiar logs y videos antiguos para que tu sesion sea la unica
+    que aparezca despues:
+        rm data/rpa_ejecucion.log
+        rm -rf data/videos/
+
+[ ] Pestanas y terminales preparadas, OBS con la escena lista.
+
+-------------------------------------------------------------------
+ 1. AL DARLE A START EN OBS
+-------------------------------------------------------------------
+
+[ ] APUNTA la hora exacta a la que pulsaste Start Recording. La
+    necesitas despues para mapear los .webm al video. Por ejemplo:
+        "Empece a las 14:30:00"
+    (o mira la metadata del .mkv que genere OBS, los timestamps de
+    creacion suelen ser fiables en NTFS Windows)
+
+[ ] Estructura del video: explicacion de codigo PRIMERO (bloques
+    1-9 de este guion) y demo DESPUES (bloques 10-13).
+
+-------------------------------------------------------------------
+ 2. DURANTE LA GRABACION: TRUCO DE MARCA VERBAL
+-------------------------------------------------------------------
+
+Antes de cada RPA, di una palabra clave clara y reconocible. Esto
+te servira en Clipchamp para localizar el momento sin tener que
+mirar timestamps:
+
+  "Y ahora, el agente lanza el RPA: ACCION."
+       (el agente se pone en marcha, Chromium aparece en pantalla)
+  "HECHO. El toast confirma que se ha guardado."
+
+Las palabras "ACCION" y "HECHO" generan picos en el waveform de
+audio que en Clipchamp se ven a simple vista.
+
+OBS captura la pantalla completa, asi que cuando el Chromium se
+abra y se rellene solo, ya queda en el video principal. NO hace
+falta hacer nada especial. En paralelo, Playwright graba un .webm
+limpio en data/videos/ que podras meter encima despues si quieres.
+
+-------------------------------------------------------------------
+ 3. DESPUES DE GRABAR: MAPEAR LAS EJECUCIONES AL VIDEO
+-------------------------------------------------------------------
+
+Lanza el script de mapeo:
+
+    .venv\Scripts\python.exe tests\mapear_rpa_al_video.py "ruta\al\video.mkv" --inicio 14:30:00
+
+Sustituye 14:30:00 por la hora que apuntaste cuando pulsaste Start
+Recording. Si no la apuntaste, omite --inicio y el script tirara de
+la fecha de creacion del .mkv.
+
+El script imprime una tabla con TODOS los RPA ejecutados durante la
+grabacion, con el mm:ss exacto de inicio y fin de cada uno, y la
+ruta al .webm correspondiente:
+
+    Workflow              mm:ss inicio  mm:ss fin   dur    .webm
+    ---------------------- ------------- ----------- ------ ----------
+    alta_libro                    05:12      05:43   31 s   data/videos/alta_libro_xxx.webm
+    prestamo_libro                08:25      08:48   23 s   data/videos/prestamo_libro_xxx.webm
+
+Esos minutos son fehacientes: salen de los timestamps reales del
+runner de Playwright, no de tu memoria. Si Clipchamp te marca un
+mm:ss y la tabla otro, fiate de la tabla.
+
+-------------------------------------------------------------------
+ 4. EDICION EN CLIPCHAMP
+-------------------------------------------------------------------
+
+Estrategia A - Solo OBS (mas rapida, recomendada)
+  La captura de OBS ya muestra el Chromium ejecutando el RPA. No
+  hace falta meter los .webm. El espectador ve la consola del
+  agente, el Chromium en directo y todo el flujo en una sola pista.
+
+  Editas como siempre: cortar silencios, errores, acelerar partes
+  aburridas. Los mm:ss de la tabla solo te sirven como referencia
+  ("ah, el primer RPA fue al 5:12, alli es donde acelero un poco
+  porque tarda").
+
+  Los .webm quedan como anexo de evidencia (no se entregan en el
+  video, pero estan ahi por si el profesor los pide).
+
+
+Estrategia B - Insertar .webm como cut-away (mas trabajo, mas pulido)
+  1. Importa el video OBS y arrastralo a la pista 1.
+  2. Importa los .webm de data/videos/ a la pista 2 (encima).
+  3. Coloca cada .webm en el "mm:ss inicio" que dio el script.
+  4. Recortalo a la duracion indicada (o un poco mas para que se
+     vea el toast final "Guardado").
+  5. Tres formas de mostrarlo:
+     - Pantalla completa: ocultas la pista 1 durante esos segundos
+       y se ve solo el Chromium limpio.
+     - Picture-in-Picture: redimensionas el .webm a una esquina
+       (300x200 px) y dejas la consola del agente debajo, asi se
+       ve el [tool-call] en la consola y el Chromium a la vez.
+     - Crossfade: fundido entre las dos pistas en los bordes.
+
+
+Estrategia C - .webm al final como anexo (la mas simple si tienes prisa)
+  Tras el cierre de la demo principal, dices: "Y como evidencia, la
+  sesion completa del navegador grabada por Playwright durante esa
+  ejecucion." Y reproduces el .webm entero a pantalla completa al
+  final del video.
+
+-------------------------------------------------------------------
+ 5. SI EDITAS Y LOS mm:ss CAMBIAN
+-------------------------------------------------------------------
+
+Si recortas silencios o aceleras partes, los mm:ss del script ya
+NO son validos: la pista principal ha cambiado de duracion.
+
+Solucion: edita primero la pista de OBS (cortes, aceleracion).
+Cuando quede el corte final, busca visualmente donde aparece el
+Chromium en pantalla (es facil de ver porque cambia toda la
+ventana). Inserta los .webm alli, alineandolos con el momento
+donde empieza a moverse el Chromium en la pista principal.
+
+Si te lias, vuelve a lanzar el script: te recordara cuantos RPAs
+hubo y en que orden, aunque los mm:ss ya no cuadren.
+
+-------------------------------------------------------------------
+ 6. RECOMENDACION HONESTA
+-------------------------------------------------------------------
+
+- Empieza por la Estrategia A. Es lo mas rapido y el video queda
+  perfectamente bien con solo la captura de OBS.
+
+- Si despues de editar te queda tiempo y quieres pulir mas, sube a
+  la Estrategia B en los 1-2 RPAs mas vistosos (el alta de libro
+  funciona bien para esto, el del encargo a httpbin tambien).
+
+- La Estrategia C es para cerrar el video con un golpe de efecto:
+  "y aqui teneis 30 segundos de RPA limpio, sin yo tocar nada".
+
+
+-------------------------------------------------------------------
+ 7. CONVERSION OPCIONAL .webm -> .mp4
+-------------------------------------------------------------------
+
+Clipchamp come .webm sin problemas. Si por algun motivo te da
+guerra, conviertelo:
+
+    ffmpeg -i data\videos\alta_libro_xxx.webm -c:v libx264 -crf 23 alta_libro.mp4
+
+(Instala ffmpeg con: winget install ffmpeg)
+
+El .mp4 resultante pesa parecido y lo come cualquier editor.
+
+
+-------------------------------------------------------------------
+ 8. COMPROBAR QUE LOS .webm SE GENERARON BIEN
+-------------------------------------------------------------------
+
+Tras grabar, antes de cerrar todo:
+
+[ ] ls data/videos/ -> debe haber un .webm por cada RPA ejecutado
+[ ] cat data/rpa_ejecucion.log -> debe haber pares INICIO/FIN de
+    cada workflow, con duracion razonable (15-60s)
+[ ] Reproducir un .webm rapido para verificar que se ve bien
+    (que el Chromium no estaba minimizado o tras otra ventana)
+
+Si algun .webm pesa < 100 KB, casi seguro Playwright no llego a
+grabar (cerro antes de tiempo). En ese caso, repite ese RPA o
+acepta que ese tramo solo lo tienes en la captura de OBS.

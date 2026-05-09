@@ -1,0 +1,98 @@
+{
+  "id": "devolucion_libro",
+  "titulo": "Devolución de libro prestado al fondo",
+  "descripcion": "Cierra un préstamo activo y reincorpora el ejemplar al fondo. NO es una baja (el libro vuelve a estar disponible para nuevos préstamos). Se puede llamar de tres formas: (1) con el nº de préstamo P-NNNN, (2) con el nº de registro del libro R-NNNN si solo hay un préstamo activo de ese título, o (3) con R-NNNN + nº de carnet S-NNNN si hay varios préstamos activos del mismo libro. Workflow PREFERENTE para devoluciones. Expresiones típicas: 'devuelve el P-0007', 'el socio S-0042 devuelve el R-0003', 'cierra el préstamo del libro X', 'apunta la devolución del R-0007 que ha traído Antonio'.",
+  "app": "biblioteca_seccion",
+  "url": "{{FORM_URL_DEVOLUCION}}",
+  "tags": [
+    "devolucion",
+    "cerrar prestamo",
+    "libro devuelto",
+    "P-NNNN",
+    "registrar devolucion",
+    "biblioteca"
+  ],
+  "param_schema": {
+    "id_prestamo": {
+      "type": "string",
+      "description": "Nº de préstamo, formato P-NNNN. Opcional si hay id_libro.",
+      "required": false
+    },
+    "id_libro": {
+      "type": "string",
+      "description": "Nº de registro del libro, formato R-NNNN. Opcional si hay id_prestamo.",
+      "required": false
+    },
+    "id_socio": {
+      "type": "string",
+      "description": "Nº de carnet del socio. Solo necesario si hay varios préstamos del mismo libro.",
+      "required": false
+    }
+  },
+  "steps": [
+    {
+      "type": "wait",
+      "ms": 500
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#id_prestamo"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#id_prestamo"
+      },
+      "value": "{{id_prestamo}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#id_libro"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#id_libro"
+      },
+      "value": "{{id_libro}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#id_socio"
+      }
+    },
+    {
+      "type": "type",
+      "target": {
+        "by": "css",
+        "value": "#id_socio"
+      },
+      "value": "{{id_socio}}"
+    },
+    {
+      "type": "click",
+      "target": {
+        "by": "css",
+        "value": "#btn_devolver"
+      }
+    },
+    {
+      "type": "wait_for_text",
+      "target": {
+        "by": "css",
+        "value": "#toast"
+      },
+      "contains": "Devolución registrada"
+    }
+  ]
+}
