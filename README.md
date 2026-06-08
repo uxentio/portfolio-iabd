@@ -66,6 +66,7 @@ Trabajos del ciclo de **Inteligencia Artificial y Big Data**: prácticas, retos 
 | [`iot-mqtt-nodered-maui/`](programacion-ia/iot-mqtt-nodered-maui) | Integración IoT: MQTT + Node-RED + .NET MAUI + LLM |
 | [`ejercicios-csharp-poo/`](programacion-ia/ejercicios-csharp-poo) | Ejercicios de POO en C# |
 | [`tarea-llm-integration/`](programacion-ia/tarea-llm-integration) | Memoria de integración con LLMs |
+| [`language-tutor-system/`](programacion-ia/language-tutor-system) | Tutor de idiomas adaptativo: prompt de sistema + esquema de progreso (ingeniería de prompts) |
 
 ### 🗄️ [`big-data-aplicado/`](big-data-aplicado/) — Big Data Aplicado
 

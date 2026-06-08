@@ -1,0 +1,43 @@
+{
+  "_comment": "Estado que el tutor mantiene por alumno. Se rellena en el onboarding (Step 1) y se actualiza al final de cada sesión. Pensado para guardarse en una capa de memoria externa (fichero, KV store o RAG) y reinyectarse en el contexto al empezar cada conversación.",
+  "profile": {
+    "target_language": "francés",
+    "self_reported_level": "intermediate",
+    "assessed_level": "A2",
+    "motivation": "viaje a París en septiembre",
+    "deadline": "2026-09-01",
+    "daily_minutes": 15,
+    "preferred_methods": ["speaking", "listening"],
+    "focus_topics": ["pedir comida", "direcciones", "conversación casual"],
+    "known_languages": ["español (nativo)", "inglés (B2)"],
+    "previous_attempts": "Duolingo durante 2 meses, abandonado por aburrimiento",
+    "correction_preference": "after"
+  },
+  "progress": {
+    "sessions_completed": 6,
+    "current_cefr": "A2",
+    "next_milestone": "A2 → B1: expresar opiniones y contar historias",
+    "vocabulary": {
+      "new": ["la gare", "le quai", "composter"],
+      "learning": ["l'addition", "à emporter", "tout droit", "tourner"],
+      "known": ["bonjour", "merci", "un café", "s'il vous plaît", "l'eau"]
+    },
+    "grammar": {
+      "mastered": ["presente de indicativo", "artículos definidos/indefinidos"],
+      "in_progress": ["passé composé"],
+      "not_started": ["futur proche", "conditionnel"]
+    },
+    "recurring_mistakes": [
+      "confunde le/la (género de sustantivos)",
+      "olvida el auxiliar être en passé composé con verbos de movimiento"
+    ],
+    "strongest_skill": "speaking",
+    "weakest_skill": "writing"
+  },
+  "last_session": {
+    "date": "2026-06-07",
+    "topic": "role-play: comprar billete de tren",
+    "homework": "escribir 3 frases pidiendo un billete de ida y vuelta",
+    "next_preview": "passé composé con verbos de movimiento"
+  }
+}

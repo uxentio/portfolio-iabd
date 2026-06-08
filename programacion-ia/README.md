@@ -10,6 +10,7 @@ Proyectos de integración: agentes de IA, RPA + RAG, IoT con MQTT y aplicaciones
 | [`iot-mqtt-nodered-maui/`](iot-mqtt-nodered-maui) | Integración IoT extremo-a-extremo: sensores → MQTT → Node-RED → backend → MAUI + LLM |
 | [`ejercicios-csharp-poo/`](ejercicios-csharp-poo) | Ejercicios de programación orientada a objetos en C# |
 | [`tarea-llm-integration/`](tarea-llm-integration) | Memoria de integración con LLMs |
+| [`language-tutor-system/`](language-tutor-system) | Prompt de sistema para un tutor de idiomas adaptativo (ingeniería de prompts / diseño de agente LLM) |
 
 ## Archivos sueltos
 
