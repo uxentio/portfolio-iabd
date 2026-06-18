@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CW4EVER · Entrenador de código Morse</title>
+  <meta name="description" content="Entrenador de código Morse (CW) en el navegador: método Koch, temporización Farnsworth, práctica de copia y estadísticas." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>·−·− CW4EVER <span>Entrenador de código Morse</span></h1>
+    <div id="lamp" class="lamp off" title="Indicador de tono"></div>
+  </header>
+
+  <main>
+    <section class="panel controls">
+      <h2>Sesión</h2>
+
+      <label class="field">
+        <span>Modo de práctica</span>
+        <select id="mode">
+          <option value="koch">Método Koch (progresivo)</option>
+          <option value="letras">Solo letras</option>
+          <option value="numeros">Solo números</option>
+          <option value="mixto">Mixto (letras + números + signos)</option>
+          <option value="abrev">Abreviaturas / código Q</option>
+          <option value="callsigns">Indicativos (callsigns)</option>
+        </select>
+      </label>
+
+      <div id="kochBox" class="koch-info">
+        <p id="kochInfo"></p>
+      </div>
+
+      <label class="field slider">
+        <span>Velocidad de carácter <em id="charWpmVal"></em> WPM</span>
+        <input id="charWpm" type="range" min="10" max="40" step="1" />
+      </label>
+
+      <label class="field slider">
+        <span>Velocidad efectiva (Farnsworth) <em id="effWpmVal"></em> WPM</span>
+        <input id="effWpm" type="range" min="5" max="40" step="1" />
+      </label>
+
+      <label class="field slider">
+        <span>Tono <em id="freqVal"></em> Hz</span>
+        <input id="freq" type="range" min="400" max="1000" step="10" />
+      </label>
+
+      <div id="groupSizeRow" class="field slider">
+        <label class="field slider">
+          <span>Tamaño de grupo <em id="groupSizeVal"></em></span>
+          <input id="groupSize" type="range" min="1" max="7" step="1" />
+        </label>
+      </div>
+
+      <label class="field slider">
+        <span>Número de grupos <em id="groupCountVal"></em></span>
+        <input id="groupCount" type="range" min="1" max="15" step="1" />
+      </label>
+    </section>
+
+    <section class="panel trainer">
+      <h2>Práctica de copia</h2>
+      <p class="lead">Pulsa <strong>Reproducir</strong> (o la barra espaciadora), escucha el Morse
+        y escribe lo que oigas. Luego comprueba tu copia.</p>
+
+      <div class="buttons">
+        <button id="btnPlay" class="primary">▶ Reproducir</button>
+        <button id="btnReplay">↻ Repetir</button>
+        <button id="btnStop">■ Parar</button>
+        <button id="btnNew">＋ Nueva sesión <kbd>N</kbd></button>
+      </div>
+
+      <textarea id="answer" rows="3" placeholder="Escribe aquí lo que oigas… (Ctrl+Enter para comprobar)"
+        autocomplete="off" autocapitalize="characters" spellcheck="false"></textarea>
+
+      <div class="buttons">
+        <button id="btnCheck" class="primary">✓ Comprobar</button>
+        <button id="btnReveal">👁 Ver solución</button>
+      </div>
+
+      <div id="result" class="result"></div>
+      <p id="stats" class="stats"></p>
+    </section>
+
+    <section class="panel chart-panel">
+      <h2>Tabla de referencia</h2>
+      <div id="chart" class="chart"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Inspirado en el entrenador de <a href="https://cw4ever.eu/trainer/" rel="noopener" target="_blank">cw4ever.eu</a>.
+       Método Koch + temporización Farnsworth (estándar ARRL). Hecho con Web Audio API, sin dependencias.</p>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

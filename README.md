@@ -88,6 +88,12 @@ Trabajos del ciclo de **Inteligencia Artificial y Big Data**: prácticas, retos 
 
 Aportación propia (overrides Docker, evidencias y código `src/`) sobre el entorno docente de Big Data. **El entorno base es del profesor y no se redistribuye aquí.**
 
+### 📡 [`cw4ever-trainer/`](cw4ever-trainer/) — Extra
+
+| Proyecto | Tema |
+|---|---|
+| [`cw4ever-trainer/`](cw4ever-trainer/) | Entrenador de código Morse (CW) en el navegador: método Koch + temporización Farnsworth, sin dependencias |
+
 ## Proyectos en repos independientes
 
 - **MovieApp** — Sistema de gestión de películas en .NET (API + WPF + MAUI + consola). Repo privado.
