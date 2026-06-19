@@ -6,6 +6,12 @@
 > y de *Lingua Franca Nova*: conservar el **sabor del latín** eliminando lo que más
 > cuesta aprender (declinaciones, conjugaciones, géneros y concordancias).
 
+> **Documentos del proyecto:**
+> - 📘 Este `README.md` — introducción, filosofía y resumen.
+> - 📖 [`gramatica.md`](gramatica.md) — gramática completa (tiempos, aspecto, afijos).
+> - 📚 [`lexico.md`](lexico.md) — diccionario temático (varios cientos de palabras).
+> - 📝 [`textos.md`](textos.md) — diálogos, fábulas y proverbios con traducción.
+
 ---
 
 ## 1. Filosofía de diseño
@@ -126,7 +132,11 @@ El tiempo se marca con una **partícula antepuesta**, igual para todas las perso
 | Presente | — | `io ama` | yo amo / I love |
 | Pasado | `ia` | `io ia ama` | yo amé / I loved |
 | Futuro | `va` | `io va ama` | yo amaré / I will love |
+| Condicional | `ave` | `io ave ama` | yo amaría / I would love |
 | Perfecto (matiz) | `habe` | `io habe ama` | yo he amado / I have loved |
+
+> El sistema completo de tiempos, aspecto, voz pasiva y formación de palabras está en
+> [`gramatica.md`](gramatica.md).
 
 - **Negación**: `non` antes del verbo → `io non ama`.
 - **Imperativo**: la raíz desnuda → `Ama!`, `Veni!`, `Audi!` (puro latín).
