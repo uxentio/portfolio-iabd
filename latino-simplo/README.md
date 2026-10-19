@@ -8,12 +8,16 @@
 
 > **Documentos del proyecto:**
 > - 📘 Este `README.md` — introducción, filosofía y resumen.
+> - ✨ [`manifesto.md`](manifesto.md) — por qué existe esta lengua (escrito en Latino Simplo).
 > - 🚀 [`aprende-en-10-minutos.md`](aprende-en-10-minutos.md) — curso exprés con ejercicios.
 > - 📖 [`gramatica.md`](gramatica.md) — gramática completa (tiempos, aspecto, afijos).
+> - 🔤 [`ortografia.md`](ortografia.md) — ortografía y pronunciación.
 > - 📚 [`lexico.md`](lexico.md) — diccionario temático (Latino Simplo → es/en).
 > - 🤖 [`lexico-moderno.md`](lexico-moderno.md) — léxico actual: tecnología, IA, ciencia, mente.
 > - 🔄 [`diccionario-inverso.md`](diccionario-inverso.md) — español/inglés → Latino Simplo (para escribir).
 > - 📝 [`textos.md`](textos.md) — diálogos, fábulas y proverbios con traducción.
+> - 🃏 [`flashcards.md`](flashcards.md) + [`flashcards.csv`](flashcards.csv) — mazo de repaso (Anki).
+> - 🛠️ [`traductor.py`](traductor.py) — traductor léxico español ⇄ Latino Simplo.
 
 ---
 
@@ -268,3 +272,27 @@ sola declinación.
 
 > **En una línea:** toma una raíz latina, no la declines nunca, ordénala como en inglés
 > o en español, y marca el tiempo con `ia` o `va`. Eso es el *Latino Simplo*.
+
+---
+
+## 14. Herramientas
+
+**Traductor léxico** (`traductor.py`, solo Python estándar, sin dependencias):
+
+```bash
+python3 traductor.py --to ls "El perro grande come pan"
+#   -> le cane magno manduca pane
+
+python3 traductor.py --to es "io ama te"
+#   -> yo amar te
+
+python3 traductor.py --to ls          # modo interactivo
+```
+
+Es un **glosador palabra por palabra** basado en el diccionario: traduce el vocabulario,
+normaliza artículos y las formas verbales más frecuentes, y marca con `[?palabra]` lo que
+no conoce. No sustituye a repasar el orden y las partículas con la `gramatica.md`, pero
+resuelve la mayor parte de una frase al instante.
+
+**Flashcards** (`flashcards.csv`): mazo de ~145 palabras nucleares listo para importar en
+Anki o Quizlet. Ver [`flashcards.md`](flashcards.md) para las instrucciones.
