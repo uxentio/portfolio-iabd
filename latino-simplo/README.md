@@ -10,7 +10,8 @@
 > - 📘 Este `README.md` — introducción, filosofía y resumen.
 > - 🚀 [`aprende-en-10-minutos.md`](aprende-en-10-minutos.md) — curso exprés con ejercicios.
 > - 📖 [`gramatica.md`](gramatica.md) — gramática completa (tiempos, aspecto, afijos).
-> - 📚 [`lexico.md`](lexico.md) — diccionario temático (varios cientos de palabras).
+> - 📚 [`lexico.md`](lexico.md) — diccionario temático (Latino Simplo → es/en).
+> - 🔄 [`diccionario-inverso.md`](diccionario-inverso.md) — español/inglés → Latino Simplo (para escribir).
 > - 📝 [`textos.md`](textos.md) — diálogos, fábulas y proverbios con traducción.
 
 ---

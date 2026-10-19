@@ -150,7 +150,7 @@ triginta (30), quaranta (40), quinquaginta (50), centu (100), mille (1000).`
 | `aqua` | agua / *water* | `vino` | vino / *wine* |
 | `lacte` | leche / *milk* | `caseo` | queso / *cheese* |
 | `carne` | carne / *meat* | `ovo` | huevo / *egg* |
-| `fructo` | fruta / *fruit* | `malo` | manzana / *apple* |
+| `fructo` | fruta / *fruit* | `pomo` | manzana / *apple* |
 | `uva` | uva / *grape* | `oliva` | aceituna / *olive* |
 | `oleo` | aceite / *oil* | `sale` | sal / *salt* |
 | `zucaro` | azúcar / *sugar* | `mele` | miel / *honey* |

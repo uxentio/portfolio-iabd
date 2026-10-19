@@ -34,7 +34,7 @@ as a teacher. —How nice! We can talk later, if you want. —Sure. See you late
 ## 2. Dialogo: in le mercato (en el mercado)
 
 > — **Bono die! Que tu vole emi?**
-> — **Io quaere fructo fresco. Quanto costa le malos?**
+> — **Io quaere fructo fresco. Quanto costa le pomos?**
 > — **Duo euro le kilo. Illos es maxime bono hodie.**
 > — **Bene, io prende un kilo. Et tu habe pane?**
 > — **Si, certo. Hic es. Alio cosa?**
